@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html lang = "en-IN">
+    <head>
+        <meta name = "google-site-verification" content = "SgHsyBjRk9hujHsLjvXAa6a-775GwMKcGfRNNdM3Jpc" />
+        <meta charset = "utf-8" />
+        <meta name = "viewport" content = "width = device-width, initial-scale = 1.0" />
+        <meta name = "theme-color" content = "black" />
+        <link rel = "icon" type = "image/x-icon" href = "" />
+        <link rel = "stylesheet" type = "text/css" href = "style.css" />
+    </head>
+    <body>
+        <div id = "evalBar">0</div>
+        <div id = "whitePlayer"></div>
+        <div id = "blackPlayer"></div>
+        <div id = "chessBoard"></div>
+        <table style = "font-weight: bold; float: left; padding: 16px; margin: var(--margin); border: var(--border); background-color: white;"> <tbody>
+            <tr>
+                <td> FEN </td>
+                <td> <input id = "fenInput" /> </td>
+            </tr>
+            <tr>
+                <td> PGN </td>
+                <td> <textarea id = "pgnInput" rows = "5"></textarea> </td>
+            </tr>
+        </tbody> </table>
+        <script src = "boardSetUp.js"></script>
+    </body>
+</html>
