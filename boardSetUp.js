@@ -1,11 +1,11 @@
 const chessBoard = document.getElementById("chessBoard");
 
 let isBoardFlipped = false;
-let boardPieces, toMove, castlingRights, enPassantSquare, halfmoveCount, noOfMoves;
+let boardPieces, toMove, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber;
 
 function parseFen(fen) {
     boardPieces = [];
-    toMove = castlingRights = enPassantSquare = halfmoveCount = noOfMoves = "";
+    toMove = castlingRights = enPassantSquare = halfmoveClock = fullmoveNumber = "";
 
     let i = 0, fenChar = fen[i];
     while (fenChar != " ") {
@@ -35,14 +35,14 @@ function parseFen(fen) {
 
     i++; fenChar = fen[i];
     while (fenChar != " ") {
-        halfmoveCount += fenChar;
+        halfmoveClock += fenChar;
         i++; fenChar = fen[i];
     }
-    halfmoveCount = Number(halfmoveCount);
+    halfmoveClock = Number(halfmoveClock);
 
     i++; fenChar = fen[i];
     while (fenChar != " ") {
-        noOfMoves += fenChar;
+        fullmoveNumber += fenChar;
         i++;
         if (i < fen.length) { // Since i (index) starts from 0, but length starts from 1.
             fenChar = fen[i];
@@ -50,7 +50,7 @@ function parseFen(fen) {
             break;
         }
     }
-    noOfMoves = Number(noOfMoves);
+    fullmoveNumber = Number(fullmoveNumber);
 }
 function setUpChessBoard(isFlipped, fen) {
     parseFen(fen);
