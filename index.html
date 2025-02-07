@@ -10,20 +10,51 @@
         <link rel = "stylesheet" type = "text/css" href = "style.css" />
     </head>
     <body>
-        <div id = "evalBar">0</div>
-        <div id = "whitePlayer"></div>
-        <div id = "blackPlayer"></div>
-        <div id = "chessBoard"></div>
+        <div style = "float: center;">
+            <div id = "evalBar">0</div>
+            <div id = "whitePlayer"></div>
+            <div id = "chessBoard"></div>
+            <div id = "blackPlayer"></div>
+        </div>
         <table style = "font-weight: bold; float: left; padding: 16px; margin: var(--margin); border: var(--border); background-color: white;"> <tbody>
             <tr>
                 <td> FEN </td>
-                <td> <input id = "fenInput" /> </td>
+                <td> <input id = "fenInput" spellcheck = "false" onblur = "updateChessBoard(false, this.value)" /> </td>
+                <td id = "fenVerifier"></td>
             </tr>
             <tr>
                 <td> PGN </td>
                 <td> <textarea id = "pgnInput" rows = "5"></textarea> </td>
             </tr>
         </tbody> </table>
+        <div> <ul style = "float: left; max-width: 45%;"> <b> PLEASE READ ALL THIS (SCROLL DOWN IF NEEDED): </b> </ul>
+            <ul style = "display: block; float: left; max-width: 45%;">
+                Features:
+                <li> The chess board changes size as per the browser window’s width. </li>
+                <li> Everything on this page is made by Yashdeep Singh Fauzdar, except for the chess pieces (taken from Lichess) and board colour (also from Lichess). </li>
+                <li> Full FEN support. </li>
+                <li> Detects what is wrong with invalid FENs. (Hover over the red circle with a cross that appears beside FEN input box to see what’s wrong.) </li>
+                <li> Board updates whenever you click out of the FEN input box. </li>
+                <li> System fonts. </li>
+            </ul>
+            <ul style = "display: block; float: left; max-width: 45%;"> Expected soon:
+                <li> Full PGN support with the ability to make moves. (As of now, the board pieces are just decorative.) </li>
+                <li> Ability to flip board. (This is already supported — all that is needed is a button so that the user can do it too.) </li>
+                <li> Dark mode. </li>
+                <li> Enable the user to make small customisations. </li>
+                <li> Its own simple chess engine, made by Yashdeep Singh Fauzdar in plain JavaScript. </li>
+                <li> Working evaluation bar. </li>
+                <li> A menu bar, along with web pages on all chess rules. </li>
+                <li> Store settings in browser. </li>
+            </ul>
+            <ul style = "display: block; float: left;"> Credits:
+                <li> The code for everything on this page is made by Yashdeep Singh Fauzdar. </li>
+                <li> Thanks to Lichess for the chess pieces and current board colour. </li>
+                <li> The tick and cross icons beside the FEN input box are taken from Google Fonts. </li>
+                <li> Source Code is avaiable here: <a href = "https://github.com/PerfunctoryOrator/chess/tree/main" target = "_blank"> https://github.com/PerfunctoryOrator/chess/tree/main</a>. </li>
+                <li> For Kushagra (my schoolmate): you can give me some recommendations on WhatsApp or Chess.com. </li>
+            </ul>
+        </div>
         <script src = "boardSetUp.js"></script>
     </body>
 </html>
