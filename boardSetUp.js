@@ -82,7 +82,7 @@ function parseFen(fen) {
         }
         if (!(boardPieces.includes("K") && boardPieces.includes("k"))) {
             isFenValid = false;
-            reasonsForInvalidFen.push("The piece placement described by the provided FEN doens’t include the position(s) of one or both king(s).");
+            reasonsForInvalidFen.push("The piece placement described by the provided FEN doesn’t include the position(s) of one or both king(s).");
         }
     }
     if (isFenValid == false) {
