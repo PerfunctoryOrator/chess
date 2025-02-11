@@ -5,33 +5,34 @@
         <meta name = "google-site-verification" content = "SgHsyBjRk9hujHsLjvXAa6a-775GwMKcGfRNNdM3Jpc" />
         <meta charset = "utf-8" />
         <meta name = "viewport" content = "width = device-width, initial-scale = 1.0" />
-        <meta name = "theme-color" content = "black" />
+        <meta name = "theme-color" content = "rgb(174, 138, 104)" />    <!-- Same as `var(--board-colour)` in `style.css` -->
         <link rel = "icon" type = "image/x-icon" href = "" />
         <link rel = "stylesheet" type = "text/css" href = "style.css" />
     </head>
     <body>
-        <div style = "float: center;">
-            <div id = "evalBar">0</div>
-            <div id = "whitePlayer"></div>
-            <div id = "chessBoard"></div>
-            <div id = "blackPlayer"></div>
+        <div>
+            <div id = "eval-bar"> 0 </div>
+            <div id = "white-player"></div>
+            <div id = "chess-board"></div>
+            <div id = "black-player"></div>
         </div>
-        <table style = "font-weight: bold; float: left; padding: 16px; margin: var(--margin); border: var(--border); background-color: white;"> <tbody>
+        <table id = "input-table"> <tbody>
             <tr>
                 <td> FEN </td>
-                <td> <input id = "fenInput" spellcheck = "false" onblur = "updateChessBoard(false, this.value)" /> </td>
-                <td id = "fenVerifier"></td>
+                <td> <input id = "fen-input" value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck = "false" onblur = "updateChessBoard(false, this.value)" /> </td>
+                <td id = "fen-validity-indicator"></td>
             </tr>
             <tr>
                 <td> PGN </td>
-                <td> <textarea id = "pgnInput" rows = "5"></textarea> </td>
+                <td> <textarea id = "pgn-input" rows = "5" spellcheck = "false"></textarea> </td>
+                <td id = "pgn-validity-indicator"></td>
             </tr>
         </tbody> </table>
         <div> <ul style = "float: left; max-width: 45%;"> <b> PLEASE READ ALL THIS (SCROLL DOWN IF NEEDED): </b> </ul>
             <ul style = "display: block; float: left; max-width: 45%;">
                 Features:
                 <li> The chess board changes size as per the browser window’s width. </li>
-                <li> Everything on this page is made by Yashdeep Singh Fauzdar, except for the chess pieces (taken from Lichess) and board colour (also from Lichess). </li>
+                <li> Everything on this page is made by Yashdeep Singh Fauzdar, except for the chess pieces (taken from Lichess). </li>
                 <li> Full FEN support. </li>
                 <li> Detects what is wrong with invalid FENs. (Hover over the red circle with a cross that appears beside FEN input box to see what’s wrong.) </li>
                 <li> Board updates whenever you click out of the FEN input box. </li>

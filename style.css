@@ -20,23 +20,36 @@
 
     --off-white: rgb(245, 245, 245);
     --dark-grey: rgb(40, 40, 40);
+
     --shadow-colour: rgba(0, 0, 0, 0.2);
+    --colour: var(--dark-grey);
+    --background-colour: var(--off-white);
+    --contrast-background-colour: white;
     --padding: 8px;
     --margin: 16px;
     --border: 4px solid gainsboro;
+    --emphasis-animation: linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%);
 
     --board-square-width: 5vw;
     --board-colour: var(--lichess-board-colour);
     --light-square-colour: var(--lichess-light-square-colour);
+
+    @media (prefers-color-scheme: dark) {
+        --shadow-colour: rgba(0, 0, 0, 0.8);
+        --colour: var(--off-white);
+        --background-colour: var(--dark-grey);
+        --contrast-background-colour: black;
+    }
 }
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     font-size: 16px;
     line-height: 1.5em;
     margin: 16px;
-    background-color: var(--off-white);
+    color: var(--colour);
+    background-color: var(--background-colour);
 }
-#evalBar {
+#eval-bar {
     font-weight: bold;
     text-align: center;
     float: left;
@@ -45,12 +58,12 @@ body {
     padding: var(--padding) 4px;
     margin: var(--margin);
     border: var(--border);
-    background-color: white;
+    background-color: var(--contrast-background-colour);
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
 }
-#chessBoard {
+#chess-board {
     line-height: 0px;
     float: left;
     width: max-content;
@@ -61,31 +74,44 @@ body {
     -moz-user-select: none;
     user-select: none;
 }
-.boardSquare {
+.board-square {
     display: inline-block;
     width: var(--board-square-width);
     height: var(--board-square-width);
     background-color: var(--board-colour);
 }
-.lightBoardSquare {
+.light-board-square {
     background-color: var(--light-square-colour);
 }
-.boardSquare.containsPiece:hover {
+.board-square.contains-piece:hover {
     outline: 4px solid white;
     outline-offset: -4px;
 }
+#input-table {
+    font-weight: bold;
+    float: left;
+    padding: 16px;
+    margin: var(--margin);
+    border: var(--border);
+    background-color: var(--contrast-background-colour);
+}
 input, textarea {
+    font-size: 16px;
     width: 30vw;
     padding: var(--padding);
     margin: 8px;
-    font-size: 16px;
     border: var(--border);
+    color: var(--colour);
+    background-color: var(--background-colour);
     resize: none;
 }
-#fenVerifier {
+#fen-validity-indicator {
     position: relative;
 }
-#fenVerifier > div {
+#fen-validity-indicator > svg, #pgn-validity-indicator > svg {
+    cursor: pointer;
+}
+#fen-validity-indicator > div {
     font-weight: normal;
     overflow-wrap: break-word;
     display: none;
@@ -95,15 +121,15 @@ input, textarea {
     height: max-content;
     padding: var(--padding);
     border-radius: 1em;
-    color: var(--off-white);
-    background-color: rgb(40, 40, 40, 0.8);
+    color: var(--background-colour);
+    background-color: var(--colour);
 }
-#fenVerifier:hover > div {
+#fen-validity-indicator:hover > div {
     display: block;
 }
 
 @media (max-width: 600px) {
-    #fenVerifier > div {
+    #fen-validity-indicator > div {
         left: auto;
         right: 0px;
         width: 50vw;
