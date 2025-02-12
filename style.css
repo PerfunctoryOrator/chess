@@ -41,6 +41,18 @@
         --contrast-background-colour: black;
     }
 }
+.r {background-image: var(--r);}
+.n {background-image: var(--n);}
+.b {background-image: var(--b);}
+.q {background-image: var(--q);}
+.k {background-image: var(--k);}
+.p {background-image: var(--p);}
+.R {background-image: var(--R);}
+.N {background-image: var(--N);}
+.B {background-image: var(--B);}
+.Q {background-image: var(--Q);}
+.K {background-image: var(--K);}
+.P {background-image: var(--P);}
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     font-size: 16px;
@@ -63,32 +75,43 @@ body {
     -moz-user-select: none;
     user-select: none;
 }
-#chess-board {
-    line-height: 0px;
+#chess-board, #piece-area {
+    display: grid;
+    grid-template: repeat(8, var(--board-square-width)) / repeat(8, var(--board-square-width));
     float: left;
     width: max-content;
-    margin: var(--margin);
-    border: var(--border);
-    box-shadow: 8px 16px 16px var(--shadow-colour);
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
 }
+#chess-board {
+    position: relative;
+    margin: var(--margin);
+    border: var(--border);
+    box-shadow: 8px 16px 16px var(--shadow-colour);
+}
+#piece-area {
+    position: absolute;
+    z-index: 1;
+}
+.chess-piece {
+    position: relative;
+}
 .board-square {
-    display: inline-block;
-    width: var(--board-square-width);
-    height: var(--board-square-width);
+    position: relative;
     background-color: var(--board-colour);
 }
 .light-board-square {
     background-color: var(--light-square-colour);
 }
-.board-square.contains-piece:hover {
+.chess-piece:hover {
     outline: 4px solid white;
     outline-offset: -4px;
 }
-#input-table {
+#input-grid {
     font-weight: bold;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
     float: left;
     padding: 16px;
     margin: var(--margin);

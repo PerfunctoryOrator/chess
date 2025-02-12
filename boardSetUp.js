@@ -1,9 +1,10 @@
 const chessBoard = document.getElementById("chess-board");
+const pieceArea = document.getElementById("piece-area");
 let isBoardFlipped = false;
-let boardPieces, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber;
+let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber;
 
 function parseFen(fen) {
-    boardPieces = [];
+    piecePositions = [];
     activeColour = castlingRights = enPassantSquare = halfmoveClock = fullmoveNumber = "";
     let isFenValid = true, reasonsForInvalidFen = [];
     function readValueFromFen() {
@@ -35,10 +36,10 @@ function parseFen(fen) {
     }
     while (fenChar != " ") {
         if (!(Number(fenChar) || fenChar == "/")) {
-            boardPieces.push(fenChar);
+            piecePositions.push(fenChar);
         } else if (fenChar != "/") {
             for (let j = Number(fenChar); j > 0; j--) {
-                boardPieces.push("");
+                piecePositions.push("");
             }
         }
         i++;
@@ -51,7 +52,7 @@ function parseFen(fen) {
         }
     }
     if (isFenValid) {
-        if (boardPieces.length != 64) {
+        if (piecePositions.length != 64) {
             isFenValid = false;
             reasonsForInvalidFen.push("The “piece placement” of the provided FEN is incorrect.");
         }
@@ -80,23 +81,23 @@ function parseFen(fen) {
             isFenValid = false;
             reasonsForInvalidFen.push("The “fullmove number” field of the provided FEN is incorrect.");
         }
-        if (!(boardPieces.includes("K") && boardPieces.includes("k"))) {
+        if (!(piecePositions.includes("K") && piecePositions.includes("k"))) {
             isFenValid = false;
             reasonsForInvalidFen.push("The provided FEN doesn’t include the position(s) of one or both king(s).");
-        } else if(boardPieces.filter(x => x === "K").length > 1 || boardPieces.filter(x => x === "k").length > 1) {
+        } else if(piecePositions.filter(x => x === "K").length > 1 || piecePositions.filter(x => x === "k").length > 1) {
             isFenValid = false;
             reasonsForInvalidFen.push("The provided FEN specifies the position of one or both king(s) more than once.");
         }
     }
     if (isFenValid == false) {
-        boardPieces = [];
+        piecePositions = [];
         activeColour = castlingRights = enPassantSquare = halfmoveClock = fullmoveNumber = "";
         return reasonsForInvalidFen;
     } else {
         return false;
     }
 }
-function updateChessBoard(isFlipped) {
+function updateChessBoard() {
     const fen = document.getElementById("fen-input").value.trim();
     const fenParseResult = parseFen(fen);
     if (fenParseResult) {
@@ -122,37 +123,71 @@ function updateChessBoard(isFlipped) {
     for (let i = 0; i < prevBoardRanks.length; i++) {
         prevBoardRanks[i].remove();
     }
-    let boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
-    let squareNumber = 0, pieceOnSquare = "";
-    if (isFlipped) {
+    const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    let squareNumber = 0;
+    if (isBoardFlipped) {
         boardFiles.reverse();
         squareNumber = 63;
     }
-    for (let rank = isFlipped ? 1 : 8; [1, 2, 3, 4, 5, 6, 7, 8].includes(rank); rank = isFlipped ? rank+1 : rank-1) {
-        const rankElement = document.createElement("div");
-        rankElement.className = "board-rank";
-        let isLightSquare = rank%2 > 0 ? true : false;
-        if (isFlipped) {
-            isLightSquare = !isLightSquare;
-        }
-        for (i in boardFiles) {
+    for (let rank = isBoardFlipped ? 1 : 8; rank > 0 && rank < 9; rank = isBoardFlipped ? rank+1 : rank-1) {
+        let isLightSquare = isBoardFlipped ? rank%2 < 1 : rank%2 > 0;
+        for (let file = 0; file < 8; file++) {
             isLightSquare = !isLightSquare;
             const square = document.createElement("div");
             square.className = "board-square";
             if (isLightSquare) {
-                square.className += " light-board-square";
+                square.classList.add("light-board-square");
             }
-            square.id = `${boardFiles[i]}${rank}`;
-            pieceOnSquare = boardPieces[squareNumber];
-            if (pieceOnSquare != "") {
-                square.className += " contains-piece";
-                square.style.backgroundImage = `var(--${pieceOnSquare})`;
+            square.innerText = square.id = `${boardFiles[file]}${rank}`;
+            square.innerText += ` — ${squareNumber}`;
+            square.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
+            square.style.gridColumn = `${file + 1} / ${file + 2}`;
+            const pieceAtSquare = piecePositions[squareNumber];
+            if (pieceAtSquare) {
+                square.innerText += ` — ${pieceAtSquare}`;
+                const piece = document.createElement("div");
+                piece.className = `chess-piece ${pieceAtSquare}`;
+                piece.id = square.id;
+                piece.style.gridRow = square.style.gridRow;
+                piece.style.gridColumn = square.style.gridColumn;
+                pieceArea.appendChild(piece);
             }
-            rankElement.appendChild(square);
-            squareNumber = isFlipped ? squareNumber-1 : squareNumber+1;
+            chessBoard.appendChild(square);
+            squareNumber = isBoardFlipped ? squareNumber-1 : squareNumber+1;
         }
-        chessBoard.appendChild(rankElement);
     }
+}
+
+function convertSquareToIndex(square) {
+    return 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
+}
+
+function getLegalMoves(square) {
+    return ["e5", "d6", "c3", "f2"];
+}
+
+function highlightLegalMoves(chessPiece) {
+    document.querySelectorAll(".move-indicator").forEach(el => el.remove());
+
+    const pieceSquare = chessPiece.id;
+
+    // Example: Get legal moves for a piece (you’ll replace this with actual move logic)
+    const legalMoves = getLegalMoves(pieceSquare);
+
+    // Loop through each valid move
+    legalMoves.forEach(square => {
+        const boardSquare = document.querySelector(`#${square}.board-square`);
+        // Create a new div for the move indicator
+        const moveIndicator = document.createElement("div");
+        moveIndicator.className = "move-indicator";
+
+        // Check if square has a piece (to decide between filled circle or ring)
+        const isOccupied = piecePositions[convertSquareToIndex(square)] !== "";
+        moveIndicator.classList.add(isOccupied ? "ring" : "filled-circle");
+
+        // Append to the square
+        boardSquare.appendChild(moveIndicator);
+    });
 }
 
 const parameters = location.search.replace(/%20/g, " ").split("?");
@@ -175,4 +210,30 @@ if (parameters != "") {
             isBoardFlipped = true;
     }
 }
-updateChessBoard(isBoardFlipped);
+updateChessBoard();
+document.querySelectorAll(".chess-piece").forEach(piece => {
+    piece.setAttribute("onclick", "highlightLegalMoves(this)");
+});
+function removeMoveIndicators() {
+    document.querySelectorAll(".move-indicator").forEach(el => {
+        el.style.animation = "fadeOut 0.3s ease-in-out";
+        setTimeout(() => el.remove(), 300);
+    });
+}
+
+// Add fade-out animation
+const styleSheet = document.createElement("style");
+styleSheet.innerHTML = `
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    }
+`;
+document.head.appendChild(styleSheet);
+// Add event listener for clicks anywhere on the document
+document.addEventListener("click", function(event) {
+    // Check if the clicked element is NOT a chess piece
+    if (!event.target.classList.contains("chess-piece")) {
+        removeMoveIndicators();
+    }
+});
