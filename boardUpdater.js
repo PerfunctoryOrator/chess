@@ -139,12 +139,10 @@ function updateChessBoard() {
                 square.classList.add("light-board-square");
             }
             square.innerText = square.id = `${boardFiles[file]}${rank}`;
-            square.innerText += ` — ${squareNumber}`;
             square.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
             square.style.gridColumn = `${file + 1} / ${file + 2}`;
             const pieceAtSquare = piecePositions[squareNumber];
             if (pieceAtSquare) {
-                square.innerText += ` — ${pieceAtSquare}`;
                 const piece = document.createElement("div");
                 piece.className = `chess-piece ${pieceAtSquare}`;
                 piece.id = square.id;
@@ -168,24 +166,13 @@ function getLegalMoves(square) {
 
 function highlightLegalMoves(chessPiece) {
     document.querySelectorAll(".move-indicator").forEach(el => el.remove());
-
     const pieceSquare = chessPiece.id;
-
-    // Example: Get legal moves for a piece (you’ll replace this with actual move logic)
     const legalMoves = getLegalMoves(pieceSquare);
-
-    // Loop through each valid move
     legalMoves.forEach(square => {
         const boardSquare = document.querySelector(`#${square}.board-square`);
-        // Create a new div for the move indicator
         const moveIndicator = document.createElement("div");
         moveIndicator.className = "move-indicator";
-
-        // Check if square has a piece (to decide between filled circle or ring)
-        const isOccupied = piecePositions[convertSquareToIndex(square)] !== "";
-        moveIndicator.classList.add(isOccupied ? "ring" : "filled-circle");
-
-        // Append to the square
+        moveIndicator.classList.add(piecePositions[convertSquareToIndex(square)] != "" ? "ring" : "filled-circle");
         boardSquare.appendChild(moveIndicator);
     });
 }
@@ -210,29 +197,18 @@ if (parameters != "") {
             isBoardFlipped = true;
     }
 }
-updateChessBoard();
-document.querySelectorAll(".chess-piece").forEach(piece => {
-    piece.setAttribute("onclick", "highlightLegalMoves(this)");
-});
 function removeMoveIndicators() {
-    document.querySelectorAll(".move-indicator").forEach(el => {
-        el.style.animation = "fadeOut 0.3s ease-in-out";
+    document.querySelectorAll(".move-indicator").forEach(indicator => {
+        indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
         setTimeout(() => el.remove(), 300);
     });
 }
 
-// Add fade-out animation
-const styleSheet = document.createElement("style");
-styleSheet.innerHTML = `
-    @keyframes fadeOut {
-        from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-    }
-`;
-document.head.appendChild(styleSheet);
-// Add event listener for clicks anywhere on the document
+updateChessBoard();
+document.querySelectorAll(".chess-piece").forEach(piece => {
+    piece.setAttribute("onclick", "highlightLegalMoves(this)");
+});
 document.addEventListener("click", function(event) {
-    // Check if the clicked element is NOT a chess piece
     if (!event.target.classList.contains("chess-piece")) {
         removeMoveIndicators();
     }

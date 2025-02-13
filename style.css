@@ -33,6 +33,7 @@
     --board-square-width: 5vw;
     --board-colour: var(--lichess-board-colour);
     --light-square-colour: var(--lichess-light-square-colour);
+    --move-indicator-colour: rgba(0, 0, 0, 0.2);
 
     @media (prefers-color-scheme: dark) {
         --shadow-colour: rgba(0, 0, 0, 0.8);
@@ -99,9 +100,11 @@ body {
 }
 .board-square {
     position: relative;
+    color: var(--light-square-colour);
     background-color: var(--board-colour);
 }
 .light-board-square {
+    color: var(--board-colour);
     background-color: var(--light-square-colour);
 }
 .chess-piece:hover {
@@ -149,6 +152,47 @@ input, textarea {
 }
 #fen-validity-indicator:hover > div {
     display: block;
+}
+.move-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: fadeIn 0.2s var(--emphasis-animation) forwards;
+}
+.filled-circle {
+    background-color: var(--move-indicator-colour);
+}
+.ring {
+    width: 80%;
+    height: 80%;
+    border: 0.5vw solid var(--move-indicator-colour);
+    background-color: transparent;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
 }
 
 @media (max-width: 600px) {
