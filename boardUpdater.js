@@ -1,12 +1,9 @@
-const chessBoard = document.getElementById("chess-board");
-const pieceArea = document.getElementById("piece-area");
 let isBoardFlipped = false;
 let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber;
 
 function parseFen(fen) {
     piecePositions = [];
     activeColour = castlingRights = enPassantSquare = halfmoveClock = fullmoveNumber = "";
-    let isFenValid = true, reasonsForInvalidFen = [];
     function readValueFromFen() {
         let value = "";
         i++;
@@ -30,9 +27,7 @@ function parseFen(fen) {
     if (i < fen.length) {
         fenChar = fen[i];
     } else {
-        isFenValid = false;
-        reasonsForInvalidFen.push("The provided FEN is empty.");
-        return reasonsForInvalidFen;
+        return false;
     }
     while (fenChar != " ") {
         if (!(Number(fenChar) || fenChar == "/")) {
@@ -46,83 +41,53 @@ function parseFen(fen) {
         if (i < fen.length) {
             fenChar = fen[i];
         } else {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The provided FEN doesn’t include all necessary fields.");
-            break;
+            return false;
         }
     }
-    if (isFenValid) {
-        if (piecePositions.length != 64) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The “piece placement” of the provided FEN is incorrect.");
-        }
-        activeColour = readValueFromFen();
-        if (!activeColour == true || !(activeColour == "w" || activeColour == "b")) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The “active colour” field of the provided FEN is incorrect.");
-        }
-        castlingRights = readValueFromFen();
-        if (!castlingRights == true || castlingRights.length > 4) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The “castling rights” field of the provided FEN is incorrect.");
-        }
-        enPassantSquare = readValueFromFen();
-        if (!enPassantSquare == true || enPassantSquare.length > 2 || (enPassantSquare != "-" && (enPassantSquare[1] != "3" && enPassantSquare[1] != "6"))) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The “possible en passant target” field of the provided FEN is incorrect.");
-        }
-        halfmoveClock = Number(readValueFromFen());
-        if (!halfmoveClock == true && halfmoveClock != 0) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The “halfmove clock” field of the provided FEN is incorrect.");
-        }
-        fullmoveNumber = Number(readValueFromFen());
-        if (!fullmoveNumber == true) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The “fullmove number” field of the provided FEN is incorrect.");
-        }
-        if (!(piecePositions.includes("K") && piecePositions.includes("k"))) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The provided FEN doesn’t include the position(s) of one or both king(s).");
-        } else if(piecePositions.filter(x => x === "K").length > 1 || piecePositions.filter(x => x === "k").length > 1) {
-            isFenValid = false;
-            reasonsForInvalidFen.push("The provided FEN specifies the position of one or both king(s) more than once.");
-        }
-    }
-    if (isFenValid == false) {
-        piecePositions = [];
-        activeColour = castlingRights = enPassantSquare = halfmoveClock = fullmoveNumber = "";
-        return reasonsForInvalidFen;
-    } else {
+    if (piecePositions.length != 64) {
         return false;
     }
+    activeColour = readValueFromFen();
+    if (!activeColour == true || !(activeColour == "w" || activeColour == "b")) {
+        return false;
+    }
+    castlingRights = readValueFromFen();
+    if (!castlingRights == true || castlingRights.length > 4) {
+        return false;
+    }
+    enPassantSquare = readValueFromFen();
+    if (!enPassantSquare == true || enPassantSquare.length > 2 || (enPassantSquare != "-" && (enPassantSquare[1] != "3" && enPassantSquare[1] != "6"))) {
+        return false;
+    }
+    halfmoveClock = Number(readValueFromFen());
+    if (!halfmoveClock == true && halfmoveClock != 0) {
+        return false;
+    }
+    fullmoveNumber = Number(readValueFromFen());
+    if (!fullmoveNumber == true) {
+        return false;
+    }
+    if (!(piecePositions.includes("K") && piecePositions.includes("k"))) {
+        return false;
+    } else if (piecePositions.filter(x => x === "K").length > 1 || piecePositions.filter(x => x === "k").length > 1) {
+        return false;
+    }
+    return true;
 }
 function updateChessBoard() {
     const fen = document.getElementById("fen-input").value.trim();
-    const fenParseResult = parseFen(fen);
-    if (fenParseResult) {
-        let errors = "";
-        for (i in fenParseResult) {
-            i++;
-            errors += i + ". " + fenParseResult[i - 1] + "<br />";
-            i--;
-        }
+    const isFenValid = parseFen(fen);
+    if (!isFenValid) {
         document.getElementById("fen-validity-indicator").innerHTML = `<svg height = "24px" viewBox = "0 -960 960 960" width = "24px" fill = "red">
                 <path d = "m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-            </svg>
-            <div>
-                The provided FEN is incorrect because of the following reason(s): <br /> <br /> ${errors}
-                <br /> Please enter a correct FEN in the field.
-            </div>`;
+            </svg>`;
         return;
     }
     document.getElementById("fen-validity-indicator").innerHTML = `<svg height = "24px" viewBox = "0 -960 960 960" width = "24px" fill = "var(--colour)" opacity = "0.6">
             <path d = "m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
         </svg>`;
-    const prevBoardRanks = document.querySelectorAll(".board-rank");
-    for (let i = 0; i < prevBoardRanks.length; i++) {
-        prevBoardRanks[i].remove();
-    }
+    const chessBoard = document.createElement("div");
+    const pieceArea = document.createElement("div");
     const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
     let squareNumber = 0;
     if (isBoardFlipped) {
@@ -148,12 +113,18 @@ function updateChessBoard() {
                 piece.id = square.id;
                 piece.style.gridRow = square.style.gridRow;
                 piece.style.gridColumn = square.style.gridColumn;
+                piece.setAttribute("onclick", "highlightLegalMoves(this)");
                 pieceArea.appendChild(piece);
             }
             chessBoard.appendChild(square);
             squareNumber = isBoardFlipped ? squareNumber-1 : squareNumber+1;
         }
     }
+    document.getElementById("chess-board").remove();
+    chessBoard.id = "chess-board";
+    pieceArea.id = "piece-area";
+    chessBoard.appendChild(pieceArea);
+    document.getElementById("board-container").appendChild(chessBoard);
 }
 
 function convertSquareToIndex(square) {
@@ -200,14 +171,11 @@ if (parameters != "") {
 function removeMoveIndicators() {
     document.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
-        setTimeout(() => el.remove(), 300);
+        setTimeout(() => indicator.remove(), 200);
     });
 }
 
 updateChessBoard();
-document.querySelectorAll(".chess-piece").forEach(piece => {
-    piece.setAttribute("onclick", "highlightLegalMoves(this)");
-});
 document.addEventListener("click", function(event) {
     if (!event.target.classList.contains("chess-piece")) {
         removeMoveIndicators();

@@ -10,13 +10,12 @@
         <link rel = "stylesheet" type = "text/css" href = "style.css" />
     </head>
     <body>
-        <div>
+        <div id = "board-container">
             <div id = "eval-bar"> 0 </div>
             <div id = "white-player"></div>
             <div id = "chess-board">
                 <div id = "piece-area"></div>
             </div>
-
             <div id = "black-player"></div>
         </div>
         <div id = "input-grid">
@@ -33,14 +32,14 @@
                 <li> The chess board changes size as per the browser window’s width. </li>
                 <li> Everything on this page is made by Yashdeep Singh Fauzdar, except for the chess pieces (taken from Lichess). </li>
                 <li> Full FEN support. </li>
-                <li> Detects what is wrong with invalid FENs. (Hover over the red circle with a cross that appears beside FEN input box to see what’s wrong.) </li>
+                <li> Detects invalid FENs. </li>
                 <li> Board updates whenever you click out of the FEN input box. </li>
                 <li> System fonts. </li>
+                <li> Dark mode. </li>
             </ul>
             <ul style = "display: block; float: left; max-width: 45%;"> Expected soon:
                 <li> Full PGN support with the ability to make moves. (As of now, the board pieces are just decorative.) </li>
                 <li> Ability to flip board. (This is already supported — all that is needed is a button so that the user can do it too.) </li>
-                <li> Dark mode. </li>
                 <li> Enable the user to make small customisations. </li>
                 <li> Its own simple chess engine, made by Yashdeep Singh Fauzdar in plain JavaScript. </li>
                 <li> Working evaluation bar. </li>
@@ -52,7 +51,10 @@
                 <li> Thanks to Lichess for the chess pieces and current board colour. </li>
                 <li> The tick and cross icons beside the FEN input box are taken from Google Fonts. </li>
                 <li> Source Code is avaiable here: <a href = "https://github.com/PerfunctoryOrator/chess/tree/main" target = "_blank"> https://github.com/PerfunctoryOrator/chess/tree/main</a>. </li>
-                <li> For Kushagra (my schoolmate): you can give me some recommendations on WhatsApp or Chess.com. </li>
+                <li> For my schoolmates: you can give me some recommendations on WhatsApp or Chess.com. </li>
+            </ul>
+            <ul style = "display: block; float: left;"> Removed Features:
+                <li> Hovering over the ‘cross’ icon beside the FEN input box no longer displays what’s wrong with the FEN. </li>
             </ul>
         </div>
         <script src = "boardUpdater.js"></script>
