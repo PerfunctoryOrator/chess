@@ -5,29 +5,32 @@
         <meta name = "google-site-verification" content = "SgHsyBjRk9hujHsLjvXAa6a-775GwMKcGfRNNdM3Jpc" />
         <meta charset = "utf-8" />
         <meta name = "viewport" content = "width = device-width, initial-scale = 1.0" />
-        <meta name = "theme-color" content = "rgb(174, 138, 104)" />    <!-- Same as `var(--board-colour)` in `style.css` -->
+        <meta id = "theme-colour" name = "theme-color" />
         <link rel = "icon" type = "image/x-icon" href = "" />
-        <link rel = "stylesheet" type = "text/css" href = "style.css" />
+        <link rel = "stylesheet" href = "board-styles.css" />
+        <link rel = "stylesheet" href = "board-pieces.css" />
+        <link rel = "stylesheet" href = "other-styles.css" />
+        <script>
+            document.getElementById("theme-colour").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-colour");
+        </script>
     </head>
     <body>
         <div id = "board-container">
-            <div id = "eval-bar"> 0 </div>
-            <div id = "white-player"></div>
-            <div id = "chess-board">
-                <div id = "piece-area"></div>
-            </div>
-            <div id = "black-player"></div>
+            <div id = "eval-bar" title = "Position Evaluation Bar"> 0 </div>
+            <div id = "white-player" title = "Player with White Pieces"></div>
+            <div id = "chess-board"></div>
+            <div id = "black-player" title = "Player with Black Pieces"></div>
         </div>
         <div id = "input-grid">
             <div> FEN </div>
-            <input id = "fen-input" value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck = "false" onblur = "updateChessBoard(false, this.value)" />
+            <input id = "fen-input" title = "FEN Input Box" value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck = "false" onblur = "updateChessBoard(false, this.value)" />
             <div id = "fen-validity-indicator"></div>
             <div> PGN </div>
-            <textarea id = "pgn-input" rows = "5" spellcheck = "false"></textarea>
+            <textarea id = "pgn-input" title = "PGN Input Box" rows = "5" spellcheck = "false"></textarea>
             <div id = "pgn-validity-indicator"></div>
         </div>
         <div> <ul style = "float: left; max-width: 45%;"> <b> PLEASE READ ALL THIS (SCROLL DOWN IF NEEDED): </b> </ul>
-            <ul style = "display: block; float: left; max-width: 45%;">
+            <ul title = "Features" style = "display: block; float: left; max-width: 45%;">
                 Features:
                 <li> The chess board changes size as per the browser window’s width. </li>
                 <li> Everything on this page is made by Yashdeep Singh Fauzdar, except for the chess pieces (taken from Lichess). </li>
@@ -37,7 +40,7 @@
                 <li> System fonts. </li>
                 <li> Dark mode. </li>
             </ul>
-            <ul style = "display: block; float: left; max-width: 45%;"> Expected soon:
+            <ul title = "Expected soon" style = "display: block; float: left; max-width: 45%;"> Expected soon:
                 <li> Full PGN support with the ability to make moves. (As of now, the board pieces are just decorative.) </li>
                 <li> Ability to flip board. (This is already supported — all that is needed is a button so that the user can do it too.) </li>
                 <li> Enable the user to make small customisations. </li>
@@ -46,17 +49,17 @@
                 <li> A menu bar, along with web pages on all chess rules. </li>
                 <li> Store settings in browser. </li>
             </ul>
-            <ul style = "display: block; float: left;"> Credits:
-                <li> The code for everything on this page is made by Yashdeep Singh Fauzdar. </li>
+            <ul title = "Credits" style = "display: block; float: left;"> Credits:
+                <li> The web page is designed by Yashdeep Singh Fauzdar. </li>
                 <li> Thanks to Lichess for the chess pieces and current board colour. </li>
                 <li> The tick and cross icons beside the FEN input box are taken from Google Fonts. </li>
                 <li> Source Code is avaiable here: <a href = "https://github.com/PerfunctoryOrator/chess/tree/main" target = "_blank"> https://github.com/PerfunctoryOrator/chess/tree/main</a>. </li>
                 <li> For my schoolmates: you can give me some recommendations on WhatsApp or Chess.com. </li>
             </ul>
-            <ul style = "display: block; float: left;"> Removed Features:
+            <ul title = "Removed features" style = "display: block; float: left;"> Removed features:
                 <li> Hovering over the ‘cross’ icon beside the FEN input box no longer displays what’s wrong with the FEN. </li>
             </ul>
         </div>
-        <script src = "boardUpdater.js"></script>
+        <script src = "board-updater.js"></script>
     </body>
 </html>

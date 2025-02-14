@@ -2,6 +2,7 @@ let isBoardFlipped = false;
 let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber;
 
 function parseFen(fen) {
+    let ranksParsed = 0;
     piecePositions = [];
     activeColour = castlingRights = enPassantSquare = halfmoveClock = fullmoveNumber = "";
     function readValueFromFen() {
@@ -32,7 +33,12 @@ function parseFen(fen) {
     while (fenChar != " ") {
         if (!(Number(fenChar) || fenChar == "/")) {
             piecePositions.push(fenChar);
-        } else if (fenChar != "/") {
+        } else if (fenChar == "/") {
+            ranksParsed++;
+            if (piecePositions.length != 8 * ranksParsed) {
+                return false;
+            }
+        } else {
             for (let j = Number(fenChar); j > 0; j--) {
                 piecePositions.push("");
             }
@@ -44,7 +50,7 @@ function parseFen(fen) {
             return false;
         }
     }
-    if (piecePositions.length != 64) {
+    if (piecePositions.length != 64 || ranksParsed != 7) {
         return false;
     }
     activeColour = readValueFromFen();
@@ -113,7 +119,7 @@ function updateChessBoard() {
                 piece.id = square.id;
                 piece.style.gridRow = square.style.gridRow;
                 piece.style.gridColumn = square.style.gridColumn;
-                piece.setAttribute("onclick", "highlightLegalMoves(this)");
+                piece.addEventListener("click", () => highlightLegalMoves(this));
                 pieceArea.appendChild(piece);
             }
             chessBoard.appendChild(square);
@@ -122,19 +128,17 @@ function updateChessBoard() {
     }
     document.getElementById("chess-board").remove();
     chessBoard.id = "chess-board";
+    chessBoard.title = "Chess Board";
     pieceArea.id = "piece-area";
     chessBoard.appendChild(pieceArea);
     document.getElementById("board-container").appendChild(chessBoard);
 }
-
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
 }
-
 function getLegalMoves(square) {
     return ["e5", "d6", "c3", "f2"];
 }
-
 function highlightLegalMoves(chessPiece) {
     document.querySelectorAll(".move-indicator").forEach(el => el.remove());
     const pieceSquare = chessPiece.id;
@@ -168,16 +172,13 @@ if (parameters != "") {
             isBoardFlipped = true;
     }
 }
-function removeMoveIndicators() {
-    document.querySelectorAll(".move-indicator").forEach(indicator => {
-        indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
-        setTimeout(() => indicator.remove(), 200);
-    });
-}
 
 updateChessBoard();
-document.addEventListener("click", function(event) {
+document.addEventListener("click", (event) => {
     if (!event.target.classList.contains("chess-piece")) {
-        removeMoveIndicators();
+        document.querySelectorAll(".move-indicator").forEach(indicator => {
+            indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
+            setTimeout(() => indicator.remove(), 200);
+        });
     }
 });
