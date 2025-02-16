@@ -119,7 +119,7 @@ function updateChessBoard() {
                 piece.id = square.id;
                 piece.style.gridRow = square.style.gridRow;
                 piece.style.gridColumn = square.style.gridColumn;
-                piece.addEventListener("click", () => highlightLegalMoves(this));
+                piece.addEventListener("click", () => highlightLegalMoves(piece));
                 pieceArea.appendChild(piece);
             }
             chessBoard.appendChild(square);
@@ -136,18 +136,97 @@ function updateChessBoard() {
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
 }
-function getLegalMoves(square) {
-    return ["e5", "d6", "c3", "f2"];
+function getLegalMoves(pieceSquare) {
+    const piece = piecePositions[convertSquareToIndex(pieceSquare)];
+    const pieceFile = pieceSquare[0];
+    const pieceRank = parseInt(pieceSquare[1]);
+    const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    const boardRanks = [1, 2, 3, 4, 5, 6, 7, 8];
+    let friendlyPieces = ["R", "N", "B", "Q", "K", "P"];
+    if (!friendlyPieces.includes(piece)) {
+        friendlyPieces = ["r", "n", "b", "q", "k", "p"];
+    }
+    const legalMoves = [];
+    function isValidMove(file, rank) {
+        if (boardFiles.includes(file) && boardRanks.includes(rank)) {
+            const targetSquare = `${file}${rank}`;
+            const targetPiece = piecePositions[convertSquareToIndex(targetSquare)];
+            return !friendlyPieces.includes(targetPiece);
+        }
+        return false;
+    }
+    function addDirectionalMoves(directions) {
+        directions.forEach(([fileStep, rankStep]) => {
+            let f = pieceFile, r = pieceRank;
+            while (true) {
+                f = String.fromCharCode(f.charCodeAt(0) + fileStep);
+                r += rankStep;
+                if (!isValidMove(f, r)) break;
+                legalMoves.push(`${f}${r}`);
+                if (piecePositions[convertSquareToIndex(`${f}${r}`)]) break;
+            }
+        });
+    }
+    switch (piece.toLowerCase()) {
+        case "r":
+            addDirectionalMoves([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+            break;
+        case "b":
+            addDirectionalMoves([[1, 1], [1, -1], [-1, 1], [-1, -1]]);
+            break;
+        case "q":
+            addDirectionalMoves([[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]);
+            break;
+        case "k":
+            [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([df, dr]) => {
+                let f = String.fromCharCode(pieceFile.charCodeAt(0) + df);
+                let r = pieceRank + dr;
+                if (isValidMove(f, r)) legalMoves.push(`${f}${r}`);
+            });
+            break;
+        case "n":
+            [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]].forEach(([df, dr]) => {
+                let f = String.fromCharCode(pieceFile.charCodeAt(0) + df);
+                let r = pieceRank + dr;
+                if (isValidMove(f, r)) legalMoves.push(`${f}${r}`);
+            });
+            break;
+        case "p":
+            let forward = piece === "P" ? 1 : -1;
+            let startRank = piece === "P" ? 2 : 7;
+            let promotionRank = piece === "P" ? 8 : 1;
+            let frontSquare = `${pieceFile}${pieceRank + forward}`;
+            if (!piecePositions[convertSquareToIndex(frontSquare)]) legalMoves.push(frontSquare);
+            if (pieceRank === startRank) {
+                let doubleFront = `${pieceFile}${pieceRank + 2 * forward}`;
+                if (!piecePositions[convertSquareToIndex(doubleFront)]) legalMoves.push(doubleFront);
+            }
+            [[-1, forward], [1, forward]].forEach(([df, dr]) => {
+                let f = String.fromCharCode(pieceFile.charCodeAt(0) + df);
+                let r = pieceRank + dr;
+                let captureSquare = `${f}${r}`;
+                if (isValidMove(f, r) && piecePositions[convertSquareToIndex(captureSquare)]) legalMoves.push(captureSquare);
+            });
+
+            if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1])) {
+                legalMoves.push(enPassantSquare);
+            }
+            break;
+    }
+    return legalMoves;
 }
 function highlightLegalMoves(chessPiece) {
-    document.querySelectorAll(".move-indicator").forEach(el => el.remove());
-    const pieceSquare = chessPiece.id;
-    const legalMoves = getLegalMoves(pieceSquare);
+    const existingIndicators = document.querySelectorAll(".move-indicator");
+    existingIndicators.forEach(indicator => {
+        indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
+        setTimeout(() => indicator.remove(), 200);
+    });
+    const legalMoves = getLegalMoves(chessPiece.id);
     legalMoves.forEach(square => {
         const boardSquare = document.querySelector(`#${square}.board-square`);
         const moveIndicator = document.createElement("div");
         moveIndicator.className = "move-indicator";
-        moveIndicator.classList.add(piecePositions[convertSquareToIndex(square)] != "" ? "ring" : "filled-circle");
+        moveIndicator.classList.add(piecePositions[convertSquareToIndex(square)] ? "ring" : "filled-circle");
         boardSquare.appendChild(moveIndicator);
     });
 }
