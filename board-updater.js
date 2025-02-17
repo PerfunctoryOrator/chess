@@ -66,6 +66,9 @@ function parseFen(fen) {
     if (!enPassantSquare == true || enPassantSquare.length > 2 || (enPassantSquare != "-" && (enPassantSquare[1] != "3" && enPassantSquare[1] != "6"))) {
         return false;
     }
+    if (enPassantSquare === "-") {
+        enPassantSquare = null;
+    }
     halfmoveClock = Number(readValueFromFen());
     if (!halfmoveClock == true && halfmoveClock != 0) {
         return false;
@@ -247,10 +250,15 @@ function movePiece(targetSquare) {
     const rank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
     piecePositions[convertSquareToIndex(activePiece.id)] = null;
+    const previousRank = parseInt(activePiece.id[1]);
     activePiece.id = targetSquare;
     activePiece.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
     activePiece.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
     piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
+    enPassantSquare = null;
+    if (pieceType.toLowerCase() == "p" && Math.abs(rank - previousRank) == 2) {
+        enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + file)}${3}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${6}`;
+    }
 }
 
 const parameters = location.search.replace(/%20/g, " ").split("?");
