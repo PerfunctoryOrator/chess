@@ -1,5 +1,6 @@
 let isBoardFlipped = false;
-let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber;
+let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber = null;
+let activePiece = null, legalMoves = [];
 
 function parseFen(fen) {
     let ranksParsed = 0;
@@ -31,7 +32,7 @@ function parseFen(fen) {
         return false;
     }
     while (fenChar != " ") {
-        if (!(Number(fenChar) || fenChar == "/")) {
+        if (!(parseInt(fenChar) || fenChar == "/")) {
             piecePositions.push(fenChar);
         } else if (fenChar == "/") {
             ranksParsed++;
@@ -39,8 +40,8 @@ function parseFen(fen) {
                 return false;
             }
         } else {
-            for (let j = Number(fenChar); j > 0; j--) {
-                piecePositions.push("");
+            for (let j = parseInt(fenChar); j > 0; j--) {
+                piecePositions.push(null);
             }
         }
         i++;
@@ -69,7 +70,7 @@ function parseFen(fen) {
     if (!halfmoveClock == true && halfmoveClock != 0) {
         return false;
     }
-    fullmoveNumber = Number(readValueFromFen());
+    fullmoveNumber = parseInt(readValueFromFen());
     if (!fullmoveNumber == true) {
         return false;
     }
@@ -94,10 +95,8 @@ function updateChessBoard() {
         </svg>`;
     const chessBoard = document.createElement("div");
     const pieceArea = document.createElement("div");
-    const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
     let squareNumber = 0;
     if (isBoardFlipped) {
-        boardFiles.reverse();
         squareNumber = 63;
     }
     for (let rank = isBoardFlipped ? 1 : 8; rank > 0 && rank < 9; rank = isBoardFlipped ? rank+1 : rank-1) {
@@ -109,9 +108,14 @@ function updateChessBoard() {
             if (isLightSquare) {
                 square.classList.add("light-board-square");
             }
-            square.innerText = square.id = `${boardFiles[file]}${rank}`;
+            const squareId = square.innerText = square.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
             square.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
             square.style.gridColumn = `${file + 1} / ${file + 2}`;
+            square.addEventListener("click", () => {
+                if (activePiece && legalMoves.includes(squareId)) {
+                    movePiece(squareId);
+                }
+            });
             const pieceAtSquare = piecePositions[squareNumber];
             if (pieceAtSquare) {
                 const piece = document.createElement("div");
@@ -146,7 +150,7 @@ function getLegalMoves(pieceSquare) {
     if (!friendlyPieces.includes(piece)) {
         friendlyPieces = ["r", "n", "b", "q", "k", "p"];
     }
-    const legalMoves = [];
+    legalMoves = [];
     function isValidMove(file, rank) {
         if (boardFiles.includes(file) && boardRanks.includes(rank)) {
             const targetSquare = `${file}${rank}`;
@@ -211,17 +215,25 @@ function getLegalMoves(pieceSquare) {
             if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1])) {
                 legalMoves.push(enPassantSquare);
             }
-            break;
     }
-    return legalMoves;
 }
 function highlightLegalMoves(chessPiece) {
-    const existingIndicators = document.querySelectorAll(".move-indicator");
-    existingIndicators.forEach(indicator => {
+    document.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
         setTimeout(() => indicator.remove(), 200);
     });
-    const legalMoves = getLegalMoves(chessPiece.id);
+    if (chessPiece == activePiece) {
+        activePiece = null;
+        return;
+    }
+    if (activePiece && legalMoves.includes(chessPiece.id)) {
+        chessPiece.remove();
+        movePiece(chessPiece.id);
+        activePiece = null;
+        return;
+    }
+    activePiece = chessPiece;
+    getLegalMoves(chessPiece.id);
     legalMoves.forEach(square => {
         const boardSquare = document.querySelector(`#${square}.board-square`);
         const moveIndicator = document.createElement("div");
@@ -229,6 +241,16 @@ function highlightLegalMoves(chessPiece) {
         moveIndicator.classList.add(piecePositions[convertSquareToIndex(square)] ? "ring" : "filled-circle");
         boardSquare.appendChild(moveIndicator);
     });
+}
+function movePiece(targetSquare) {
+    const file = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
+    const rank = parseInt(targetSquare[1]);
+    const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
+    piecePositions[convertSquareToIndex(activePiece.id)] = null;
+    activePiece.id = targetSquare;
+    activePiece.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
+    activePiece.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
+    piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
 }
 
 const parameters = location.search.replace(/%20/g, " ").split("?");
@@ -259,5 +281,6 @@ document.addEventListener("click", (event) => {
             indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
             setTimeout(() => indicator.remove(), 200);
         });
+        activePiece = null;
     }
 });
