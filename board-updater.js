@@ -254,6 +254,11 @@ function movePiece(targetSquare) {
     activePiece.id = targetSquare;
     activePiece.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
     activePiece.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
+    if (enPassantSquare == targetSquare) {
+        const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + file)}${previousRank}`;
+        piecePositions[convertSquareToIndex(enemyPawnSquare)] = null;
+        document.querySelector(`#${enemyPawnSquare}.chess-piece`).remove();
+    }
     piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
     enPassantSquare = null;
     if (pieceType.toLowerCase() == "p" && Math.abs(rank - previousRank) == 2) {
