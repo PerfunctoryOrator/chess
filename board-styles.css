@@ -3,7 +3,7 @@
     --chessCom-light-square-colour: rgb(235, 236, 211);
     --lichess-board-colour: rgb(174, 138, 104);
     --lichess-light-square-colour: rgb(236, 218, 185);
-    --board-square-width: 5vw;
+    --board-square-width: min(5vw, 10vh);
     --board-colour: var(--chessCom-board-colour);
     --light-square-colour: var(--chessCom-light-square-colour);
     --move-indicator-colour: rgba(0, 0, 0, 0.2);
