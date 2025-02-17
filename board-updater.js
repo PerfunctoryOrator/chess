@@ -214,8 +214,7 @@ function getLegalMoves(pieceSquare) {
                 let captureSquare = `${f}${r}`;
                 if (isValidMove(f, r) && piecePositions[convertSquareToIndex(captureSquare)]) legalMoves.push(captureSquare);
             });
-
-            if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1])) {
+            if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1]) && (piece === "P" && enPassantSquare[1] == 6 || piece === "p" && enPassantSquare[1] == 3)) {
                 legalMoves.push(enPassantSquare);
             }
     }
