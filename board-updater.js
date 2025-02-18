@@ -4,8 +4,8 @@ let activePiece = null, legalMoves = [];
 
 function parseFen(fen) {
     let ranksParsed = 0;
-    piecePositions = [];
-    activeColour = castlingRights = enPassantSquare = halfmoveClock = fullmoveNumber = "";
+    let evalPiecePositions = [];
+    let evalActiveColour, evalCastlingRights, evalEnPassantSquare, evalHalfmoveClock, evalFullmoveNumber = null;
     function readValueFromFen() {
         let value = "";
         i++;
@@ -14,7 +14,7 @@ function parseFen(fen) {
         } else {
             return;
         }
-        while (fenChar != " ") {
+        while (fenChar !== " ") {
             value += fenChar;
             i++;
             if (i < fen.length) {
@@ -31,17 +31,17 @@ function parseFen(fen) {
     } else {
         return false;
     }
-    while (fenChar != " ") {
-        if (!(parseInt(fenChar) || fenChar == "/")) {
-            piecePositions.push(fenChar);
-        } else if (fenChar == "/") {
+    while (fenChar !== " ") {
+        if (!(parseInt(fenChar) || fenChar === "/")) {
+            evalPiecePositions.push(fenChar);
+        } else if (fenChar === "/") {
             ranksParsed++;
-            if (piecePositions.length != 8 * ranksParsed) {
+            if (evalPiecePositions.length !== 8 * ranksParsed) {
                 return false;
             }
         } else {
             for (let j = parseInt(fenChar); j > 0; j--) {
-                piecePositions.push(null);
+                evalPiecePositions.push(null);
             }
         }
         i++;
@@ -51,37 +51,43 @@ function parseFen(fen) {
             return false;
         }
     }
-    if (piecePositions.length != 64 || ranksParsed != 7) {
+    if (evalPiecePositions.length !== 64 || ranksParsed !== 7) {
         return false;
     }
-    activeColour = readValueFromFen();
-    if (!activeColour == true || !(activeColour == "w" || activeColour == "b")) {
+    evalActiveColour = readValueFromFen();
+    if (!evalActiveColour == true || !(evalActiveColour === "w" || evalActiveColour === "b")) {
         return false;
     }
-    castlingRights = readValueFromFen();
-    if (!castlingRights == true || castlingRights.length > 4) {
+    evalCastlingRights = readValueFromFen();
+    if (!evalCastlingRights == true || evalCastlingRights.length > 4) {
         return false;
     }
-    enPassantSquare = readValueFromFen();
-    if (!enPassantSquare == true || enPassantSquare.length > 2 || (enPassantSquare != "-" && (enPassantSquare[1] != "3" && enPassantSquare[1] != "6"))) {
+    evalEnPassantSquare = readValueFromFen();
+    if (!evalEnPassantSquare == true || evalEnPassantSquare.length > 2 || (evalEnPassantSquare !== "-" && (evalEnPassantSquare[1] !== "3" && evalEnPassantSquare[1] !== "6"))) {
         return false;
     }
-    if (enPassantSquare === "-") {
-        enPassantSquare = null;
+    if (evalEnPassantSquare === "-") {
+        evalEnPassantSquare = null;
     }
-    halfmoveClock = Number(readValueFromFen());
-    if (!halfmoveClock == true && halfmoveClock != 0) {
+    evalHalfmoveClock = Number(readValueFromFen());
+    if (!evalHalfmoveClock == true && evalHalfmoveClock !== 0) {
         return false;
     }
-    fullmoveNumber = parseInt(readValueFromFen());
-    if (!fullmoveNumber == true) {
+    evalFullmoveNumber = parseInt(readValueFromFen());
+    if (!evalFullmoveNumber == true) {
         return false;
     }
-    if (!(piecePositions.includes("K") && piecePositions.includes("k"))) {
+    if (!(evalPiecePositions.includes("K") && evalPiecePositions.includes("k"))) {
         return false;
-    } else if (piecePositions.filter(x => x === "K").length > 1 || piecePositions.filter(x => x === "k").length > 1) {
+    } else if (evalPiecePositions.filter(x => x === "K").length > 1 || evalPiecePositions.filter(x => x === "k").length > 1) {
         return false;
     }
+    piecePositions = evalPiecePositions;
+    activeColour = evalActiveColour;
+    castlingRights = evalCastlingRights;
+    enPassantSquare = evalEnPassantSquare;
+    halfmoveClock = evalHalfmoveClock;
+    fullmoveNumber = evalFullmoveNumber;
     return true;
 }
 function updateChessBoard() {
@@ -214,7 +220,7 @@ function getLegalMoves(pieceSquare) {
                 let captureSquare = `${f}${r}`;
                 if (isValidMove(f, r) && piecePositions[convertSquareToIndex(captureSquare)]) legalMoves.push(captureSquare);
             });
-            if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1]) && (piece === "P" && enPassantSquare[1] == 6 || piece === "p" && enPassantSquare[1] == 3)) {
+            if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1]) && (piece === "P" && enPassantSquare[1] === "6" || piece === "p" && enPassantSquare[1] === "3")) {
                 legalMoves.push(enPassantSquare);
             }
     }
@@ -224,13 +230,14 @@ function highlightLegalMoves(chessPiece) {
         indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
         setTimeout(() => indicator.remove(), 200);
     });
-    if (chessPiece == activePiece) {
-        activePiece = null;
-        return;
-    }
     if (activePiece && legalMoves.includes(chessPiece.id)) {
         chessPiece.remove();
         movePiece(chessPiece.id);
+        activePiece = null;
+        return;
+    }
+    const pieceType = piecePositions[convertSquareToIndex(chessPiece.id)];
+    if (chessPiece === activePiece || activeColour === "w" ? pieceType.toLowerCase() === pieceType : pieceType.toUpperCase() === pieceType) {
         activePiece = null;
         return;
     }
@@ -240,7 +247,7 @@ function highlightLegalMoves(chessPiece) {
         const boardSquare = document.querySelector(`#${square}.board-square`);
         const moveIndicator = document.createElement("div");
         moveIndicator.className = "move-indicator";
-        moveIndicator.classList.add(piecePositions[convertSquareToIndex(square)] ? "ring" : "filled-circle");
+        moveIndicator.classList.add(piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(activePiece.id)].toLowerCase() === "p") ? "ring" : "filled-circle");
         boardSquare.appendChild(moveIndicator);
     });
 }
@@ -253,18 +260,20 @@ function movePiece(targetSquare) {
     activePiece.id = targetSquare;
     activePiece.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
     activePiece.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
-    if (enPassantSquare == targetSquare) {
+    if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + file)}${previousRank}`;
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = null;
         document.querySelector(`#${enemyPawnSquare}.chess-piece`).remove();
     }
     piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
     enPassantSquare = null;
-    if (pieceType.toLowerCase() == "p" && Math.abs(rank - previousRank) == 2) {
+    if (pieceType.toLowerCase() === "p" && Math.abs(rank - previousRank) === 2) {
         enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + file)}${3}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${6}`;
     }
+    activeColour = activeColour === "w" ? "b" : "w";
 }
 
+updateChessBoard();
 const parameters = location.search.replace(/%20/g, " ").split("?");
 if (parameters != "") {
     const firstParameter = parameters[1];
@@ -277,7 +286,7 @@ if (parameters != "") {
             break;
         case "pgn=":
             document.getElementById("pgn-input").value = firstParameter.slice(4, firstParameter.length);
-            if (parameters[2] && parameters[2] == "flip") {
+            if (parameters[2] && parameters[2] === "flip") {
                 isBoardFlipped = true;
             }
             break;
@@ -285,7 +294,6 @@ if (parameters != "") {
             isBoardFlipped = true;
     }
 }
-
 updateChessBoard();
 document.addEventListener("click", (event) => {
     if (!event.target.classList.contains("chess-piece")) {

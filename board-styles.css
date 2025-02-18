@@ -1,11 +1,11 @@
 :root {
-    --chessCom-board-colour: rgb(122, 148, 90);
-    --chessCom-light-square-colour: rgb(235, 236, 211);
-    --lichess-board-colour: rgb(174, 138, 104);
-    --lichess-light-square-colour: rgb(236, 218, 185);
+    --green-board-colour: rgb(122, 148, 90);
+    --green-light-square-colour: rgb(235, 236, 211);
+    --brown-board-colour: rgb(174, 138, 104);
+    --brown-light-square-colour: rgb(236, 218, 185);
     --board-square-width: min(5vw, 10vh);
-    --board-colour: var(--chessCom-board-colour);
-    --light-square-colour: var(--chessCom-light-square-colour);
+    --board-colour: var(--brown-board-colour);
+    --light-square-colour: var(--brown-light-square-colour);
     --move-indicator-colour: rgba(0, 0, 0, 0.2);
 }
 #eval-bar {
@@ -39,7 +39,7 @@
 }
 #piece-area {
     position: absolute;
-    z-index: 1;
+    z-index: 2;
     pointer-events: none;
 }
 .chess-piece {
@@ -59,8 +59,8 @@
     background-color: var(--light-square-colour);
 }
 .chess-piece:hover {
-    outline: 0.25vw solid white;
-    outline-offset: -0.25vw;
+    outline: min(0.25vw, 0.5vh) solid white;
+    outline-offset: max(-0.25vw, -0.5vh);
 }
 .move-indicator {
     position: absolute;
@@ -79,7 +79,7 @@
 .ring {
     width: 80%;
     height: 80%;
-    border: 0.5vw solid var(--move-indicator-colour);
+    border: min(0.5vw, 1vh) solid var(--move-indicator-colour);
     background-color: transparent;
 }
 
