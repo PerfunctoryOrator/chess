@@ -108,8 +108,8 @@ function updateChessBoard() {
     if (isBoardFlipped) {
         squareNumber = 63;
     }
-    for (let rank = isBoardFlipped ? 1 : 8; rank > 0 && rank < 9; rank = isBoardFlipped ? rank+1 : rank-1) {
-        let isLightSquare = isBoardFlipped ? rank%2 < 1 : rank%2 > 0;
+    for (let rank = 8; rank > 0; rank--) {
+        let isLightSquare = rank%2 > 0;
         for (let file = 0; file < 8; file++) {
             isLightSquare = !isLightSquare;
             const square = document.createElement("div");
@@ -117,8 +117,8 @@ function updateChessBoard() {
             if (isLightSquare) {
                 square.classList.add("light-board-square");
             }
-            const squareId = square.innerText = square.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
-            square.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
+            const squareId = square.innerText = square.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${9 - rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
+            square.style.gridRow = `${9 - rank} / ${10 - rank}`;
             square.style.gridColumn = `${file + 1} / ${file + 2}`;
             square.addEventListener("click", () => {
                 if (activePiece && legalMoves.includes(squareId)) {
@@ -129,9 +129,9 @@ function updateChessBoard() {
             if (pieceAtSquare) {
                 const piece = document.createElement("div");
                 piece.className = `chess-piece ${pieceAtSquare}`;
-                piece.id = square.id;
-                piece.style.gridRow = square.style.gridRow;
-                piece.style.gridColumn = square.style.gridColumn;
+                piece.id = squareId;
+                piece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
+                piece.style.left = `calc(${file} * var(--board-square-width))`;
                 piece.addEventListener("click", () => highlightLegalMoves(piece));
                 pieceArea.appendChild(piece);
             }
@@ -226,18 +226,24 @@ function getLegalMoves(pieceSquare) {
     }
 }
 function highlightLegalMoves(chessPiece) {
+    const ripple = document.createElement("div");
+    ripple.className = "ripple";
+    document.querySelector(`#${chessPiece.id}.board-square`).appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
     document.querySelectorAll(".move-indicator").forEach(indicator => {
-        indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
+        indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
         setTimeout(() => indicator.remove(), 200);
     });
     if (activePiece && legalMoves.includes(chessPiece.id)) {
-        chessPiece.remove();
+        chessPiece.style.opacity = "0";
+        setTimeout(() => chessPiece.remove(), 300);
         movePiece(chessPiece.id);
         activePiece = null;
         return;
     }
     const pieceType = piecePositions[convertSquareToIndex(chessPiece.id)];
-    if (chessPiece === activePiece || activeColour === "w" ? pieceType.toLowerCase() === pieceType : pieceType.toUpperCase() === pieceType) {
+    console.log(chessPiece === activePiece);
+    if (chessPiece === activePiece || (activeColour === "w" ? pieceType.toLowerCase() === pieceType : pieceType.toUpperCase() === pieceType)) {
         activePiece = null;
         return;
     }
@@ -258,12 +264,15 @@ function movePiece(targetSquare) {
     piecePositions[convertSquareToIndex(activePiece.id)] = null;
     const previousRank = parseInt(activePiece.id[1]);
     activePiece.id = targetSquare;
-    activePiece.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
-    activePiece.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
+    activePiece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
+    activePiece.style.left = `calc(${file} * var(--board-square-width))`;
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + file)}${previousRank}`;
+        const enemyPawn = document.querySelector(`#${enemyPawnSquare}.chess-piece`);
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = null;
-        document.querySelector(`#${enemyPawnSquare}.chess-piece`).remove();
+        enemyPawn.style.opacity = "0";
+        setTimeout(() => enemyPawn.remove(), 300);
+
     }
     piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
     enPassantSquare = null;
@@ -298,7 +307,7 @@ updateChessBoard();
 document.addEventListener("click", (event) => {
     if (!event.target.classList.contains("chess-piece")) {
         document.querySelectorAll(".move-indicator").forEach(indicator => {
-            indicator.style.animation = "fadeOut 0.2s var(--emphasis-animation)";
+            indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
             setTimeout(() => indicator.remove(), 200);
         });
         activePiece = null;
