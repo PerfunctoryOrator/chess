@@ -141,7 +141,6 @@ function updateChessBoard() {
     }
     document.getElementById("chess-board").remove();
     chessBoard.id = "chess-board";
-    chessBoard.title = "Chess Board";
     pieceArea.id = "piece-area";
     chessBoard.appendChild(pieceArea);
     document.getElementById("board-container").appendChild(chessBoard);
@@ -242,7 +241,6 @@ function highlightLegalMoves(chessPiece) {
         return;
     }
     const pieceType = piecePositions[convertSquareToIndex(chessPiece.id)];
-    console.log(chessPiece === activePiece);
     if (chessPiece === activePiece || (activeColour === "w" ? pieceType.toLowerCase() === pieceType : pieceType.toUpperCase() === pieceType)) {
         activePiece = null;
         return;

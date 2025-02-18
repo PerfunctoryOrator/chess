@@ -22,31 +22,24 @@
     -moz-user-select: none;
     user-select: none;
 }
+#chess-board, #piece-area {
+    float: left;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
 #chess-board {
     display: grid;
     grid-template: repeat(8, var(--board-square-width)) / repeat(8, var(--board-square-width));
-    float: left;
-    width: max-content;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-}
-#piece-area {
-    display: block;
-    float: left;
-    width: max-content;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-}
-#chess-board {
     position: relative;
     margin: var(--margin);
     border: var(--border);
     box-shadow: 8px 16px 16px var(--shadow-colour);
 }
 #piece-area {
+    display: block;
     position: absolute;
+    width: max-content;
     z-index: 2;
     pointer-events: none;
 }
