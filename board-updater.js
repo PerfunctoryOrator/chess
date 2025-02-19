@@ -278,11 +278,12 @@ function highlightMoveSquares(fromSquare, toSquare) {
 }
 function highlightSelectedSquare(square) {
     if (highlightedSquares[2] || highlightedSquares.length === 1) {
-        const highlightSquare = document.querySelector(`#${highlightedSquares.length === 1 ? highlightedSquares[0] : highlightedSquares[2]}.highlight-square`);
+        const lastHighlighted = highlightedSquares.length === 1 ? highlightedSquares[0] : highlightedSquares[2];
+        const highlightSquare = document.querySelector(`#${lastHighlighted}.highlight-square`);
         highlightSquare.style.backgroundColor = "transparent";
         setTimeout(() => highlightSquare.remove(), 200);
         highlightedSquares.pop();
-        if ((highlightedSquares.length === 1 ? highlightedSquares[0] : highlightedSquares[2]) === square) return;
+        if (lastHighlighted === square) return;
     }
     if (square) {
         highlightedSquares.push(square);
