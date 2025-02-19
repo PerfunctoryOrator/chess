@@ -22,11 +22,14 @@
             <div id = "eval-bar" title = "Position Evaluation Bar"> 0 </div>
             <div id = "white-player" title = "Player with White Pieces"></div>
             <div id = "chess-board"></div>
+            <button onclick = "{isBoardFlipped = !isBoardFlipped; setUpBoard();}" style = "font-size: 24px;"> Flip Board </button>
+            <button onclick = "{pieceMoveAnimation ='ease-in-out';}" style = "font-size: 24px;"> Set Piece Animation to Ease </button>
+            <button onclick = "{pieceMoveAnimation ='var(--emphasis-animation)';}" style = "font-size: 24px;"> Set Piece Animation to Emphasis </button>
             <div id = "black-player" title = "Player with Black Pieces"></div>
         </div>
         <div id = "input-grid">
             <div> FEN </div>
-            <input id = "fen-input" title = "FEN Input Box" value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck = "false" onblur = "updateChessBoard(false, this.value)" />
+            <input id = "fen-input" title = "FEN Input Box" value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck = "false" onblur = "setUpPieces()" />
             <div id = "fen-validity-indicator"></div>
             <div> PGN </div>
             <textarea id = "pgn-input" title = "PGN Input Box" rows = "5" spellcheck = "false"></textarea>

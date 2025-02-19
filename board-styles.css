@@ -46,21 +46,48 @@
     position: absolute;
     width: var(--board-square-width);
     height: var(--board-square-width);
-    transition: top 0.3s ease-in-out, left 0.3s ease-in-out, opacity 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
 }
 .board-square {
+    overflow: hidden;
     position: relative;
     color: var(--light-square-colour);
     background-color: var(--board-colour);
-    overflow: hidden;
+    outline-offset: max(-0.2vw, -0.4vh);
 }
 .light-board-square {
     color: var(--board-colour);
     background-color: var(--light-square-colour);
 }
-.chess-piece:hover {
-    outline: min(0.25vw, 0.5vh) solid white;
-    outline-offset: max(-0.25vw, -0.5vh);
+.highlight-square {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 0, 0.5);
+    outline-offset: max(-0.2vw, -0.4vh);
+    transition: opacity 0.2s ease-out;
+}
+#file-indicator, #rank-indicator {
+    font-weight: bold;
+    display: flex;
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+}
+#file-indicator {
+    bottom: 4px;
+    right: 4px;
+}
+#rank-indicator {
+    flex-direction: column;
+    top: 4px;
+    left: 4px;
+}
+#file-indicator > div {
+    text-align: right;
+    width: var(--board-square-width);
+}
+#rank-indicator > div {
+    height: var(--board-square-width);
 }
 .move-indicator {
     position: absolute;
@@ -81,6 +108,18 @@
     height: 80%;
     border: min(0.5vw, 1vh) solid var(--move-indicator-colour);
     background-color: transparent;
+    transition: background-color 0.2s var(--emphasis-animation), border-color 0.2s var(--emphasis-animation);
+}
+.board-square:hover > .filled-circle {
+    width: 50%;
+    height: 50%;
+    transition: width 0.2s var(--emphasis-animation), height 0.2s var(--emphasis-animation);
+}
+.board-square:hover > .ring {
+    width: 90%;
+    height: 90%;
+    background-color: var(--move-indicator-colour);
+    border: none;
 }
 .ripple {
     position: absolute;
