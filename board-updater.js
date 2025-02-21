@@ -2,7 +2,7 @@ let isBoardFlipped = false;
 let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber = null;
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
-let highlightedSquares = [];
+let lastMoveSquares = [], selectedSquare = null;
 
 function parseFen(fen) {
     let ranksParsed = 0;
@@ -29,9 +29,7 @@ function parseFen(fen) {
             evalPiecePositions.push(fenChar);
         } else if (fenChar === "/") {
             ranksParsed++;
-            if (evalPiecePositions.length !== 8 * ranksParsed) {
-                return false;
-            }
+            if (evalPiecePositions.length !== 8 * ranksParsed) return false;
         } else {
             for (let j = parseInt(fenChar); j > 0; j--) evalPiecePositions.push(null);
         }
@@ -51,8 +49,7 @@ function parseFen(fen) {
     if (!evalHalfmoveClock == true && evalHalfmoveClock !== 0) return false;
     evalFullmoveNumber = parseInt(readValueFromFen());
     if (!evalFullmoveNumber == true) return false;
-    if (!(evalPiecePositions.includes("K") && evalPiecePositions.includes("k"))) return false;
-    else if (evalPiecePositions.filter(x => x === "K").length > 1 || evalPiecePositions.filter(x => x === "k").length > 1) return false;
+    if (evalPiecePositions.filter(x => x === "K").length !== 1 || evalPiecePositions.filter(x => x === "k").length !== 1) return false;
     piecePositions = evalPiecePositions;
     activeColour = evalActiveColour;
     castlingRights = evalCastlingRights;
@@ -75,10 +72,6 @@ function setUpBoard() {
             square.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${9 - rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
             square.style.gridRow = `${9 - rank} / ${10 - rank}`;
             square.style.gridColumn = `${file + 1} / ${file + 2}`;
-            square.addEventListener("click", () => {
-                if (activePiece && legalMoves.includes(square.id)) movePiece(square.id);
-                else highlightSelectedSquare(null);
-            });
             chessBoard.appendChild(square);
             squareNumber = isBoardFlipped ? squareNumber-1 : squareNumber+1;
         }
@@ -110,6 +103,8 @@ function setUpBoard() {
     chessBoard.id = "chess-board";
     document.getElementById("board-container").appendChild(chessBoard);
     setUpPieces();
+    addClickToMove();
+    addDragAndDropToMove();
 }
 function setUpPieces() {
     const fen = document.getElementById("fen-input").value.trim();
@@ -135,9 +130,9 @@ function setUpPieces() {
                 piece.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${9 - rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
                 piece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
                 piece.style.left = `calc(${file} * var(--board-square-width))`;
-                piece.addEventListener("click", () => highlightLegalMoves(piece));
-                piece.addEventListener("mouseover", () => mouseOverPiece(piece.id));
-                piece.addEventListener("mouseout", () => mouseOutOfPiece(piece.id));
+
+                piece.addEventListener("mouseenter", () => mouseEntersPiece(piece.id));
+                piece.addEventListener("mouseleave", () => mouseLeavesPiece(piece.id));
                 pieceArea.appendChild(piece);
             }
             squareNumber = isBoardFlipped ? squareNumber-1 : squareNumber+1;
@@ -224,12 +219,14 @@ function getLegalMoves(pieceSquare) {
             if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1]) && (piece === "P" && enPassantSquare[1] === "6" || piece === "p" && enPassantSquare[1] === "3")) legalMoves.push(enPassantSquare);
     }
 }
-function highlightLegalMoves(chessPiece) {
-    const ripple = document.createElement("div");
-    ripple.className = "ripple";
+function highlightLegalMoves(chessPiece, dragged) {
+    if (!dragged) {
+        const ripple = document.createElement("div");
+        ripple.className = "ripple";
+        document.querySelector(`#${chessPiece.id}.board-square`).appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    }
     highlightSelectedSquare(chessPiece.id);
-    document.querySelector(`#${chessPiece.id}.board-square`).appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
     document.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
         setTimeout(() => indicator.remove(), 200);
@@ -253,8 +250,8 @@ function highlightLegalMoves(chessPiece) {
         const boardSquare = document.querySelector(`#${square}.board-square`);
         const moveIndicator = document.createElement("div");
         moveIndicator.className = "move-indicator";
+        moveIndicator.id = square;
         if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(activePiece.id)].toLowerCase() === "p")) {
-            moveIndicator.id = square;
             moveIndicator.classList.add("ring");
         } else {
             moveIndicator.classList.add("filled-circle");
@@ -262,38 +259,7 @@ function highlightLegalMoves(chessPiece) {
         boardSquare.appendChild(moveIndicator);
     });
 }
-function highlightMoveSquares(fromSquare, toSquare) {
-    highlightedSquares.forEach(square => {
-        const highlightSquare = document.querySelector(`#${square}.highlight-square`);
-        highlightSquare.style.backgroundColor = "transparent";
-        setTimeout(() => highlightSquare.remove(), 200);
-    });
-    highlightedSquares = [fromSquare, toSquare];
-    highlightedSquares.forEach(square => {
-        const highlightSquare = document.createElement("div");
-        highlightSquare.id = square;
-        highlightSquare.className = "highlight-square";
-        document.querySelector(`#${square}.board-square`).appendChild(highlightSquare);
-    });
-}
-function highlightSelectedSquare(square) {
-    if (highlightedSquares[2] || highlightedSquares.length === 1) {
-        const lastHighlighted = highlightedSquares.length === 1 ? highlightedSquares[0] : highlightedSquares[2];
-        const highlightSquare = document.querySelector(`#${lastHighlighted}.highlight-square`);
-        highlightSquare.style.backgroundColor = "transparent";
-        setTimeout(() => highlightSquare.remove(), 200);
-        highlightedSquares.pop();
-        if (lastHighlighted === square) return;
-    }
-    if (square) {
-        highlightedSquares.push(square);
-        const newHighlightSquare = document.createElement("div");
-        newHighlightSquare.id = square;
-        newHighlightSquare.className = "highlight-square";
-        document.querySelector(`#${square}.board-square`).appendChild(newHighlightSquare);
-    }
-}
-function movePiece(targetSquare) {
+function movePiece(targetSquare, dropped) {
     const file = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
     const rank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
@@ -303,10 +269,10 @@ function movePiece(targetSquare) {
     highlightMoveSquares(activePiece.id, targetSquare);
     activePiece.id = targetSquare;
     const activePieceStyle = activePiece.style;
-    activePieceStyle.transition = `top 0.3s ${pieceMoveAnimation}, left 0.3s ${pieceMoveAnimation}, opacity 0.3s ease-out`;
+    if (!dropped) activePieceStyle.transition = `top 0.3s ${pieceMoveAnimation}, left 0.3s ${pieceMoveAnimation}, opacity 0.3s ease-out`;
     activePieceStyle.top = `calc(${isBoardFlipped ? rank - 1 : 8 - rank} * var(--board-square-width))`;
     activePieceStyle.left = `calc(${isBoardFlipped ? 7 - file : file} * var(--board-square-width))`;
-    setTimeout(() => activePieceStyle.transition = `opacity 0.3s ease-out`, 300);
+    if (!dropped) setTimeout(() => activePieceStyle.transition = `opacity 0.3s ease-out`, 300);
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + file)}${previousRank}`;
         const enemyPawn = document.querySelector(`#${enemyPawnSquare}.chess-piece`);
@@ -320,23 +286,182 @@ function movePiece(targetSquare) {
     activeColour = activeColour === "w" ? "b" : "w";
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++;
-    if (activeColour === "w") fullmoveNumber++;
+    if (activeColour === "w") {
+        document.getElementById("to-move").innerText = `White to Move (Last Move: ${fullmoveNumber}… ${lastMoveSquares[0]} – ${lastMoveSquares[1]})`;
+        fullmoveNumber++;
+    } else {
+        document.getElementById("to-move").innerText = `Black to Move (Last Move: ${fullmoveNumber}. ${lastMoveSquares[0]} – ${lastMoveSquares[1]})`;
+    }
 }
-function mouseOverPiece(square) {
+function highlightSelectedSquare(square) {
+    if (square && !lastMoveSquares.includes(square)) {
+        if (selectedSquare !== null) document.querySelector(`#${selectedSquare}.highlight-square`).remove();
+        selectedSquare = square;
+        const newHighlightSquare = document.createElement("div");
+        newHighlightSquare.id = square;
+        newHighlightSquare.className = "highlight-square";
+        document.querySelector(`#${square}.board-square`).appendChild(newHighlightSquare);
+    } else {
+        if (selectedSquare !== null) document.querySelector(`#${selectedSquare}.highlight-square`).remove();
+        selectedSquare = null;
+    }
+}
+function highlightMoveSquares(fromSquare, toSquare) {
+    lastMoveSquares.forEach(square => {
+        const highlightSquare = document.querySelector(`#${square}.highlight-square`);
+        highlightSquare.style.backgroundColor = "transparent";
+        setTimeout(() => highlightSquare.remove(), 200);
+    });
+    lastMoveSquares = [fromSquare, toSquare];
+    lastMoveSquares.forEach(square => {
+        const highlightSquare = document.createElement("div");
+        highlightSquare.id = square;
+        highlightSquare.className = "highlight-square";
+        document.querySelector(`#${square}.board-square`).appendChild(highlightSquare);
+    });
+}
+function addClickToMove() {
+    document.querySelectorAll(".chess-piece").forEach(piece => {
+        piece.addEventListener("click", () => highlightLegalMoves(piece));
+    });
+    document.querySelectorAll(".board-square").forEach(square => {
+        square.addEventListener("click", () => {
+            if (activePiece && legalMoves.includes(square.id)) movePiece(square.id);
+            else highlightSelectedSquare(null);
+        });
+    });
+}
+function addDragAndDropToMove() {
+    document.querySelectorAll(".chess-piece").forEach(piece => {
+        piece.draggable = true;
+        piece.addEventListener("dragstart", (event) => {
+            activePiece = null;
+            highlightLegalMoves(piece, true);
+            event.dataTransfer.setData("text", piece.id);
+            event.dataTransfer.effectAllowed = "move";
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.style.outline = "none";
+            });
+        });
+        piece.addEventListener("dragend", () => {
+            const ripple = document.createElement("div");
+            ripple.className = "ripple";
+            highlightSelectedSquare(piece.id);
+            document.querySelector(`#${piece.id}.board-square`).appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+            document.querySelectorAll(".move-indicator").forEach(indicator => {
+                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
+                setTimeout(() => indicator.remove(), 200);
+            });
+            activePiece = null;
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.style.outline = null;
+            });
+        });
+        piece.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            event.dataTransfer.effectAllowed = "move";
+        });
+        piece.addEventListener("dragenter", () => {
+            const square = document.querySelector(`#${piece.id}.board-square`);
+            if (document.querySelector(`#${square.id}.highlight-square`)) {
+                document.querySelector(`#${square.id}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
+            } else {
+                square.style.outline = "calc(var(--board-square-width) / 25) solid white";
+            }
+            square.style.zIndex = "1";
+            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 6/25) calc(var(--board-square-width) * 2/25) rgba(0, 0, 0, 0.8)";
+            if (document.querySelector(`#${square.id}.ring`)) {
+                const moveIndicator = document.querySelector(`#${square.id}.ring`).style;
+                moveIndicator.width = moveIndicator.height = "70%";
+                moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-colour)";
+            }
+        });
+        piece.addEventListener("dragleave", () => {
+            const square = document.querySelector(`#${piece.id}.board-square`);
+            if (document.querySelector(`#${square.id}.highlight-square`)) {
+                document.querySelector(`#${square.id}.highlight-square`).style.outline = null;
+            }
+            square.style.outline = null;
+            square.style.zIndex = null;
+            square.style.boxShadow = null;
+            if (document.querySelector(`#${square.id}.ring`)) {
+                const moveIndicator = document.querySelector(`#${square.id}.ring`).style;
+                moveIndicator.width = moveIndicator.height = null;
+                moveIndicator.boxShadow = null;
+            }
+        });
+        piece.addEventListener("drop", (event) => {
+            event.preventDefault();
+            const square = document.querySelector(`#${piece.id}.board-square`);
+            if (document.querySelector(`#${square.id}.highlight-square`)) {
+                document.querySelector(`#${square.id}.highlight-square`).style.outline = null;
+            }
+            square.style.outline = null;
+            square.style.zIndex = null;
+            square.style.boxShadow = null;
+            if (legalMoves.includes(square.id)) {
+                piece.style.opacity = "0";
+                setTimeout(() => piece.remove(), 300);
+                movePiece(square.id, true);
+                halfmoveClock = 0;
+            }
+        });
+    });
+    document.querySelectorAll(".board-square").forEach(square => {
+        square.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            event.dataTransfer.effectAllowed = "move";
+        });
+        square.addEventListener("dragenter", () => {
+            square.style.outline = "calc(var(--board-square-width) / 25) solid white";
+            square.style.zIndex = "1";
+            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 6/25) calc(var(--board-square-width) * 2/25) rgba(0, 0, 0, 0.8)";
+            if (document.querySelector(`#${square.id}.filled-circle`)) {
+                const moveIndicator = document.querySelector(`#${square.id}.filled-circle`).style;
+                moveIndicator.width = moveIndicator.height = "50%";
+            } else if (document.querySelector(`#${square.id}.ring`)) {
+                const moveIndicator = document.querySelector(`#${square.id}.ring`).style;
+                moveIndicator.width = moveIndicator.height = "70%";
+                moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-colour)";
+            }
+        });
+        square.addEventListener("dragleave", () => {
+            square.style.outline = null;
+            square.style.zIndex = null;
+            square.style.boxShadow = null;
+            if (document.querySelector(`#${square.id}.filled-circle`)) {
+                const moveIndicator = document.querySelector(`#${square.id}.filled-circle`).style;
+                moveIndicator.width = moveIndicator.height = null;
+            } else if (document.querySelector(`#${square.id}.ring`)) {
+                const moveIndicator = document.querySelector(`#${square.id}.ring`).style;
+                moveIndicator.width = moveIndicator.height = null;
+                moveIndicator.boxShadow = null;
+            }
+        });
+        square.addEventListener("drop", (event) => {
+            event.preventDefault();
+            square.style.outline = null;
+            square.style.zIndex = null;
+            square.style.boxShadow = null;
+            if (legalMoves.includes(square.id)) movePiece(square.id, true);
+        });
+    });
+}
+function mouseEntersPiece(square) {
     const boardSquare = document.querySelector(`#${square}.board-square`);
     if (document.querySelector(`#${square}.highlight-square`)) {
-        document.querySelector(`#${square}.highlight-square`).style.outline = "min(0.2vw, 0.4vh) solid white";
+        document.querySelector(`#${square}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
     } else {
-        boardSquare.style.outline = "min(0.2vw, 0.4vh) solid white";
+        boardSquare.style.outline = "calc(var(--board-square-width) / 25) solid white";
     }
     if (document.querySelector(`#${square}.ring`)) {
         const moveIndicator = document.querySelector(`#${square}.ring`).style;
-        moveIndicator.width = moveIndicator.height = "90%";
-        moveIndicator.backgroundColor = "var(--move-indicator-colour)";
-        moveIndicator.border = "none";
+        moveIndicator.width = moveIndicator.height = "70%";
+        moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-colour)";
     }
 }
-function mouseOutOfPiece(square) {
+function mouseLeavesPiece(square) {
     const boardSquare = document.querySelector(`#${square}.board-square`);
     if (document.querySelector(`#${square}.highlight-square`)) {
         document.querySelector(`#${square}.highlight-square`).style.outline = null;
@@ -344,9 +469,8 @@ function mouseOutOfPiece(square) {
     boardSquare.style.outline = null;
     if (document.querySelector(`#${square}.ring`)) {
         const moveIndicator = document.querySelector(`#${square}.ring`).style;
-        moveIndicator.width = moveIndicator.height = "null";
-        moveIndicator.backgroundColor = null;
-        moveIndicator.border = null;
+        moveIndicator.width = moveIndicator.height = null;
+        moveIndicator.boxShadow = null;
     }
 }
 setUpBoard();

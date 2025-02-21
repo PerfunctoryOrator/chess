@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 
-<html lang = "en-IN">
+<html lang="en-IN">
     <head>
-        <meta name = "google-site-verification" content = "SgHsyBjRk9hujHsLjvXAa6a-775GwMKcGfRNNdM3Jpc" />
-        <meta charset = "utf-8" />
-        <meta name = "viewport" content = "width = device-width, initial-scale = 1.0" />
-        <meta id = "theme-colour" name = "theme-color" />
-        <title> Play Chess! </title>
-        <link rel = "icon" type = "image/x-icon" href = "white-pawn.ico" />
-        <link rel = "stylesheet" href = "board-styles.css" />
-        <link rel = "stylesheet" href = "board-pieces.css" />
-        <link rel = "stylesheet" href = "other-styles.css" />
+        <meta name="google-site-verification" content="SgHsyBjRk9hujHsLjvXAa6a-775GwMKcGfRNNdM3Jpc" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta id="theme-colour" name="theme-color" />
+        <title>Play Chess!</title>
+        <link rel="icon" type="image/x-icon" href="white-pawn.ico" />
+        <link rel="stylesheet" href="board-styles.css" />
+        <link rel="stylesheet" href="board-pieces.css" />
+        <link rel="stylesheet" href="other-styles.css" />
         <script>
             window.onload = () => {
                 document.getElementById("theme-colour").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-colour");
@@ -18,54 +18,56 @@
         </script>
     </head>
     <body>
-        <div id = "board-container">
-            <div id = "eval-bar" title = "Position Evaluation Bar"> 0 </div>
-            <div id = "white-player" title = "Player with White Pieces"></div>
-            <div id = "chess-board"></div>
-            <button onclick = "{isBoardFlipped = !isBoardFlipped; setUpBoard();}" style = "font-size: 24px;"> Flip Board </button>
-            <button onclick = "{pieceMoveAnimation ='ease-in-out';}" style = "font-size: 24px;"> Set Piece Animation to Ease </button>
-            <button onclick = "{pieceMoveAnimation ='var(--emphasis-animation)';}" style = "font-size: 24px;"> Set Piece Animation to Emphasis </button>
-            <div id = "black-player" title = "Player with Black Pieces"></div>
+        <div id="board-container">
+            <div id="chess-board"></div>
+            <button onclick="{isBoardFlipped = !isBoardFlipped; setUpBoard();}" style="font-size: 24px;">Flip Board</button>
+            <button onclick="{pieceMoveAnimation ='ease-in-out';}" style="font-size: 24px;">Set Piece Animation to Ease</button>
+            <button onclick="{pieceMoveAnimation = 'var(--emphasis-animation)';}" style="font-size: 24px;">Set Piece Animation to Emphasis</button>
+            <span id="to-move" style="font-size: 24px;">White to Move (Last Move: None)</span>
+            <div id="eval-bar" title="Position Evaluation Bar">0</div>
+            <div id="white-player" title="Player with White Pieces"></div>
+            <div id="black-player" title="Player with Black Pieces"></div>
         </div>
-        <div id = "input-grid">
-            <div> FEN </div>
-            <input id = "fen-input" title = "FEN Input Box" value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck = "false" onblur = "setUpPieces()" />
-            <div id = "fen-validity-indicator"></div>
-            <div> PGN </div>
-            <textarea id = "pgn-input" title = "PGN Input Box" rows = "5" spellcheck = "false"></textarea>
-            <div id = "pgn-validity-indicator"></div>
+        <div id="input-grid">
+            <div>FEN</div>
+            <input id="fen-input" title="FEN Input Box" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck="false" onblur="setUpPieces()" />
+            <div id="fen-validity-indicator"></div>
+            <div>PGN</div>
+            <textarea id="pgn-input" title="PGN Input Box" rows="5" spellcheck="false"></textarea>
+            <div id="pgn-validity-indicator"></div>
         </div>
-        <div> <ul style = "float: left; max-width: 45%;"> <b> PLEASE READ ALL THIS (SCROLL DOWN IF NEEDED): </b> </ul>
-            <ul title = "Features" style = "display: block; float: left; max-width: 45%;">
+        <div><ul style="float: left; max-width: 45%;"><b>PLEASE READ ALL THIS (SCROLL DOWN IF NEEDED):</b></ul>
+            <ul title="Features" style="display: block; float: left; max-width: 45%;">
                 Features:
-                <li> The chess board changes size as per the browser window’s width (and height). </li>
-                <li> Everything on this page is made by Yashdeep Singh Fauzdar, except for the chess pieces (taken from Lichess). </li>
-                <li> Full FEN support. </li>
-                <li> Detects invalid FENs. </li>
-                <li> Board updates whenever you click out of the FEN input box. </li>
-                <li> System fonts. </li>
-                <li> Dark mode. </li>
-                <li> Ability to flip board. </li>
+                <li>The chess board changes size as per the browser window’s width (and height).</li>
+                <li>Everything on this page is made by Yashdeep Singh Fauzdar, except for the chess pieces (taken from Lichess).</li>
+                <li>Full FEN support.</li>
+                <li>Detects invalid FENs.</li>
+                <li>Board updates whenever you click out of the FEN input box.</li>
+                <li>System fonts.</li>
+                <li>Dark mode.</li>
+                <li>Ability to flip board.</li>
+                <li>Ability to drag and drop pieces along with clicking.</li>
             </ul>
-            <ul title = "Expected soon" style = "display: block; float: left; max-width: 45%;"> Expected soon:
-                <li> Full PGN support. </li>
-                <li> A settings menu. </li>
-                <li> Its own simple chess engine, made by Yashdeep Singh Fauzdar in plain JavaScript. </li>
-                <li> Working evaluation bar. </li>
-                <li> A menu bar, along with web pages on all chess rules. </li>
-                <li> Store settings in browser. </li>
+            <ul title="Expected soon" style="display: block; float: left; max-width: 45%;">Expected soon:
+                <li>Full PGN support.</li>
+                <li>A settings menu.</li>
+                <li>Its own simple chess engine, made by Yashdeep Singh Fauzdar in plain JavaScript.</li>
+                <li>Working evaluation bar.</li>
+                <li>A menu bar, along with web pages on all chess rules.</li>
+                <li>Store settings in browser.</li>
             </ul>
-            <ul title = "Credits" style = "display: block; float: left;"> Credits:
-                <li> The web page is designed by Yashdeep Singh Fauzdar. </li>
-                <li> Thanks to Lichess for the chess pieces and current board colour. </li>
-                <li> The tick and cross icons beside the FEN input box are taken from Google Fonts. </li>
-                <li> Source Code is available here: <a href = "https://github.com/PerfunctoryOrator/chess/tree/main" target = "_blank"> https://github.com/PerfunctoryOrator/chess/tree/main</a>. </li>
-                <li> For my schoolmates: you can give me some recommendations on WhatsApp or Chess.com. </li>
+            <ul title="Credits" style="display: block; float: left;">Credits:
+                <li>The web page is designed by Yashdeep Singh Fauzdar.</li>
+                <li>Thanks to Lichess for the chess pieces and current board colour.</li>
+                <li>The tick and cross icons beside the FEN input box are taken from Google Fonts.</li>
+                <li>Source Code is available here: <a href="https://github.com/PerfunctoryOrator/chess/tree/main" target="_blank"> https://github.com/PerfunctoryOrator/chess/tree/main</a>.</li>
+                <li>For my schoolmates: you can give me some recommendations on WhatsApp or Chess.com.</li>
             </ul>
-            <ul title = "Removed features" style = "display: block; float: left;"> Removed features:
-                <li> Hovering over the ‘cross’ icon beside the FEN input box no longer displays what’s wrong with the FEN. </li>
+            <ul title="Removed features" style="display: block; float: left;">Removed features:
+                <li>Hovering over the ‘cross’ icon beside the FEN input box no longer displays what’s wrong with the FEN.</li>
             </ul>
         </div>
-        <script src = "board-updater.js"></script>
+        <script src="board-updater.js"></script>
     </body>
 </html>
