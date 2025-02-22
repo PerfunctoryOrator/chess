@@ -11,12 +11,15 @@
 #eval-bar {
     font-weight: bold;
     text-align: center;
+    grid-row: 2 / 3;
+    grid-column: 1 / 2;
     float: left;
-    width: 32px;
+    width: calc(var(--board-square-width) / 3);
     height: calc(2 * (4*var(--board-square-width) - var(--padding)));
-    padding: var(--padding) 4px;
+    padding: var(--padding) 0.25em;
     margin: var(--margin);
     border: var(--border);
+    border-radius: var(--box-radius);
     background-color: var(--contrast-background-colour);
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -31,11 +34,14 @@
 #chess-board {
     display: grid;
     grid-template: repeat(8, var(--board-square-width)) / repeat(8, var(--board-square-width));
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
     overflow: hidden;
     position: relative;
     margin: var(--margin);
     border: var(--border);
-    box-shadow: 8px 16px 16px var(--shadow-colour);
+    border-radius: var(--box-radius);
+    box-shadow: calc(var(--board-square-width) / 12) calc(var(--board-square-width) / 6) calc(var(--board-square-width) / 6) var(--shadow-colour);
 }
 #piece-area {
     display: block;
@@ -47,14 +53,13 @@
     position: absolute;
     width: var(--board-square-width);
     height: var(--board-square-width);
-    transition: opacity 0.3s ease-out;
 }
 .board-square {
     overflow: hidden;
     position: relative;
     color: var(--light-square-colour);
     background-color: var(--board-colour);
-    outline-offset: calc(0px - var(--board-square-width) / 25);
+    outline-offset: calc(var(--board-square-width) / -25);
 }
 .light-board-square {
     color: var(--board-colour);
@@ -64,11 +69,12 @@
     width: 100%;
     height: 100%;
     background-color: rgba(255, 255, 0, 0.5);
-    outline-offset: calc(0px - var(--board-square-width) / 25);
+    outline-offset: calc(var(--board-square-width) / -25);
     transition: opacity 0.2s ease-out;
     pointer-events: none;
 }
 #file-indicator, #rank-indicator {
+    font-size: calc(var(--board-square-width) / 5);
     font-weight: bold;
     display: flex;
     position: absolute;
@@ -76,20 +82,23 @@
     pointer-events: none;
 }
 #file-indicator {
-    bottom: 4px;
-    right: 4px;
+    bottom: calc(var(--board-square-width) / 20);
 }
 #rank-indicator {
     flex-direction: column;
-    top: 4px;
-    left: 4px;
+    top: calc(var(--board-square-width) / 20);
 }
-#file-indicator > div {
-    text-align: right;
+.file-name, .rank-name {
+    color: var(--board-colour);
+}
+.file-name {
     width: var(--board-square-width);
 }
-#rank-indicator > div {
+.rank-name {
     height: var(--board-square-width);
+}
+.light-text-colour {
+    color: var(--light-square-colour);
 }
 .move-indicator {
     position: absolute;
@@ -132,7 +141,7 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 50%;
-    animation: ripple-effect 0.6s ease-out;
+    animation: ripple-effect 0.5s ease-out;
 }
 
 @keyframes fade-in {
@@ -157,7 +166,7 @@
 }
 @keyframes ripple-effect {
     0% {
-        transform: scale(0);
+        transform: scale(0.4);
         opacity: 0.5;
     }
     100% {

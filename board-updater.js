@@ -3,8 +3,11 @@ let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let lastMoveSquares = [], selectedSquare = null;
+let rankIndicatorSide = "a";
+let isFenValid = true;
 
 function parseFen(fen) {
+    isFenValid = false;
     let ranksParsed = 0;
     let evalPiecePositions = [];
     let evalActiveColour, evalCastlingRights, evalEnPassantSquare, evalHalfmoveClock, evalFullmoveNumber = null;
@@ -50,6 +53,7 @@ function parseFen(fen) {
     evalFullmoveNumber = parseInt(readValueFromFen());
     if (!evalFullmoveNumber == true) return false;
     if (evalPiecePositions.filter(x => x === "K").length !== 1 || evalPiecePositions.filter(x => x === "k").length !== 1) return false;
+    isFenValid = true;
     piecePositions = evalPiecePositions;
     activeColour = evalActiveColour;
     castlingRights = evalCastlingRights;
@@ -81,43 +85,45 @@ function setUpBoard() {
     chessBoard.appendChild(pieceArea);
     const fileList = document.createElement("div");
     fileList.id = "file-indicator";
+    if (rankIndicatorSide === "a") fileList.style.right = "calc(var(--board-square-width) / 20)";
+    else fileList.style.left = "calc(var(--board-square-width) / 20)";
     for (let file = 0; file < 8; file++) {
         isLightSquare = !isLightSquare;
         const fileName = document.createElement("div");
-        fileName.style.color = isLightSquare ? "var(--board-colour)" : "var(--light-square-colour)";
+        fileName.className = "file-name";
         fileName.innerText = isBoardFlipped ? String.fromCharCode("h".charCodeAt(0) - file) : String.fromCharCode("a".charCodeAt(0) + file);
+        fileName.id = fileName.innerText + (isBoardFlipped ? "8" : "1");
+        if (rankIndicatorSide === "a") fileName.style.textAlign = "right";
+        if (!isLightSquare) fileName.classList.add("light-text-colour");
+        fileName.style.color = isLightSquare ? "var(--board-colour)" : "var(--light-square-colour)";
         fileList.appendChild(fileName);
     }
     chessBoard.appendChild(fileList);
     const rankList = document.createElement("div");
     rankList.id = "rank-indicator";
+    if (rankIndicatorSide === "a") {
+        rankList.style.left = "calc(var(--board-square-width) / 20)";
+    } else {
+        rankList.style.right = "calc(var(--board-square-width) / 20)";
+        isLightSquare = !isLightSquare;
+    }
     for (let rank = 1; rank < 9; rank++) {
         isLightSquare = !isLightSquare;
         const rankName = document.createElement("div");
-        rankName.style.color = isLightSquare ? "var(--light-square-colour)" : "var(--board-colour)";
+        rankName.className = "rank-name";
         rankName.innerText = isBoardFlipped ? rank : 9 - rank;
+        rankName.id = rankIndicatorSide + rankName.innerText;
+        if (isLightSquare) rankName.classList.add("light-text-colour");
         rankList.appendChild(rankName);
     }
     chessBoard.appendChild(rankList);
     document.getElementById("chess-board").remove();
     chessBoard.id = "chess-board";
-    document.getElementById("board-container").appendChild(chessBoard);
+    document.getElementById("game-container").appendChild(chessBoard);
+    parseFen(document.getElementById("fen-input").value);
     setUpPieces();
-    addClickToMove();
-    addDragAndDropToMove();
 }
 function setUpPieces() {
-    const fen = document.getElementById("fen-input").value.trim();
-    const isFenValid = parseFen(fen);
-    if (isFenValid) {
-        document.getElementById("fen-validity-indicator").innerHTML = `<svg height = "24px" viewBox = "0 -960 960 960" width = "24px" fill = "var(--colour)" opacity = "0.6">
-            <path d = "m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-        </svg>`;
-    } else {
-        document.getElementById("fen-validity-indicator").innerHTML = `<svg height = "24px" viewBox = "0 -960 960 960" width = "24px" fill = "red">
-                <path d = "m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-            </svg>`;
-    }
     const chessBoard = document.getElementById("chess-board");
     const pieceArea = document.createElement("div");
     let squareNumber = isBoardFlipped ? 63 : 0;
@@ -130,7 +136,7 @@ function setUpPieces() {
                 piece.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${9 - rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
                 piece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
                 piece.style.left = `calc(${file} * var(--board-square-width))`;
-
+                piece.style.transition = "opacity 0.3s ease-out";
                 piece.addEventListener("mouseenter", () => mouseEntersPiece(piece.id));
                 piece.addEventListener("mouseleave", () => mouseLeavesPiece(piece.id));
                 pieceArea.appendChild(piece);
@@ -141,6 +147,8 @@ function setUpPieces() {
     document.getElementById("piece-area").remove();
     pieceArea.id = "piece-area";
     chessBoard.appendChild(pieceArea);
+    addClickToMove();
+    addDragAndDropToMove();
 }
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
@@ -224,7 +232,7 @@ function highlightLegalMoves(chessPiece, dragged) {
         const ripple = document.createElement("div");
         ripple.className = "ripple";
         document.querySelector(`#${chessPiece.id}.board-square`).appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
+        setTimeout(() => ripple.remove(), 500);
     }
     highlightSelectedSquare(chessPiece.id);
     document.querySelectorAll(".move-indicator").forEach(indicator => {
@@ -272,7 +280,7 @@ function movePiece(targetSquare, dropped) {
     if (!dropped) activePieceStyle.transition = `top 0.3s ${pieceMoveAnimation}, left 0.3s ${pieceMoveAnimation}, opacity 0.3s ease-out`;
     activePieceStyle.top = `calc(${isBoardFlipped ? rank - 1 : 8 - rank} * var(--board-square-width))`;
     activePieceStyle.left = `calc(${isBoardFlipped ? 7 - file : file} * var(--board-square-width))`;
-    if (!dropped) setTimeout(() => activePieceStyle.transition = `opacity 0.3s ease-out`, 300);
+    if (!dropped) setTimeout(() => activePieceStyle.transition = "opacity 0.3s ease-out", 300);
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + file)}${previousRank}`;
         const enemyPawn = document.querySelector(`#${enemyPawnSquare}.chess-piece`);
@@ -286,30 +294,64 @@ function movePiece(targetSquare, dropped) {
     activeColour = activeColour === "w" ? "b" : "w";
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++;
-    if (activeColour === "w") {
-        document.getElementById("to-move").innerText = `White to Move (Last Move: ${fullmoveNumber}… ${lastMoveSquares[0]} – ${lastMoveSquares[1]})`;
-        fullmoveNumber++;
-    } else {
-        document.getElementById("to-move").innerText = `Black to Move (Last Move: ${fullmoveNumber}. ${lastMoveSquares[0]} – ${lastMoveSquares[1]})`;
-    }
+    if (activeColour === "w") fullmoveNumber++;
 }
 function highlightSelectedSquare(square) {
     if (square && !lastMoveSquares.includes(square)) {
-        if (selectedSquare !== null) document.querySelector(`#${selectedSquare}.highlight-square`).remove();
+        if (selectedSquare !== null) {
+            const highlightSquare = document.querySelector(`#${selectedSquare}.highlight-square`);
+            highlightSquare.style.backgroundColor = "transparent";
+            if (document.querySelector(`#${selectedSquare}.file-name`)) {
+                document.querySelector(`#${selectedSquare}.file-name`).style.color = null;
+            }
+            if (document.querySelector(`#${selectedSquare}.rank-name`)) {
+                document.querySelector(`#${selectedSquare}.rank-name`).style.color = null;
+            }
+            setTimeout(() => highlightSquare.remove(), 200);
+            if (square === selectedSquare) {
+                selectedSquare = null;
+                return;
+            }
+        }
         selectedSquare = square;
         const newHighlightSquare = document.createElement("div");
         newHighlightSquare.id = square;
         newHighlightSquare.className = "highlight-square";
         document.querySelector(`#${square}.board-square`).appendChild(newHighlightSquare);
+        if (document.querySelector(`#${square}.file-name`)) {
+            const fileIndicator = document.querySelector(`#${square}.file-name`);
+            if (fileIndicator.classList.contains("light-text-colour")) fileIndicator.style.color = "var(--board-colour)";
+        }
+        if (document.querySelector(`#${square}.rank-name`)) {
+            const rankIndicator = document.querySelector(`#${square}.rank-name`);
+            if (rankIndicator.classList.contains("light-text-colour")) rankIndicator.style.color = "var(--board-colour)";
+        }
     } else {
-        if (selectedSquare !== null) document.querySelector(`#${selectedSquare}.highlight-square`).remove();
+        if (selectedSquare !== null) {
+            const highlightSquare = document.querySelector(`#${selectedSquare}.highlight-square`);
+            highlightSquare.style.backgroundColor = "transparent";
+            if (document.querySelector(`#${selectedSquare}.file-name`)) {
+                document.querySelector(`#${selectedSquare}.file-name`).style.color = null;
+            }
+            if (document.querySelector(`#${selectedSquare}.rank-name`)) {
+                document.querySelector(`#${selectedSquare}.rank-name`).style.color = null;
+            }
+            setTimeout(() => highlightSquare.remove(), 200);
+        }
         selectedSquare = null;
     }
 }
 function highlightMoveSquares(fromSquare, toSquare) {
+    highlightSelectedSquare(null);
     lastMoveSquares.forEach(square => {
         const highlightSquare = document.querySelector(`#${square}.highlight-square`);
         highlightSquare.style.backgroundColor = "transparent";
+        if (document.querySelector(`#${square}.file-name`)) {
+            document.querySelector(`#${square}.file-name`).style.color = null;
+        }
+        if (document.querySelector(`#${square}.rank-name`)) {
+            document.querySelector(`#${square}.rank-name`).style.color = null;
+        }
         setTimeout(() => highlightSquare.remove(), 200);
     });
     lastMoveSquares = [fromSquare, toSquare];
@@ -317,6 +359,14 @@ function highlightMoveSquares(fromSquare, toSquare) {
         const highlightSquare = document.createElement("div");
         highlightSquare.id = square;
         highlightSquare.className = "highlight-square";
+        if (document.querySelector(`#${square.id}.file-name`)) {
+            const fileIndicator = document.querySelector(`#${square.id}.file-name`);
+            if (fileIndicator.classList.contains("light-text-colour")) fileIndicator.style.color = "var(--board-colour)";
+        }
+        if (document.querySelector(`#${square.id}.rank-name`)) {
+            const rankIndicator = document.querySelector(`#${square.id}.rank-name`);
+            if (rankIndicator.classList.contains("light-text-colour")) rankIndicator.style.color = "var(--board-colour)";
+        }
         document.querySelector(`#${square}.board-square`).appendChild(highlightSquare);
     });
 }
@@ -335,28 +385,31 @@ function addDragAndDropToMove() {
     document.querySelectorAll(".chess-piece").forEach(piece => {
         piece.draggable = true;
         piece.addEventListener("dragstart", (event) => {
+            if (document.querySelector(`#${piece.id}.highlight-square`)) {
+                document.querySelector(`#${piece.id}.highlight-square`).style.outline = "none";
+            }
+            document.querySelector(`#${piece.id}.board-square`).style.outline = "none";
             activePiece = null;
             highlightLegalMoves(piece, true);
-            event.dataTransfer.setData("text", piece.id);
             event.dataTransfer.effectAllowed = "move";
-            document.querySelectorAll(".board-square").forEach(square => {
-                square.style.outline = "none";
-            });
+            piece.style.transition = null;
+            setTimeout(() => piece.style.opacity = "0.5", 0);
+            event.dataTransfer.setData("text", piece.id);
         });
         piece.addEventListener("dragend", () => {
             const ripple = document.createElement("div");
             ripple.className = "ripple";
             highlightSelectedSquare(piece.id);
             document.querySelector(`#${piece.id}.board-square`).appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
+            setTimeout(() => ripple.remove(), 500);
             document.querySelectorAll(".move-indicator").forEach(indicator => {
                 indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
                 setTimeout(() => indicator.remove(), 200);
             });
             activePiece = null;
-            document.querySelectorAll(".board-square").forEach(square => {
-                square.style.outline = null;
-            });
+            legalMoves = [];
+            piece.style.opacity = null;
+            piece.style.transition = "opacity 0.3s ease-out";
         });
         piece.addEventListener("dragover", (event) => {
             event.preventDefault();
@@ -370,7 +423,7 @@ function addDragAndDropToMove() {
                 square.style.outline = "calc(var(--board-square-width) / 25) solid white";
             }
             square.style.zIndex = "1";
-            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 6/25) calc(var(--board-square-width) * 2/25) rgba(0, 0, 0, 0.8)";
+            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
             if (document.querySelector(`#${square.id}.ring`)) {
                 const moveIndicator = document.querySelector(`#${square.id}.ring`).style;
                 moveIndicator.width = moveIndicator.height = "70%";
@@ -416,7 +469,7 @@ function addDragAndDropToMove() {
         square.addEventListener("dragenter", () => {
             square.style.outline = "calc(var(--board-square-width) / 25) solid white";
             square.style.zIndex = "1";
-            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 6/25) calc(var(--board-square-width) * 2/25) rgba(0, 0, 0, 0.8)";
+            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
             if (document.querySelector(`#${square.id}.filled-circle`)) {
                 const moveIndicator = document.querySelector(`#${square.id}.filled-circle`).style;
                 moveIndicator.width = moveIndicator.height = "50%";
@@ -473,6 +526,24 @@ function mouseLeavesPiece(square) {
         moveIndicator.boxShadow = null;
     }
 }
+function flipBoard() {
+    isBoardFlipped = !isBoardFlipped;
+    setUpBoard();
+}
+function showSettings() {
+    document.getElementById("settings-container").style.display = "block";
+}
+function checkFenValidity(fen) {
+    if (parseFen(fen)) {
+        document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--colour)" opacity="0.6">
+            <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+        </svg>`;
+    } else {
+        document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="red">
+            <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+        </svg>`;
+    }
+}
 setUpBoard();
 const parameters = location.search.replace(/%20/g, " ").split("?");
 if (parameters != "") {
@@ -490,6 +561,8 @@ if (parameters != "") {
             isBoardFlipped = true;
     }
 }
+checkFenValidity(document.getElementById("fen-input").value);
+if (!isFenValid) document.getElementById("position-input-container").style.display = "block";
 setUpBoard();
 document.addEventListener("click", (event) => {
     if (!event.target.classList.contains("chess-piece")) {

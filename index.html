@@ -18,23 +18,65 @@
         </script>
     </head>
     <body>
-        <div id="board-container">
+        <div id="game-container">
             <div id="chess-board"></div>
-            <button onclick="{isBoardFlipped = !isBoardFlipped; setUpBoard();}" style="font-size: 24px;">Flip Board</button>
-            <button onclick="{pieceMoveAnimation ='ease-in-out';}" style="font-size: 24px;">Set Piece Animation to Ease</button>
-            <button onclick="{pieceMoveAnimation = 'var(--emphasis-animation)';}" style="font-size: 24px;">Set Piece Animation to Emphasis</button>
-            <span id="to-move" style="font-size: 24px;">White to Move (Last Move: None)</span>
             <div id="eval-bar" title="Position Evaluation Bar">0</div>
-            <div id="white-player" title="Player with White Pieces"></div>
-            <div id="black-player" title="Player with Black Pieces"></div>
+            <div id="white-player" title="Player with White Pieces" style="grid-row: 1 / 2; grid-column: 2 / 3;"></div>
+            <div id="black-player" title="Player with Black Pieces" style="grid-row: 3 / 4; grid-column: 2 / 3;"></div>
+            <div id="more-view">
+                <div id="move-grid">
+                    Moves played on the board will be shown here. <br />
+                    Coming soon…
+                </div>
+                <div class="options" style="position: absolute; bottom: 0; width: 100%; justify-content: center;">
+                    <button title="Flip Board" onclick="flipBoard()">Flip Board</button>
+                    <button title="Show Settings" onclick="document.getElementById('settings-container').style.display = 'block';">
+                        <svg height="24px" viewBox="0 -960 960 960" width="24px">
+                            <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" />
+                        </svg>
+                        Settings
+                    </button>
+                    <button title="Load FEN or PGN" onclick="document.getElementById('position-input-container').style.display = 'block';">
+                        <svg height="24px" viewBox="0 -960 960 960" width="24px">
+                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+                        </svg>
+                        Load FEN or PGN
+                    </button>
+                </div>
+            </div>
         </div>
-        <div id="input-grid">
-            <div>FEN</div>
-            <input id="fen-input" title="FEN Input Box" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck="false" onblur="setUpPieces()" />
-            <div id="fen-validity-indicator"></div>
-            <div>PGN</div>
-            <textarea id="pgn-input" title="PGN Input Box" rows="5" spellcheck="false"></textarea>
-            <div id="pgn-validity-indicator"></div>
+        <div id="settings-container" class="full-screen-menu-container">
+            <div id="position-input-box">
+                <div>
+                    Coming soon…
+                </div>
+                <div class="options" style="padding: 0;">
+                    <button title="Load" onclick="document.getElementById('settings-container').style.display = null;">Done</button>
+                </div>
+            </div>
+        </div>
+        <div id="position-input-container" class="full-screen-menu-container">
+            <div id="position-input-box">
+                <div>
+                    <div>FEN</div>
+                    <input id="fen-input" title="FEN Input Box" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" spellcheck="false" onchange="checkFenValidity(this.value)" />
+                    <div id="fen-validity-indicator"></div>
+                    <div>PGN</div>
+                    <textarea id="pgn-input" title="PGN Input Box" rows="5" spellcheck="false"></textarea>
+                    <div id="pgn-validity-indicator"></div>
+                </div>
+                <div class="options" style="padding: 0;">
+                    <button title="Cancel" onclick="{
+                        if (isFenValid) document.getElementById('position-input-container').style.display = null;
+                        else alert('The entered FEN is incorrect.');
+                        }">Cancel</button>
+                    <button title="Load" onclick="{
+                        setUpPieces();
+                        if (isFenValid) document.getElementById('position-input-container').style.display = null;
+                        else alert('The entered FEN is incorrect.');
+                        }">Load</button>
+                </div>
+            </div>
         </div>
         <div><ul style="float: left; max-width: 45%;"><b>PLEASE READ ALL THIS (SCROLL DOWN IF NEEDED):</b></ul>
             <ul title="Features" style="display: block; float: left; max-width: 45%;">
@@ -48,14 +90,14 @@
                 <li>Dark mode.</li>
                 <li>Ability to flip board.</li>
                 <li>Ability to drag and drop pieces along with clicking.</li>
+                <li>A settings menu.</li>
+                <li>Store settings in browser.</li>
             </ul>
             <ul title="Expected soon" style="display: block; float: left; max-width: 45%;">Expected soon:
                 <li>Full PGN support.</li>
-                <li>A settings menu.</li>
                 <li>Its own simple chess engine, made by Yashdeep Singh Fauzdar in plain JavaScript.</li>
                 <li>Working evaluation bar.</li>
                 <li>A menu bar, along with web pages on all chess rules.</li>
-                <li>Store settings in browser.</li>
             </ul>
             <ul title="Credits" style="display: block; float: left;">Credits:
                 <li>The web page is designed by Yashdeep Singh Fauzdar.</li>
