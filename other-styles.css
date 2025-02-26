@@ -7,9 +7,10 @@
     --link-colour: rgb(42, 100, 227);
     --background-colour: var(--off-white);
     --contrast-background-colour: white;
+    --border-colour: gainsboro;
     --padding: 0.5em;
     --margin: 1em;
-    --border: 0.25em solid gainsboro;
+    --border: 0.25em solid var(--border-colour);
     --box-radius: 0.5em;
     --emphasis-animation: linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%);
 }
@@ -25,16 +26,30 @@ body {
     display: grid;
     grid-template: repeat(3, max-content) / repeat(3, max-content);
 }
-#more-view {
+#options-view {
     position: relative;
     grid-row: 2 / 3;
     grid-column: 3 / 4;
-    width: calc(5 * var(--board-square-width));
+    min-width: 25em;
     height: calc(8 * var(--board-square-width));
     margin: var(--margin);
     border: var(--border);
     border-radius: var(--box-radius);
     background-color: var(--contrast-background-colour);
+}
+#more-options {
+    display: none;
+    position: absolute;
+    right: 0.25em;
+    bottom: calc(100% + 0.5em);
+    width: max-content;
+    background-color: var(--background-colour);
+    border: var(--border);
+    border-radius: var(--box-radius);
+}
+#more-options > button {
+    margin: 0;
+    border-radius: 0;
 }
 .options {
     display: flex;
@@ -102,7 +117,7 @@ button:hover {
     background-color: var(--active-colour);
 }
 button > svg {
-    margin-right: var(--padding);
+    margin-right: 0.5em;
     fill: var(--colour);
 }
 button:hover > svg {
@@ -117,5 +132,21 @@ button:hover > svg {
         --link-colour: rgb(61, 133, 247);
         --background-colour: var(--dark-grey);
         --contrast-background-colour: black;
+        --border-colour: rgb(112, 112, 112);
+    }
+}
+@media (max-width: 915px) {
+    :root {
+        --board-square-width: min(10vw, 10vh);
+    }
+    #options-view {
+        grid-row: 4 / 5;
+        grid-column: 2 / 3;
+        width: calc(var(--board-square-width) * 8);
+    }
+    @media (max-width: 600px) {
+        :root {
+            --board-square-width: min(9vw, 10vh);
+        }
     }
 }

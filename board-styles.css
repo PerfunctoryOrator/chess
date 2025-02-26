@@ -39,6 +39,7 @@
     grid-column: 2 / 3;
     overflow: hidden;
     position: relative;
+    width: max-content;
     margin: var(--margin);
     border: var(--border);
     border-radius: var(--box-radius);

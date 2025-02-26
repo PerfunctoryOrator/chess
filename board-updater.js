@@ -207,7 +207,6 @@ function getLegalMoves(pieceSquare) {
         case "p":
             let forward = piece === "P" ? 1 : -1;
             let startRank = piece === "P" ? 2 : 7;
-            let promotionRank = piece === "P" ? 8 : 1;
             let frontSquare = `${pieceFile}${pieceRank + forward}`;
             if (!piecePositions[convertSquareToIndex(frontSquare)]) {
                 legalMoves.push(frontSquare);
@@ -292,7 +291,16 @@ function movePiece(targetSquare, dropped = false) {
     }
     piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
     enPassantSquare = null;
-    if (pieceType.toLowerCase() === "p" && Math.abs(rank - previousRank) === 2) enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + file)}${3}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${6}`;
+    if (pieceType.toLowerCase() === "p") {
+        if (Math.abs(rank - previousRank) === 2) {
+            enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + file)}${3}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${6}`;
+        } else if (rank === (pieceType === "p" ? 1 : 8)) {
+            activePiece.classList.remove("P", "p");
+            const promotedTo = pieceType === "p" ? "q" : "Q";
+            activePiece.classList.add(promotedTo);
+            piecePositions[convertSquareToIndex(activePiece.id)] = promotedTo;
+        }
+    }
     activeColour = activeColour === "w" ? "b" : "w";
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++;
@@ -614,15 +622,16 @@ let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let lastMoveSquares = [], selectedSquare = null;
+let prevFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let isFenValid = true;
 const fenInputBox = document.getElementById("fen-input");
-fenInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+fenInputBox.value = prevFen;
 const parameters = location.search.replace(/%20/g, " ").split("?");
 if (parameters != "") {
     const firstParameter = parameters[1];
     switch (firstParameter.slice(0, 4)) {
         case "fen=":
-            fenInputBox.value = firstParameter.slice(4, firstParameter.length);
+            prevFen = fenInputBox.value = firstParameter.slice(4, firstParameter.length);
             if (parameters[2] && parameters[2].includes("flip")) isBoardFlipped = true;
             break;
         case "pgn=":

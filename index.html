@@ -23,13 +23,13 @@
             <div id="eval-bar" title="Position Evaluation Bar">0</div>
             <div id="white-player" title="Player with White Pieces" style="grid-row: 1 / 2; grid-column: 2 / 3;"></div>
             <div id="black-player" title="Player with Black Pieces" style="grid-row: 3 / 4; grid-column: 2 / 3;"></div>
-            <div id="more-view">
+            <div id="options-view">
                 <div id="move-grid">
                     Moves played on the board will be shown here. <br />
                     Coming soon…
                 </div>
-                <div class="options" style="position: absolute; bottom: 0; width: 100%; justify-content: center;">
-                    <button title="Flip Board" onclick="flipBoard()">
+                <div class="options" style="position: absolute; bottom: 0; width: 100%; justify-content: flex-start;">
+                    <button title="Flip Board" onclick="flipBoard();">
                         <svg id="flipSvg" height="24px" viewBox="0 -960 960 960" width="24px" style="transform: rotate(-90deg);">
                             <path d="M400-200 120-480l280-280v560Zm160 0v-560l280 280-280 280Zm60-145 135-135-135-135v270Z" />
                         </svg>
@@ -41,12 +41,40 @@
                         </svg>
                         Settings
                     </button>
-                    <button title="Load FEN or PGN" onclick="document.getElementById('position-input-container').style.display = 'block';">
+                    <button title="More" style="margin-left: auto;" onclick="{
+                        if (document.getElementById('more-options').style.display === 'block') {
+                            document.getElementById('more-options').style.display = null;
+                            this.style.backgroundColor = null;
+                        } else {
+                            document.getElementById('more-options').style.display = 'block';
+                            this.style.backgroundColor = 'var(--active-colour)';
+                        }
+                        }">
                         <svg height="24px" viewBox="0 -960 960 960" width="24px">
-                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+                            <path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z" />
                         </svg>
-                        Load FEN or PGN
+                        More
                     </button>
+                    <div id="more-options">
+                        <button title="Load from FEN" onclick="{
+                            checkFenValidity(fenInputBox.value);
+                            document.getElementById('position-input-container').style.display = 'block';
+                            }">
+                            <svg height="24px" viewBox="0 -960 960 960" width="24px">
+                                <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+                            </svg>
+                            Load from FEN
+                        </button>
+                        <button title="Load from FEN" onclick="{
+                            checkFenValidity(fenInputBox.value);
+                            document.getElementById('position-input-container').style.display = 'block';
+                            }">
+                            <svg height="24px" viewBox="0 -960 960 960" width="24px">
+                                <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+                            </svg>
+                            Load from FEN
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -64,18 +92,23 @@
             <div id="position-input-box">
                 <div>
                     <div>FEN</div>
-                    <input id="fen-input" title="FEN Input Box" spellcheck="false" oninput="checkFenValidity(this.value)" />
+                    <input id="fen-input" title="FEN Input Box" spellcheck="false" oninput="checkFenValidity(this.value);" />
                     <div id="fen-validity-indicator"></div>
                     <div>PGN</div>
                     <textarea id="pgn-input" title="PGN Input Box" rows="5" spellcheck="false"></textarea>
                     <div id="pgn-validity-indicator"></div>
                 </div>
                 <div class="options" style="padding: 0;">
-                    <button title="Cancel" onclick="document.getElementById('position-input-container').style.display = null">Cancel</button>
+                    <button title="Cancel" onclick="{
+                        document.getElementById('position-input-container').style.display = null;
+                        fenInputBox.value = prevFen;
+                        }">Cancel</button>
                     <button title="Load" onclick="{
-                        setUpPieces();
-                        if (isFenValid) document.getElementById('position-input-container').style.display = null;
-                        else alert('The entered FEN is incorrect.');
+                        if (isFenValid) {
+                            prevFen = fenInputBox.value;
+                            setUpPieces();
+                            document.getElementById('position-input-container').style.display = null;
+                        } else alert('The entered FEN is not valid.');
                         }">Load</button>
                 </div>
             </div>
