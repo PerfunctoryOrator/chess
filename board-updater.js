@@ -301,7 +301,13 @@ function movePiece(targetSquare, dropped = false) {
             piecePositions[convertSquareToIndex(activePiece.id)] = promotedTo;
         }
     }
-    activeColour = activeColour === "w" ? "b" : "w";
+    if (activeColour === "w") {
+        activeColour = "b";
+        document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
+    } else {
+        activeColour = "w";
+        document.getElementById("to-move").innerHTML = `<div></div><b>White</b>&nbsp;to move`;
+    }
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++;
     if (activeColour === "w") fullmoveNumber++;
@@ -407,6 +413,8 @@ function checkFenValidity(fen) {
         document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--colour)" opacity="0.6">
             <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
         </svg>`;
+        if (activeColour === "w") document.getElementById("to-move").innerHTML = `<div></div><b>White</b>&nbsp;to move`;
+        else document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
     } else {
         document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="red">
             <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
