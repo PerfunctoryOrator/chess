@@ -1,11 +1,3 @@
-let isBoardFlipped = false;
-let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber = null;
-let activePiece = null, legalMoves = [];
-let pieceMoveAnimation = "ease-in-out";
-let lastMoveSquares = [], selectedSquare = null;
-let rankIndicatorSide = "a";
-let isFenValid = true;
-
 function parseFen(fen) {
     isFenValid = false;
     let ranksParsed = 0;
@@ -29,6 +21,15 @@ function parseFen(fen) {
     else return false;
     while (fenChar !== " ") {
         if (!(parseInt(fenChar) || fenChar === "/")) {
+            switch (fenChar.toLowerCase()) {
+                case "r": break;
+                case "n": break;
+                case "b": break;
+                case "q": break;
+                case "k": break;
+                case "p": break;
+                default: return false;
+            }
             evalPiecePositions.push(fenChar);
         } else if (fenChar === "/") {
             ranksParsed++;
@@ -45,6 +46,17 @@ function parseFen(fen) {
     if (!evalActiveColour == true || !(evalActiveColour === "w" || evalActiveColour === "b")) return false;
     evalCastlingRights = readValueFromFen();
     if (!evalCastlingRights == true || evalCastlingRights.length > 4) return false;
+    if (evalCastlingRights !== "-") {
+        for (const char of evalCastlingRights) {
+            switch (char) {
+                case "K": break;
+                case "Q": break;
+                case "k": break;
+                case "q": break;
+                default: return false;
+            }
+        }
+    }
     evalEnPassantSquare = readValueFromFen();
     if (!evalEnPassantSquare == true || evalEnPassantSquare.length > 2 || (evalEnPassantSquare !== "-" && (evalEnPassantSquare[1] !== "3" && evalEnPassantSquare[1] !== "6"))) return false;
     if (evalEnPassantSquare === "-") evalEnPassantSquare = null;
@@ -62,10 +74,9 @@ function parseFen(fen) {
     fullmoveNumber = evalFullmoveNumber;
     return true;
 }
-function setUpBoard() {
+function setUpEmptyBoard() {
     const chessBoard = document.createElement("div");
     let isLightSquare;
-    let squareNumber = isBoardFlipped ? 63 : 0;
     for (let rank = 8; rank > 0; rank--) {
         isLightSquare = rank%2 > 0;
         for (let file = 0; file < 8; file++) {
@@ -73,46 +84,35 @@ function setUpBoard() {
             const square = document.createElement("div");
             square.className = "board-square";
             if (isLightSquare) square.classList.add("light-board-square");
-            square.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${9 - rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
+            square.id = `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
             square.style.gridRow = `${9 - rank} / ${10 - rank}`;
             square.style.gridColumn = `${file + 1} / ${file + 2}`;
             chessBoard.appendChild(square);
-            squareNumber = isBoardFlipped ? squareNumber-1 : squareNumber+1;
         }
     }
-    const pieceArea = document.createElement("div");
-    pieceArea.id = "piece-area";
-    chessBoard.appendChild(pieceArea);
     const fileList = document.createElement("div");
     fileList.id = "file-indicator";
-    if (rankIndicatorSide === "a") fileList.style.right = "calc(var(--board-square-width) / 20)";
-    else fileList.style.left = "calc(var(--board-square-width) / 20)";
+    fileList.style.right = "calc(var(--board-square-width) / 20)";
     for (let file = 0; file < 8; file++) {
         isLightSquare = !isLightSquare;
         const fileName = document.createElement("div");
         fileName.className = "file-name";
-        fileName.innerText = isBoardFlipped ? String.fromCharCode("h".charCodeAt(0) - file) : String.fromCharCode("a".charCodeAt(0) + file);
-        fileName.id = fileName.innerText + (isBoardFlipped ? "8" : "1");
-        if (rankIndicatorSide === "a") fileName.style.textAlign = "right";
+        fileName.innerText = String.fromCharCode("a".charCodeAt(0) + file);
+        fileName.id = fileName.innerText + "1";
+        fileName.style.textAlign = "right";
         if (!isLightSquare) fileName.classList.add("light-text-colour");
-        fileName.style.color = isLightSquare ? "var(--board-colour)" : "var(--light-square-colour)";
         fileList.appendChild(fileName);
     }
     chessBoard.appendChild(fileList);
     const rankList = document.createElement("div");
     rankList.id = "rank-indicator";
-    if (rankIndicatorSide === "a") {
-        rankList.style.left = "calc(var(--board-square-width) / 20)";
-    } else {
-        rankList.style.right = "calc(var(--board-square-width) / 20)";
-        isLightSquare = !isLightSquare;
-    }
+    rankList.style.left = "calc(var(--board-square-width) / 20)";
     for (let rank = 1; rank < 9; rank++) {
         isLightSquare = !isLightSquare;
         const rankName = document.createElement("div");
         rankName.className = "rank-name";
-        rankName.innerText = isBoardFlipped ? rank : 9 - rank;
-        rankName.id = rankIndicatorSide + rankName.innerText;
+        rankName.innerText = 9 - rank;
+        rankName.id = "a" + rankName.innerText;
         if (isLightSquare) rankName.classList.add("light-text-colour");
         rankList.appendChild(rankName);
     }
@@ -120,20 +120,18 @@ function setUpBoard() {
     document.getElementById("chess-board").remove();
     chessBoard.id = "chess-board";
     document.getElementById("game-container").appendChild(chessBoard);
-    parseFen(document.getElementById("fen-input").value);
-    setUpPieces();
 }
 function setUpPieces() {
     const chessBoard = document.getElementById("chess-board");
     const pieceArea = document.createElement("div");
-    let squareNumber = isBoardFlipped ? 63 : 0;
+    let squareNumber = 0;
     for (let rank = 8; rank > 0; rank--) {
         for (let file = 0; file < 8; file++) {
             const pieceAtSquare = piecePositions[squareNumber];
             if (pieceAtSquare) {
                 const piece = document.createElement("div");
                 piece.className = `chess-piece ${pieceAtSquare}`;
-                piece.id = isBoardFlipped ? `${String.fromCharCode("h".charCodeAt(0) - file)}${9 - rank}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
+                piece.id = `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
                 piece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
                 piece.style.left = `calc(${file} * var(--board-square-width))`;
                 piece.style.transition = "opacity 0.3s ease-out";
@@ -141,14 +139,14 @@ function setUpPieces() {
                 piece.addEventListener("mouseleave", () => mouseLeavesPiece(piece.id));
                 pieceArea.appendChild(piece);
             }
-            squareNumber = isBoardFlipped ? squareNumber-1 : squareNumber+1;
+            squareNumber++;
         }
     }
-    document.getElementById("piece-area").remove();
+    if (document.getElementById("piece-area")) document.getElementById("piece-area").remove();
     pieceArea.id = "piece-area";
     chessBoard.appendChild(pieceArea);
     addClickToMove();
-    addDragAndDropToMove();
+    addDragDropToMove();
 }
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
@@ -224,10 +222,14 @@ function getLegalMoves(pieceSquare) {
                 let captureSquare = `${f}${r}`;
                 if (isValidMove(f, r) && piecePositions[convertSquareToIndex(captureSquare)]) legalMoves.push(captureSquare);
             });
-            if (enPassantSquare && Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 && pieceRank + forward === parseInt(enPassantSquare[1]) && (piece === "P" && enPassantSquare[1] === "6" || piece === "p" && enPassantSquare[1] === "3")) legalMoves.push(enPassantSquare);
+            if (enPassantSquare &&
+                Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 &&
+                pieceRank + forward === parseInt(enPassantSquare[1])) {
+                legalMoves.push(enPassantSquare);
+            }
     }
 }
-function highlightLegalMoves(chessPiece, dragged) {
+function highlightLegalMoves(chessPiece, dragged = false) {
     if (!dragged) {
         const ripple = document.createElement("div");
         ripple.className = "ripple";
@@ -267,7 +269,7 @@ function highlightLegalMoves(chessPiece, dragged) {
         boardSquare.appendChild(moveIndicator);
     });
 }
-function movePiece(targetSquare, dropped) {
+function movePiece(targetSquare, dropped = false) {
     const file = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
     const rank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
@@ -296,18 +298,17 @@ function movePiece(targetSquare, dropped) {
     else halfmoveClock++;
     if (activeColour === "w") fullmoveNumber++;
 }
-function highlightSelectedSquare(square) {
+function highlightSelectedSquare(square = null) {
     if (square && !lastMoveSquares.includes(square)) {
         if (selectedSquare !== null) {
             const highlightSquare = document.querySelector(`#${selectedSquare}.highlight-square`);
-            highlightSquare.style.backgroundColor = "transparent";
+            highlightSquare.remove();
             if (document.querySelector(`#${selectedSquare}.file-name`)) {
                 document.querySelector(`#${selectedSquare}.file-name`).style.color = null;
             }
             if (document.querySelector(`#${selectedSquare}.rank-name`)) {
                 document.querySelector(`#${selectedSquare}.rank-name`).style.color = null;
             }
-            setTimeout(() => highlightSquare.remove(), 200);
             if (square === selectedSquare) {
                 selectedSquare = null;
                 return;
@@ -329,46 +330,117 @@ function highlightSelectedSquare(square) {
     } else {
         if (selectedSquare !== null) {
             const highlightSquare = document.querySelector(`#${selectedSquare}.highlight-square`);
-            highlightSquare.style.backgroundColor = "transparent";
+            highlightSquare.remove();
             if (document.querySelector(`#${selectedSquare}.file-name`)) {
                 document.querySelector(`#${selectedSquare}.file-name`).style.color = null;
             }
             if (document.querySelector(`#${selectedSquare}.rank-name`)) {
                 document.querySelector(`#${selectedSquare}.rank-name`).style.color = null;
             }
-            setTimeout(() => highlightSquare.remove(), 200);
         }
         selectedSquare = null;
     }
 }
 function highlightMoveSquares(fromSquare, toSquare) {
-    highlightSelectedSquare(null);
+    highlightSelectedSquare();
     lastMoveSquares.forEach(square => {
         const highlightSquare = document.querySelector(`#${square}.highlight-square`);
-        highlightSquare.style.backgroundColor = "transparent";
+        highlightSquare.remove();
         if (document.querySelector(`#${square}.file-name`)) {
             document.querySelector(`#${square}.file-name`).style.color = null;
         }
         if (document.querySelector(`#${square}.rank-name`)) {
             document.querySelector(`#${square}.rank-name`).style.color = null;
         }
-        setTimeout(() => highlightSquare.remove(), 200);
     });
     lastMoveSquares = [fromSquare, toSquare];
     lastMoveSquares.forEach(square => {
         const highlightSquare = document.createElement("div");
         highlightSquare.id = square;
         highlightSquare.className = "highlight-square";
-        if (document.querySelector(`#${square.id}.file-name`)) {
-            const fileIndicator = document.querySelector(`#${square.id}.file-name`);
+        if (document.querySelector(`#${square}.file-name`)) {
+            const fileIndicator = document.querySelector(`#${square}.file-name`);
             if (fileIndicator.classList.contains("light-text-colour")) fileIndicator.style.color = "var(--board-colour)";
         }
-        if (document.querySelector(`#${square.id}.rank-name`)) {
-            const rankIndicator = document.querySelector(`#${square.id}.rank-name`);
+        if (document.querySelector(`#${square}.rank-name`)) {
+            const rankIndicator = document.querySelector(`#${square}.rank-name`);
             if (rankIndicator.classList.contains("light-text-colour")) rankIndicator.style.color = "var(--board-colour)";
         }
         document.querySelector(`#${square}.board-square`).appendChild(highlightSquare);
     });
+}
+function mouseEntersPiece(square) {
+    const boardSquare = document.querySelector(`#${square}.board-square`);
+    if (document.querySelector(`#${square}.highlight-square`)) {
+        document.querySelector(`#${square}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
+    } else {
+        boardSquare.style.outline = "calc(var(--board-square-width) / 25) solid white";
+    }
+    if (document.querySelector(`#${square}.ring`)) {
+        const moveIndicator = document.querySelector(`#${square}.ring`).style;
+        moveIndicator.width = moveIndicator.height = "70%";
+        moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-colour)";
+    }
+}
+function mouseLeavesPiece(square) {
+    const boardSquare = document.querySelector(`#${square}.board-square`);
+    if (document.querySelector(`#${square}.highlight-square`)) {
+        document.querySelector(`#${square}.highlight-square`).style.outline = null;
+    }
+    boardSquare.style.outline = null;
+    if (document.querySelector(`#${square}.ring`)) {
+        const moveIndicator = document.querySelector(`#${square}.ring`).style;
+        moveIndicator.width = moveIndicator.height = null;
+        moveIndicator.boxShadow = null;
+    }
+}
+function checkFenValidity(fen) {
+    if (parseFen(fen.trim())) {
+        document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--colour)" opacity="0.6">
+            <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+        </svg>`;
+    } else {
+        document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="red">
+            <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+        </svg>`;
+    }
+}
+function flipBoard() {
+    isBoardFlipped = !isBoardFlipped;
+    document.getElementById("flipSvg").style.transform = `rotate(${isBoardFlipped ? "" : "-"}90deg)`;
+    document.querySelectorAll(".board-square").forEach(square => {
+        const file = square.id[0].charCodeAt(0) - "a".charCodeAt(0);
+        const rank = parseInt(square.id[1]);
+        square.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
+        square.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
+    });
+    document.getElementById("file-indicator").style.flexDirection = isBoardFlipped ? "row-reverse" : null;
+    document.querySelectorAll(".file-name").forEach(fileIndicator => {
+        fileIndicator.id = fileIndicator.id[0] + (isBoardFlipped ? "8" : "1");
+        if (fileIndicator.classList.contains("light-text-colour")) {
+            fileIndicator.classList.remove("light-text-colour");
+        } else {
+            fileIndicator.classList.add("light-text-colour");
+        }
+    });
+    document.getElementById("rank-indicator").style.flexDirection = isBoardFlipped ? "column-reverse" : null;
+    document.querySelectorAll(".rank-name").forEach(rankIndicator => {
+        rankIndicator.id = (isBoardFlipped ? "h" : "a") + rankIndicator.id[1];
+        if (rankIndicator.classList.contains("light-text-colour")) {
+            rankIndicator.classList.remove("light-text-colour");
+        } else {
+            rankIndicator.classList.add("light-text-colour");
+        }
+    });
+    document.querySelectorAll(".chess-piece").forEach(piece => {
+        const file = piece.id[0].charCodeAt(0) - "a".charCodeAt(0);
+        const rank = parseInt(piece.id[1]);
+        piece.style.top = isBoardFlipped ? `calc(${rank - 1} * var(--board-square-width))` : `calc(${8 - rank} * var(--board-square-width))`;
+        piece.style.left = isBoardFlipped ? `calc(${7 - file} * var(--board-square-width))` : `calc(${file} * var(--board-square-width))`;
+    });
+}
+function showSettings() {
+    document.getElementById("settings-container").style.display = "block";
 }
 function addClickToMove() {
     document.querySelectorAll(".chess-piece").forEach(piece => {
@@ -377,35 +449,61 @@ function addClickToMove() {
     document.querySelectorAll(".board-square").forEach(square => {
         square.addEventListener("click", () => {
             if (activePiece && legalMoves.includes(square.id)) movePiece(square.id);
-            else highlightSelectedSquare(null);
         });
     });
-}
-function addDragAndDropToMove() {
-    document.querySelectorAll(".chess-piece").forEach(piece => {
-        piece.draggable = true;
-        piece.addEventListener("dragstart", (event) => {
-            if (document.querySelector(`#${piece.id}.highlight-square`)) {
-                document.querySelector(`#${piece.id}.highlight-square`).style.outline = "none";
-            }
-            document.querySelector(`#${piece.id}.board-square`).style.outline = "none";
-            activePiece = null;
-            highlightLegalMoves(piece, true);
-            event.dataTransfer.effectAllowed = "move";
-            piece.style.transition = null;
-            setTimeout(() => piece.style.opacity = "0.5", 0);
-            event.dataTransfer.setData("text", piece.id);
-        });
-        piece.addEventListener("dragend", () => {
-            const ripple = document.createElement("div");
-            ripple.className = "ripple";
-            highlightSelectedSquare(piece.id);
-            document.querySelector(`#${piece.id}.board-square`).appendChild(ripple);
-            setTimeout(() => ripple.remove(), 500);
+    document.addEventListener("click", (event) => {
+        if (!event.target.classList.contains("chess-piece")) {
             document.querySelectorAll(".move-indicator").forEach(indicator => {
                 indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
                 setTimeout(() => indicator.remove(), 200);
             });
+            highlightSelectedSquare();
+            activePiece = null;
+        }
+    });
+}
+function addDragDropToMove() {
+    let draggedPieceId = null;
+    document.querySelectorAll(".chess-piece").forEach(piece => {
+        piece.draggable = true;
+        piece.addEventListener("dragstart", (event) => {
+            draggedPieceId = piece.id;
+            if (document.querySelector(`#${piece.id}.highlight-square`)) {
+                document.querySelector(`#${piece.id}.highlight-square`).style.outline = "none";
+            }
+            document.querySelector(`#${piece.id}.board-square`).style.outline = "none";
+            if (document.querySelector(`#${piece.id}.file-name`)) {
+                document.querySelector(`#${piece.id}.file-name`).style.opacity = "0";
+            }
+            if (document.querySelector(`#${piece.id}.rank-name`)) {
+                document.querySelector(`#${piece.id}.rank-name`).style.opacity = "0";
+            }
+            activePiece = null;
+            highlightSelectedSquare();
+            highlightLegalMoves(piece, true);
+            event.dataTransfer.effectAllowed = "move";
+            piece.style.transition = null;
+            setTimeout(() => piece.style.opacity = "0.5", 0);
+        });
+        piece.addEventListener("dragend", () => {
+            if (document.querySelector(`#${draggedPieceId}.file-name`)) {
+                document.querySelector(`#${draggedPieceId}.file-name`).style.opacity = null;
+            }
+            if (document.querySelector(`#${draggedPieceId}.rank-name`)) {
+                document.querySelector(`#${draggedPieceId}.rank-name`).style.opacity = null;
+            }
+            if (draggedPieceId !== piece.id) {
+                const ripple = document.createElement("div");
+                ripple.className = "ripple";
+                document.querySelector(`#${piece.id}.board-square`).appendChild(ripple);
+                setTimeout(() => ripple.remove(), 500);
+            }
+            highlightSelectedSquare(piece.id);
+            document.querySelectorAll(".move-indicator").forEach(indicator => {
+                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
+                setTimeout(() => indicator.remove(), 200);
+            });
+            draggedPieceId = null;
             activePiece = null;
             legalMoves = [];
             piece.style.opacity = null;
@@ -413,7 +511,6 @@ function addDragAndDropToMove() {
         });
         piece.addEventListener("dragover", (event) => {
             event.preventDefault();
-            event.dataTransfer.effectAllowed = "move";
         });
         piece.addEventListener("dragenter", () => {
             const square = document.querySelector(`#${piece.id}.board-square`);
@@ -464,7 +561,6 @@ function addDragAndDropToMove() {
     document.querySelectorAll(".board-square").forEach(square => {
         square.addEventListener("dragover", (event) => {
             event.preventDefault();
-            event.dataTransfer.effectAllowed = "move";
         });
         square.addEventListener("dragenter", () => {
             square.style.outline = "calc(var(--board-square-width) / 25) solid white";
@@ -500,57 +596,33 @@ function addDragAndDropToMove() {
             if (legalMoves.includes(square.id)) movePiece(square.id, true);
         });
     });
+    document.addEventListener("dragover", (event) => {
+        event.preventDefault();
+    });
+    document.addEventListener("drop", (event) => {
+        event.preventDefault();
+        if (!event.target.classList.contains("board-square")) {
+            document.querySelectorAll(".move-indicator").forEach(indicator => {
+                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
+                setTimeout(() => indicator.remove(), 200);
+            });
+        }
+    });
 }
-function mouseEntersPiece(square) {
-    const boardSquare = document.querySelector(`#${square}.board-square`);
-    if (document.querySelector(`#${square}.highlight-square`)) {
-        document.querySelector(`#${square}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
-    } else {
-        boardSquare.style.outline = "calc(var(--board-square-width) / 25) solid white";
-    }
-    if (document.querySelector(`#${square}.ring`)) {
-        const moveIndicator = document.querySelector(`#${square}.ring`).style;
-        moveIndicator.width = moveIndicator.height = "70%";
-        moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-colour)";
-    }
-}
-function mouseLeavesPiece(square) {
-    const boardSquare = document.querySelector(`#${square}.board-square`);
-    if (document.querySelector(`#${square}.highlight-square`)) {
-        document.querySelector(`#${square}.highlight-square`).style.outline = null;
-    }
-    boardSquare.style.outline = null;
-    if (document.querySelector(`#${square}.ring`)) {
-        const moveIndicator = document.querySelector(`#${square}.ring`).style;
-        moveIndicator.width = moveIndicator.height = null;
-        moveIndicator.boxShadow = null;
-    }
-}
-function flipBoard() {
-    isBoardFlipped = !isBoardFlipped;
-    setUpBoard();
-}
-function showSettings() {
-    document.getElementById("settings-container").style.display = "block";
-}
-function checkFenValidity(fen) {
-    if (parseFen(fen)) {
-        document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--colour)" opacity="0.6">
-            <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-        </svg>`;
-    } else {
-        document.getElementById("fen-validity-indicator").innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px" fill="red">
-            <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-        </svg>`;
-    }
-}
-setUpBoard();
+let isBoardFlipped = false;
+let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber = null;
+let activePiece = null, legalMoves = [];
+let pieceMoveAnimation = "ease-in-out";
+let lastMoveSquares = [], selectedSquare = null;
+let isFenValid = true;
+const fenInputBox = document.getElementById("fen-input");
+fenInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const parameters = location.search.replace(/%20/g, " ").split("?");
 if (parameters != "") {
     const firstParameter = parameters[1];
     switch (firstParameter.slice(0, 4)) {
         case "fen=":
-            document.getElementById("fen-input").value = firstParameter.slice(4, firstParameter.length);
+            fenInputBox.value = firstParameter.slice(4, firstParameter.length);
             if (parameters[2] && parameters[2].includes("flip")) isBoardFlipped = true;
             break;
         case "pgn=":
@@ -561,15 +633,14 @@ if (parameters != "") {
             isBoardFlipped = true;
     }
 }
-checkFenValidity(document.getElementById("fen-input").value);
-if (!isFenValid) document.getElementById("position-input-container").style.display = "block";
-setUpBoard();
-document.addEventListener("click", (event) => {
-    if (!event.target.classList.contains("chess-piece")) {
-        document.querySelectorAll(".move-indicator").forEach(indicator => {
-            indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-            setTimeout(() => indicator.remove(), 200);
-        });
-        activePiece = null;
-    }
-});
+checkFenValidity(fenInputBox.value);
+if (!isFenValid) {
+    alert("The FEN specified by the URL is not valid.\nEnter a valid FEN.");
+    parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+}
+setUpEmptyBoard();
+setUpPieces();
+if (isBoardFlipped) {
+    isBoardFlipped = !isBoardFlipped;
+    flipBoard();
+}
