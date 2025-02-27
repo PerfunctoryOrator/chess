@@ -1,6 +1,6 @@
 # Online Chess Platform
 
-This repository contains the source code for an online chess platform developed as a school project. The platform offers an interactive chess-playing experience directly in the browser.
+This repository contains the source code for an online chess platform developed as an experiment. The platform offers an interactive chess-playing experience directly in the browser.
 
 ## Features
 
