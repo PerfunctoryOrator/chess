@@ -64,6 +64,7 @@ body {
     border-radius: var(--box-radius);
 }
 #more-options > button {
+    width: 100%;
     margin: 0;
     border-radius: 0;
 }
