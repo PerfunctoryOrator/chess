@@ -29,12 +29,12 @@ To run this project locally:
 
 - **Design and Development**: The platform was designed and developed by Yashdeep Singh Fauzdar.
 - **Chess Pieces and Board Colours**: Assets are sourced from [Lichess](https://lichess.org/).
-- **Icons**: Button glyphs and icons, such as the ‘tick’ and ‘cross’ beside the FEN input box, are provided by [Google Fonts](https://fonts.google.com/).
+- **Icons**: Button glyphs and icons are provided by [Google’s Material Icons](https://fonts.google.com/icons).
 
-## License
+## Licence
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/PerfunctoryOrator/chess/blob/main/LICENSE) file for more details.
-The icons used in this project are from [Google’s Material Icons](https://fonts.google.com/icons) and are licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE_Material_Icons](LICENSE_Material_Icons) for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+The icons used in this project are from [Google’s Material Icons](https://fonts.google.com/icons) and are licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE_Material_Icons](LICENSE_Material_Icons) for details. The original SVGs were slightly modified (removing `fill` attributes) for integration purposes.
 
 ---
 
