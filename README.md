@@ -34,6 +34,7 @@ To run this project locally:
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/PerfunctoryOrator/chess/blob/main/LICENSE) file for more details.
+The icons used in this project are from [Google’s Material Icons](https://fonts.google.com/icons) and are licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE_Material_Icons](LICENSE_Material_Icons) for details.
 
 ---
 
