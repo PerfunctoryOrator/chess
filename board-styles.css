@@ -8,6 +8,7 @@
     --light-square-colour: var(--brown-light-square-colour);
     --move-indicator-colour: rgba(0, 0, 0, 0.2);
 }
+
 #eval-bar {
     font-weight: bold;
     text-align: center;
@@ -51,11 +52,6 @@
     width: max-content;
     z-index: 3;
 }
-.chess-piece {
-    position: absolute;
-    width: var(--board-square-width);
-    height: var(--board-square-width);
-}
 .board-square {
     overflow: hidden;
     position: relative;
@@ -73,6 +69,11 @@
     background-color: rgba(255, 255, 0, 0.5);
     outline-offset: calc(var(--board-square-width) / -25);
     pointer-events: none;
+}
+.chess-piece {
+    position: absolute;
+    width: var(--board-square-width);
+    height: var(--board-square-width);
 }
 #file-indicator, #rank-indicator {
     font-size: calc(var(--board-square-width) / 5);

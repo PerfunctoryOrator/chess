@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en-IN">
+<html lang="en-IN" lazy-loaded="true">
     <head>
         <meta name="google-site-verification" content="SgHsyBjRk9hujHsLjvXAa6a-775GwMKcGfRNNdM3Jpc" />
         <meta charset="utf-8" />
@@ -8,22 +8,17 @@
         <meta id="theme-colour" name="theme-color" />
         <title>Play Chess!</title>
         <link rel="canonical" href="" />
-        <link rel="icon" type="image/x-icon" href="white-pawn.ico" />
+        <link rel="icon" type="image/x-icon" href="media-support/white-pawn.ico" />
         <link rel="stylesheet" href="board-styles.css" />
         <link rel="stylesheet" href="board-pieces.css" />
         <link rel="stylesheet" href="other-styles.css" />
-        <script>
-            window.onload = () => {
-                document.getElementById("theme-colour").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-colour");
-            }
-        </script>
     </head>
     <body>
         <div id="game-container">
             <div id="chess-board"></div>
-            <div id="eval-bar" title="Position Evaluation Bar">0</div>
-            <div id="white-player" title="Player with White Pieces" style="grid-row: 1 / 2; grid-column: 2 / 3;"></div>
-            <div id="black-player" title="Player with Black Pieces" style="grid-row: 3 / 4; grid-column: 2 / 3;"></div>
+            <div id="eval-bar" title="Evaluation bar">0</div>
+            <div id="white-player" title="Player with white pieces" style="grid-row: 1 / 2; grid-column: 2 / 3;"></div>
+            <div id="black-player" title="Player with black pieces" style="grid-row: 3 / 4; grid-column: 2 / 3;"></div>
             <div id="options-view">
                 <div id="move-grid" style="flex: 1;">
                     Moves played on the board will be shown here. <br />
@@ -31,21 +26,21 @@
                 </div>
                 <div id="to-move"></div>
                 <div class="options" style="position: relative;">
-                    <button title="Flip Board" onclick="flipBoard();">
+                    <button title="Flip board" onclick="flipBoard();">
                         <!-- Icon sourced from Google Fonts (Material Icons) — Apache License 2.0 -->
                         <svg xmlns="http://www.w3.org/2000/svg" id="flipSvg" height="24px" viewBox="0 -960 960 960" width="24px" style="transform: rotate(-90deg);">
                             <path d="M400-200 120-480l280-280v560Zm160 0v-560l280 280-280 280Zm60-145 135-135-135-135v270Z" />
                         </svg>
                         Flip Board
                     </button>
-                    <button title="Show Settings" onclick="document.getElementById('settings-container').style.display = 'block';">
+                    <button title="Show settings" onclick="document.getElementById('settings-container').style.display = 'block';">
                         <!-- Icon sourced from Google Fonts (Material Icons) — Apache License 2.0 -->
                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                             <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" />
                         </svg>
                         Settings
                     </button>
-                    <button title="More" style="margin-left: auto;" onclick="{
+                    <button id="more-button" title="More" style="margin-left: auto;" onclick="{
                         if (document.getElementById('more-options').style.display === 'block') {
                             document.getElementById('more-options').style.display = null;
                             this.style.backgroundColor = null;
@@ -110,10 +105,61 @@
                 </div>
             </div>
         </div>
-        <div class="full-screen-menu-container" id="settings-container">
-            <div id="position-input-box">
-                <div>
-                    Coming soon… rabfliuehrfliuawehrliuaewhrliueawh
+        <div class="full-screen-menu-container" id="settings-container" style="display: block;">
+            <div class="input-box-container">
+                <div class="options" style="justify-content: center; padding: 0; border-top: none; border-bottom: var(--border);">
+                    <button>General</button>
+                    <button>Board</button>
+                    <button>Advanced</button>
+                </div>
+                <div id="settings-view">
+                    <span>Appearance</span>
+                    <div>
+                        <label>
+                            <input type="radio" name="colour-theme" style="display: none;" onchange="setAppearance();" />
+                            <div style="transform: rotate(180deg);">
+                                <div style="overflow: hidden; position: relative; background-color: var(--off-white);">
+                                    <div style="position: absolute; top: calc(1em / sqrt(2)); right: calc(1em / sqrt(2)); width: 4em; height: 4em; background-color: var(--dark-grey); transform: rotate(30deg);"></div>
+                                </div>
+                            </div>
+                            <span>System</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="colour-theme" onchange="setAppearance('light');" />
+                            <div>
+                                <div style="background-color: var(--off-white);"></div>
+                            </div>
+                            <span>Light</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="colour-theme" onchange="setAppearance('dark');" />
+                            <div>
+                                <div style="background-color: var(--dark-grey);"></div>
+                            </div>
+                            <span>Dark</span>
+                        </label>
+                    </div>
+                    <!-- <label class="toggle-switch">
+                        <input class="toggle" type="checkbox" value="show-border" />
+                        <div class="slider"></div>
+                    </label> -->
+                    <span>Border</span>
+                    <div>
+                        <label>
+                            <input type="radio" name="box-radius" />
+                            <div>
+                                <div style="background-color: var(--off-white);"></div>
+                            </div>
+                            <span>Curved</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="box-radius" />
+                            <div>
+                                <div style="background-color: var(--off-white);"></div>
+                            </div>
+                            <span>Boxy</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="options" style="padding: 0;">
                     <button title="Reset" style="position: absolute;" onclick="resetSettings();">Reset</button>
@@ -123,13 +169,13 @@
             </div>
         </div>
         <div class="full-screen-menu-container" id="position-input-container">
-            <div id="position-input-box">
-                <div>
-                    <div>FEN</div>
-                    <input id="fen-input" title="FEN Input Box" spellcheck="false" oninput="checkFenValidity(this.value);" />
+            <div class="input-box-container">
+                <div style="background-color: var(--contrast-background-colour);">
+                    <span>FEN</span>
+                    <input id="fen-input" type="text" title="FEN input box" spellcheck="false" oninput="checkFenValidity(this.value);" />
                     <div id="fen-validity-indicator"></div>
-                    <div>PGN</div>
-                    <textarea id="pgn-input" title="PGN Input Box" rows="5" spellcheck="false"></textarea>
+                    <span>PGN</span>
+                    <textarea id="pgn-input" title="PGN input box" rows="5" spellcheck="false"></textarea>
                     <div id="pgn-validity-indicator"></div>
                 </div>
                 <div class="options" style="padding: 0;">
@@ -179,6 +225,7 @@
                 <li>Hovering over the ‘cross’ icon beside the FEN input box no longer displays what’s wrong with the FEN.</li>
             </ul>
         </div>
+        <script src="settings.js"></script>
         <script src="board-updater.js"></script>
     </body>
 </html>
