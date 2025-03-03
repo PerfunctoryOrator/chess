@@ -3,7 +3,7 @@
     --green-light-square-colour: rgb(235, 236, 211);
     --brown-board-colour: rgb(174, 138, 104);
     --brown-light-square-colour: rgb(236, 218, 185);
-    --board-square-width: min(5vw, 10vh);
+    --board-square-width: round(down, min(10vw, 10vh), 1px);
     --board-colour: var(--brown-board-colour);
     --light-square-colour: var(--brown-light-square-colour);
     --move-indicator-colour: rgba(0, 0, 0, 0.2);
@@ -57,7 +57,7 @@
     position: relative;
     color: var(--light-square-colour);
     background-color: var(--board-colour);
-    outline-offset: calc(var(--board-square-width) / -25);
+    outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
 }
 .light-board-square {
     color: var(--board-colour);
@@ -67,7 +67,7 @@
     width: 100%;
     height: 100%;
     background-color: rgba(255, 255, 0, 0.5);
-    outline-offset: calc(var(--board-square-width) / -25);
+    outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
     pointer-events: none;
 }
 .chess-piece {
@@ -144,6 +144,12 @@
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 50%;
     animation: ripple-effect 0.5s ease-out;
+}
+
+@media (max-width: 600px) {
+    :root {
+        --board-square-width: round(down, min(9vw, 10vh), 1px);
+    }
 }
 
 @keyframes fade-in {

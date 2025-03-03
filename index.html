@@ -105,66 +105,92 @@
                 </div>
             </div>
         </div>
-        <div class="full-screen-menu-container" id="settings-container" style="display: block;">
+        <div class="full-screen-menu-container" id="settings-container">
             <div class="input-box-container">
                 <div class="options" style="justify-content: center; padding: 0; border-top: none; border-bottom: var(--border);">
-                    <button>General</button>
-                    <button>Board</button>
-                    <button>Advanced</button>
+                    <button title="General">General</button>
+                    <button title="Board">Board</button>
+                    <button title="Advanced">Advanced</button>
                 </div>
                 <div id="settings-view">
                     <span>Appearance</span>
                     <div>
                         <label>
-                            <input type="radio" name="colour-theme" style="display: none;" onchange="setAppearance();" />
-                            <div style="transform: rotate(180deg);">
-                                <div style="overflow: hidden; position: relative; background-color: var(--off-white);">
-                                    <div style="position: absolute; top: calc(1em / sqrt(2)); right: calc(1em / sqrt(2)); width: 4em; height: 4em; background-color: var(--dark-grey); transform: rotate(30deg);"></div>
-                                </div>
+                            <input type="radio" name="appearance" value="system" style="display: none;" onchange="setAppearance('system');" />
+                            <div style="background-color: var(--off-white); transform: rotate(180deg);">
+                                <div style="position: absolute; top: calc(1em / sqrt(2)); right: calc(1em / sqrt(2)); width: 4em; height: 4em; background-color: var(--dark-grey); transform: rotate(30deg);"></div>
                             </div>
                             <span>System</span>
                         </label>
                         <label>
-                            <input type="radio" name="colour-theme" onchange="setAppearance('light');" />
-                            <div>
-                                <div style="background-color: var(--off-white);"></div>
-                            </div>
+                            <input type="radio" name="appearance" value="light" onchange="setAppearance('light');" />
+                            <div style="background-color: var(--off-white);"></div>
                             <span>Light</span>
                         </label>
                         <label>
-                            <input type="radio" name="colour-theme" onchange="setAppearance('dark');" />
-                            <div>
-                                <div style="background-color: var(--dark-grey);"></div>
-                            </div>
+                            <input type="radio" name="appearance" value="dark" onchange="setAppearance('dark');" />
+                            <div style="background-color: var(--dark-grey);"></div>
                             <span>Dark</span>
                         </label>
                     </div>
-                    <!-- <label class="toggle-switch">
-                        <input class="toggle" type="checkbox" value="show-border" />
-                        <div class="slider"></div>
-                    </label> -->
-                    <span>Border</span>
+                    <span>Edges</span>
                     <div>
                         <label>
-                            <input type="radio" name="box-radius" />
+                            <input type="radio" name="edges" value="soft" onchange="setEdges('soft');" />
                             <div>
-                                <div style="background-color: var(--off-white);"></div>
+                                <div style="position: absolute; bottom: 30%; left: 30%; width: 4em; height: 2em; background-color: var(--contrast-background-colour); border: var(--border); border-radius: 0.5em;"></div>
                             </div>
-                            <span>Curved</span>
+                            <span>Soft</span>
                         </label>
                         <label>
-                            <input type="radio" name="box-radius" />
+                            <input type="radio" name="edges" value="sharp" onchange="setEdges('sharp');" />
                             <div>
-                                <div style="background-color: var(--off-white);"></div>
+                                <div style="position: absolute; bottom: 30%; left: 30%; width: 4em; height: 2em; background-color: var(--contrast-background-colour); border: var(--border);"></div>
                             </div>
-                            <span>Boxy</span>
+                            <span>Sharp</span>
+                        </label>
+                    </div>
+                    <span>Buttons</span>
+                    <div>
+                        <label>
+                            <input type="radio" name="buttons" value="curved" onchange="setButtons('curved');" />
+                            <div style="border-radius: 2em;"></div>
+                            <span>Round</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="buttons" value="subtle" onchange="setButtons('subtle');" />
+                            <div style="border-radius: 0.5em;">
+                            </div>
+                            <span>Subtle</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="buttons" value="angular" onchange="setButtons('angular');" />
+                            <div style="border-radius: 0;"></div>
+                            <span>Sharp</span>
                         </label>
                     </div>
                 </div>
                 <div class="options" style="padding: 0;">
-                    <button title="Reset" style="position: absolute;" onclick="resetSettings();">Reset</button>
-                    <button title="Cancel" onclick="document.getElementById('settings-container').style.display = null;">Cancel</button>
-                    <button title="Done" onclick="document.getElementById('settings-container').style.display = null;">Done</button>
+                    <button title="Reset" style="position: absolute; color: rgb(255, 107, 107);" onclick="{
+                        if (confirm('Are you sure you want to reset settings?')) {
+                            currentSettings = defaultSettings;
+                            applyCurrentSettings();
+                        }
+                        }">Reset</button>
+                    <button title="Cancel" onclick="{
+                        currentSettings = UserSettings.getSettings();
+                        if (!currentSettings) {
+                            currentSettings = defaultSettings;
+                            UserSettings.saveSettings(defaultSettings);
+                            alert('Browser cookies have been cleared. So, settings have been restored to default.');
+                        }
+                        applyCurrentSettings();
+                        document.getElementById('settings-container').style.display = null;
+                        }">Cancel</button>
+                    <button title="Done" onclick="{
+                        UserSettings.saveSettings(currentSettings);
+                        document.getElementById('settings-container').style.display = null;
+                        }">Save</button>
                 </div>
             </div>
         </div>
@@ -204,10 +230,11 @@
                 <li>Dark mode.</li>
                 <li>Ability to flip board.</li>
                 <li>Ability to drag and drop pieces along with clicking.</li>
-            </ul>
-            <ul title="Expected soon" style="display: block; float: left; max-width: 45%;">Expected soon:
                 <li>A settings menu.</li>
                 <li>Store settings in browser.</li>
+            </ul>
+            <ul title="Expected soon" style="display: block; float: left; max-width: 45%;">Expected soon:
+                <li>Additional settings.</li>
                 <li>Full PGN support.</li>
                 <li>Its own simple chess engine, made by Yashdeep Singh Fauzdar in plain JavaScript.</li>
                 <li>Working evaluation bar.</li>
@@ -216,8 +243,7 @@
             <ul title="Credits" style="display: block; float: left;">Credits:
                 <li>Google Fonts for button glyphs.</li>
                 <li>The web page is designed by Yashdeep Singh Fauzdar.</li>
-                <li>Thanks to Lichess for the chess pieces and current board colour.</li>
-                <li>The tick and cross icons beside the FEN input box are taken from Google Fonts.</li>
+                <li>Thanks to Colin M.L. Burnett for the chess pieces and current board colour.</li>
                 <li>Source Code is available here: <a href="https://github.com/PerfunctoryOrator/chess/tree/main" target="_blank"> https://github.com/PerfunctoryOrator/chess/tree/main</a>.</li>
                 <li>For my schoolmates: you can give me some recommendations on WhatsApp or Chess.com.</li>
             </ul>
@@ -229,3 +255,7 @@
         <script src="board-updater.js"></script>
     </body>
 </html>
+<!-- <label class="toggle-switch">
+    <input class="toggle" type="checkbox" value="show-border" />
+    <div class="slider"></div>
+</label> -->

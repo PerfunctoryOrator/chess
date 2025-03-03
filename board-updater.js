@@ -386,9 +386,9 @@ function highlightMoveSquares(fromSquare, toSquare) {
 function mouseEntersPiece(square) {
     const boardSquare = document.querySelector(`#${square}.board-square`);
     if (document.querySelector(`#${square}.highlight-square`)) {
-        document.querySelector(`#${square}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
+        document.querySelector(`#${square}.highlight-square`).style.outline = "round(down, calc(var(--board-square-width) / 25), 1px) solid white";
     } else {
-        boardSquare.style.outline = "calc(var(--board-square-width) / 25) solid white";
+        boardSquare.style.outline = "round(down, calc(var(--board-square-width) / 25), 1px) solid white";
     }
     if (document.querySelector(`#${square}.ring`)) {
         const moveIndicator = document.querySelector(`#${square}.ring`).style;
@@ -630,8 +630,8 @@ function addDragDropToMove() {
     });
 }
 let isBoardFlipped = false;
-let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber = null;
-let activePiece = null, legalMoves = [];
+let piecePositions, activeColour, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber;
+let activePiece, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let lastMoveSquares = [], selectedSquare = null;
 let prevFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

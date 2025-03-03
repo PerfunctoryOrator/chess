@@ -11,6 +11,7 @@
     --margin: 1em;
     --border: 0.125em solid var(--border-colour);
     --box-radius: 0.5em;
+    --button-radius: 0.5em;
     --emphasis-animation: linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%);
 }
 
@@ -128,15 +129,16 @@ body {
 }
 #settings-view input[type=radio] {
     display: none;
-    margin: 0 var(--margin);
 }
 #settings-view input[type=radio] + div {
-    border: var(--border);
-}
-#settings-view input[type=radio] + div > div {
+    overflow: hidden;
+    position: relative;
     width: calc(sqrt(3) * 2em);
     height: 2em;
     margin: 0.125em;
+    background-color: var(--background-colour);
+    border: var(--border);
+    border-radius: var(--box-radius);
 }
 #settings-view input[type=radio]:checked + div {
     border-color: var(--board-colour) !important;
@@ -167,7 +169,7 @@ button {
     padding: var(--padding);
     margin: 0.5em;
     border: none;
-    border-radius: var(--box-radius);
+    border-radius: var(--button-radius);
     color: var(--colour);
     background-color: transparent;
     cursor: pointer;
@@ -195,18 +197,10 @@ button:hover > svg {
     }
 }
 @media (max-width: 915px) {
-    :root {
-        --board-square-width: min(10vw, 10vh);
-    }
     #options-view {
         grid-row: 4 / 5;
         grid-column: 2 / 3;
         width: calc(8 * var(--board-square-width));
-    }
-    @media (max-width: 600px) {
-        :root {
-            --board-square-width: min(9vw, 10vh);
-        }
     }
 }
 /* .toggle-switch {
@@ -228,7 +222,7 @@ button:hover > svg {
     bottom: 0;
     background-color: var(--border-colour);
     transition: background-color 0.3s ease;
-    border-radius: var(--box-radius);
+    border-radius: var(--button-radius);
 }
 .slider::before {
     content: "";
