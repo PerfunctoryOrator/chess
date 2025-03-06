@@ -1,29 +1,30 @@
 function setAppearance(mode) {
-    function setAppearanceColours(values) {
+    function setAppearanceColors(values) {
         const root = document.querySelector(":root");
-        root.style.setProperty("--shadow-colour", values[0]);
-        root.style.setProperty("--active-colour", values[1]);
-        root.style.setProperty("--colour", values[2]);
-        root.style.setProperty("--background-colour", values[3]);
-        root.style.setProperty("--contrast-background-colour", values[4]);
-        root.style.setProperty("--border-colour", values[5]);
+        root.style.setProperty("--color", values[0]);
+        root.style.setProperty("--background-color", values[1]);
+        root.style.setProperty("--contrast-background-color", values[2]);
+        root.style.setProperty("--active-color", values[3]);
+        root.style.setProperty("--active-background-color", values[4]);
+        root.style.setProperty("--border-color", values[5]);
+        root.style.setProperty("--shadow-color", values[6]);
     }
     switch (mode) {
         case "system":
-            setAppearanceColours([null, null, null, null, null, null]);
+            setAppearanceColors(["", "", "", "", "", "", ""]);
             break;
         case "light":
-            setAppearanceColours(["rgba(0, 0, 0, 0.2)", "rgba(0, 0, 0, 0.05)", "var(--dark-grey)", "var(--off-white)", "white", "gainsboro"]);
+            setAppearanceColors(["var(--dark-gray)", "var(--off-white)", "white", "rgb(42, 100, 227)", "rgba(0, 0, 0, 0.05)", "gainsboro", "rgba(0, 0, 0, 0.2)"]);
             break;
         case "dark":
-            setAppearanceColours(["rgba(0, 0, 0, 0.8)", "rgba(255, 255, 255, 0.2)", "var(--off-white)", "var(--dark-grey)", "black", "rgb(112, 112, 112)"]);
+            setAppearanceColors(["var(--off-white)", "var(--dark-gray)", "black", "rgb(150, 200, 255)", "rgba(255, 255, 255, 0.2)", "rgb(112, 112, 112)", "rgba(0, 0, 0, 0.8)"]);
     }
     currentSettings.appearance = mode;
 }
 function setEdges(mode) {
     switch (mode) {
         case "soft":
-            document.querySelector(":root").style.setProperty("--box-radius", null);
+            document.querySelector(":root").style.setProperty("--box-radius", "");
             break;
         case "sharp":
             document.querySelector(":root").style.setProperty("--box-radius", "0");
@@ -32,13 +33,13 @@ function setEdges(mode) {
 }
 function setButtons(mode) {
     switch (mode) {
-        case "curved":
-            document.querySelector(":root").style.setProperty("--button-radius", "2em");
+        case "round":
+            document.querySelector(":root").style.setProperty("--button-radius", "");
             break;
         case "subtle":
-            document.querySelector(":root").style.setProperty("--button-radius", null);
+            document.querySelector(":root").style.setProperty("--button-radius", "0.5em");
             break;
-        case "angular":
+        case "sharp":
             document.querySelector(":root").style.setProperty("--button-radius", "0");
     }
     currentSettings.buttons = mode;
@@ -51,12 +52,22 @@ function applyCurrentSettings() {
     setEdges(currentSettings.edges);
     setButtons(currentSettings.buttons);
 }
-const defaultSettings = {
-    appearance: "system",
-    edges: "soft",
-    buttons: "subtle",
-};
 const UserSettings = {
+    defaultSettings: {
+        version: "beta1",
+        appearance: "system",
+        edges: "soft",
+        buttons: "round",
+    },
+    areSettingsValid: function(settings) {
+        if (!settings) return false;
+        if (settings.version !== this.defaultSettings.version) return false;
+        const keys = Object.keys(this.defaultSettings);
+        for (const key of keys) {
+            if (!(key in this.defaultSettings)) return false;
+        }
+        return true;
+    },
     saveSettings: function(settings, daysToExpire = 90) {
         const encoded = JSON.stringify(settings);
         document.cookie = `userSettings=${encoded}; path=/; max-age=${daysToExpire * 24 * 60 * 60}`;
@@ -64,17 +75,24 @@ const UserSettings = {
     getSettings: function() {
         const cookie = document.cookie.split("; ").find(row => row.startsWith("userSettings="));
         if (cookie) {
-            return JSON.parse(cookie.split("=")[1]);
+            const settings = JSON.parse(cookie.split("=")[1]);
+            if (this.areSettingsValid(settings)) {
+                return settings;
+            }
         }
-        return null;
     },
+    resetSettings: function() {
+        UserSettings.saveSettings(this.defaultSettings);
+        currentSettings = this.defaultSettings;
+        applyCurrentSettings();
+    }
 };
 let currentSettings = UserSettings.getSettings();
 if (!currentSettings) {
-    UserSettings.saveSettings(defaultSettings);
-    currentSettings = defaultSettings;
+    UserSettings.saveSettings(UserSettings.defaultSettings);
+    currentSettings = UserSettings.defaultSettings;
 }
 applyCurrentSettings();
-window.onload = () => {
-    document.getElementById("theme-colour").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-colour");
+onload = () => {
+    document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-color");
 }

@@ -1,12 +1,16 @@
 :root {
-    --green-board-colour: rgb(122, 148, 90);
-    --green-light-square-colour: rgb(235, 236, 211);
-    --brown-board-colour: rgb(174, 138, 104);
-    --brown-light-square-colour: rgb(236, 218, 185);
+    --green-board-color: rgb(122, 148, 90);
+    --green-light-square-color: rgb(235, 236, 211);
+
+    --brown-board-color: rgb(174, 138, 104);
+    --brown-light-square-color: rgb(236, 218, 185);
+
+    --board-color: var(--brown-board-color);
+    --light-square-color: var(--brown-light-square-color);
+
+    --move-indicator-color: rgba(0, 0, 0, 0.2);
+
     --board-square-width: round(down, min(10vw, 10vh), 1px);
-    --board-colour: var(--brown-board-colour);
-    --light-square-colour: var(--brown-light-square-colour);
-    --move-indicator-colour: rgba(0, 0, 0, 0.2);
 }
 
 #eval-bar {
@@ -18,19 +22,20 @@
     width: 32px;
     height: calc(2 * (4*var(--board-square-width) - var(--padding)));
     padding: var(--padding) 0;
-    margin: var(--margin);
-    margin-right: 0;
     border: var(--border);
     border-radius: var(--box-radius);
-    background-color: var(--contrast-background-colour);
+    background-color: var(--contrast-background-color);
     -webkit-user-select: none;
+    -khtml-user-select: none;
     -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 }
 #chess-board, #piece-area {
-    float: left;
     -webkit-user-select: none;
+    -khtml-user-select: none;
     -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 }
 #chess-board {
@@ -41,10 +46,8 @@
     overflow: hidden;
     position: relative;
     width: max-content;
-    margin: var(--margin);
     border: var(--border);
     border-radius: var(--box-radius);
-    box-shadow: calc(var(--board-square-width) / 12) calc(var(--board-square-width) / 6) calc(var(--board-square-width) / 6) var(--shadow-colour);
 }
 #piece-area {
     display: block;
@@ -55,13 +58,11 @@
 .board-square {
     overflow: hidden;
     position: relative;
-    color: var(--light-square-colour);
-    background-color: var(--board-colour);
+    background-color: var(--board-color);
     outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
 }
 .light-board-square {
-    color: var(--board-colour);
-    background-color: var(--light-square-colour);
+    background-color: var(--light-square-color);
 }
 .highlight-square {
     width: 100%;
@@ -91,7 +92,7 @@
     top: calc(var(--board-square-width) / 20);
 }
 .file-name, .rank-name {
-    color: var(--board-colour);
+    color: var(--board-color);
 }
 .file-name {
     width: var(--board-square-width);
@@ -99,8 +100,8 @@
 .rank-name {
     height: var(--board-square-width);
 }
-.light-text-colour {
-    color: var(--light-square-colour);
+.light-text-color {
+    color: var(--light-square-color);
 }
 .move-indicator {
     position: absolute;
@@ -115,25 +116,25 @@
     transition: width 0.2s var(--emphasis-animation), height 0.2s var(--emphasis-animation);
     pointer-events: none;
 }
-.filled-circle {
-    background-color: var(--move-indicator-colour);
+.empty-move-indicator {
+    background-color: var(--move-indicator-color);
 }
-.ring {
+.capture-indicator {
     width: 80%;
     height: 80%;
-    border: calc(var(--board-square-width) / 10) solid var(--move-indicator-colour);
+    border: calc(var(--board-square-width) / 10) solid var(--move-indicator-color);
     background-color: transparent;
-    box-shadow: inset 0 0 var(--move-indicator-colour);
+    box-shadow: inset 0 0 var(--move-indicator-color);
     transition: box-shadow 0.2s var(--emphasis-animation);
 }
-.board-square:hover > .filled-circle {
+.board-square:hover > .empty-move-indicator {
     width: 50%;
     height: 50%;
 }
-.board-square:hover > .ring {
+.board-square:hover > .capture-indicator {
     width: 70%;
     height: 70%;
-    box-shadow: inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-colour);
+    box-shadow: inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color);
 }
 .ripple {
     position: absolute;

@@ -33,7 +33,7 @@ To run this project locally:
 
 ## Licence
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the MIT licence. See the [LICENSE](LICENSE) file for more details.
 The icons used in this project are from [Google’s Material Icons](https://fonts.google.com/icons) and are licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE_Material_Icons](LICENSE_Material_Icons) for details. The original SVGs were slightly modified (removing `fill` attributes) for integration purposes.
 
 ---
