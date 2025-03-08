@@ -44,6 +44,19 @@ function setButtons(mode) {
     }
     currentSettings.buttons = mode;
 }
+function setFont(font) {
+    switch (font) {
+        case "system":
+            document.querySelector(":root").style.setProperty("--font-family", "");
+            break;
+        case "noto-sans":
+            document.querySelector(":root").style.setProperty("--font-family", "Noto Sans");
+            break;
+        case "noto-serif":
+            document.querySelector(":root").style.setProperty("--font-family", "Noto Serif");
+    }
+    currentSettings.font = font;
+}
 function applyCurrentSettings() {
     document.querySelector(`input[name="appearance"][value="${currentSettings.appearance}"]`).checked = true;
     document.querySelector(`input[name="edges"][value="${currentSettings.edges}"]`).checked = true;
@@ -51,20 +64,26 @@ function applyCurrentSettings() {
     setAppearance(currentSettings.appearance);
     setEdges(currentSettings.edges);
     setButtons(currentSettings.buttons);
+    setDropDownValue("font-selector", currentSettings.font, true);
 }
+
 const UserSettings = {
     defaultSettings: {
-        version: "beta1",
+        version: "beta2",
         appearance: "system",
         edges: "soft",
         buttons: "round",
+        font: "system",
     },
     areSettingsValid: function(settings) {
         if (!settings) return false;
-        if (settings.version !== this.defaultSettings.version) return false;
+        if (settings.version !== this.defaultSettings.version) {
+            alert("Your settings have been reset to default due to a recent version update of our chess website. This ensures compatibility with the new features and improvements we’ve added. You can reconfigure your preferences in the ‘Settings’ menu.\n\nThank you for your understanding.");
+            return false;
+        }
         const keys = Object.keys(this.defaultSettings);
         for (const key of keys) {
-            if (!(key in this.defaultSettings)) return false;
+            if (!(key in settings)) return false;
         }
         return true;
     },
@@ -83,16 +102,15 @@ const UserSettings = {
     },
     resetSettings: function() {
         UserSettings.saveSettings(this.defaultSettings);
-        currentSettings = this.defaultSettings;
+        currentSettings = {...this.defaultSettings};
         applyCurrentSettings();
-    }
+    },
 };
+
 let currentSettings = UserSettings.getSettings();
 if (!currentSettings) {
     UserSettings.saveSettings(UserSettings.defaultSettings);
     currentSettings = UserSettings.defaultSettings;
 }
 applyCurrentSettings();
-onload = () => {
-    document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-color");
-}
+document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-color");

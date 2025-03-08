@@ -1,4 +1,8 @@
+/* Variables */
 :root {
+    --system-font-stack: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    --emphasis-animation: linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%);
+
     --off-white: rgb(245, 245, 245);
     --dark-gray: rgb(40, 40, 40);
 
@@ -10,30 +14,57 @@
     --border-color: gainsboro;
     --shadow-color: rgba(0, 0, 0, 0.2);
 
-    --padding: 0.5em;
-    --margin: 1em;
-    --border: 0.125em solid var(--border-color);
-    --box-radius: 0.5em;
-    --button-radius: 2em;
-    --focus-outline: 0.125em solid var(--active-color);
+    --font-family: var(--system-font-stack);
+    --padding: 8px;
+    --margin: 16px;
+    --border: 2px solid var(--border-color);
+    --box-radius: 8px;
+    --button-radius: 32px;
+    --focus-outline: 2px solid var(--active-color);
 
     --options-display: block;
-
-    --emphasis-animation: linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%);
 }
+
+/* Fonts */
+@font-face {
+    font-family: "Noto Sans";
+    src: url("media-support/fonts/noto-sans/noto-sans.ttf");
+    font-weight: regular;
+}
+@font-face {
+    font-family: "Noto Sans";
+    src: url("media-support/fonts/noto-sans/noto-sans-italic.ttf");
+    font-weight: regular;
+    font-style: italic;
+}
+@font-face {
+    font-family: "Noto Serif";
+    src: url("media-support/fonts/noto-serif/noto-serif.ttf");
+    font-weight: regular;
+}
+@font-face {
+    font-family: "Noto Serif";
+    src: url("media-support/fonts/noto-serif/noto-serif-italic.ttf");
+    font-weight: regular;
+    font-style: italic;
+}
+
+/* Body */
 body {
-    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: var(--font-family);
     font-size: 16px;
     line-height: 1.5em;
     margin: var(--margin);
     color: var(--color);
     background-color: var(--background-color);
 }
+
+/* Anchors */
 a {
     text-decoration-color: skyblue;
     color: var(--active-color);
     border-radius: var(--button-radius);
-    outline-offset: 0.125em;
+    outline-offset: 2px;
 }
 a:hover, a:focus-visible {
     text-decoration-color: var(--active-color);
@@ -41,50 +72,10 @@ a:hover, a:focus-visible {
 a:focus-visible {
     outline: var(--focus-outline);
 }
-input[type=text], textarea {
-    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    font-size: 16px;
-    width: 30vw;
-    padding: var(--padding);
-    margin: var(--padding);
-    border: var(--border);
-    border-radius: var(--box-radius);
-    color: var(--color);
-    background-color: var(--background-color);
-    resize: none;
-}
-input[type=text]:focus, textarea:focus {
-    border-color: var(--active-color);
-    outline: none;
-}
-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-input[type=radio] {
-    display: none;
-}
-input[type=radio] + div {
-    overflow: hidden;
-    position: relative;
-    width: calc(sqrt(3) * 2.5em);
-    height: 2.5em;
-    margin: 0.125em;
-    margin-bottom: 0.25em;
-    background-color: var(--background-color);
-    border-radius: var(--box-radius);
-    outline: var(--border);
-    outline-offset: 0.125em;
-}
-input[type=radio]:checked + div {
-    outline-color: var(--active-color);
-}
-input[type=radio]:checked ~ span {
-    font-weight: bold;
-}
+
+/* Buttons */
 button {
-    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: var(--font-family);
     font-size: 16px;
     display: flex;
     align-items: center;
@@ -109,24 +100,80 @@ button > svg {
     margin-right: var(--padding);
 }
 .dangerous-button {
-    position: absolute;
+    margin-right: auto;
 }
 .dangerous-button:hover {
     color: rgb(255, 107, 107);
 }
-.dangerous-button:focus {
+.dangerous-button:focus-visible {
     color: rgb(255, 107, 107);
     outline-color: rgb(255, 107, 107);
 }
-#game-container {
-    display: grid;
-    grid-template: repeat(4, max-content) / repeat(3, max-content);
+
+/* Text inputs */
+input[type=text], textarea {
+    font-family: var(--font-family);
+    font-size: 16px;
+    width: 30vw;
+    padding: var(--padding);
+    margin: var(--padding);
+    border: var(--border);
+    border-radius: var(--box-radius);
+    color: var(--color);
+    background-color: var(--background-color);
+    resize: none;
+}
+input[type=text]:focus, textarea:focus {
+    border-color: var(--active-color);
+    outline: none;
+}
+
+/* Illustrated radio inputs */
+.radio-input-area {
+    display: flex;
     gap: var(--margin);
 }
+.radio-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+.radio-input > input {
+    display: none;
+}
+.radio-input > input + div {
+    overflow: hidden;
+    position: relative;
+    width: calc(sqrt(3) * 40px);
+    height: 40px;
+    margin: 2px;
+    margin-bottom: 4px;
+    background-color: var(--background-color);
+    border-radius: var(--box-radius);
+    outline: var(--border);
+    outline-offset: 2px;
+}
+.radio-input > input:checked + div {
+    outline-color: var(--active-color);
+}
+.radio-input > input:checked ~ span {
+    font-weight: bold;
+}
+
+/* Game area */
+#game-area {
+    display: grid;
+    grid-template: repeat(4, max-content) / repeat(3, max-content);
+    gap: var(--padding);
+}
+
+/* Players */
 #white-player, #black-player {
     grid-column: 2 / 3;
     display: flex;
     gap: var(--padding);
+    margin: 0 var(--padding);
 }
 #white-player {
     grid-row: 3 / 4;
@@ -150,22 +197,9 @@ button > svg {
 .player-rating::after {
     content: ")";
 }
-#to-move {
-    display: flex;
-    align-items: center;
-    padding: var(--padding);
-    background-color: var(--background-color);
-    border-top: var(--border);
-}
-#to-move > div {
-    width: 2em;
-    height: 2em;
-    margin-right: var(--margin);
-    background-color: white;
-    border: var(--border);
-    border-radius: var(--box-radius);
-}
-#options-view {
+
+/* Moves-display and other options */
+#board-info-options {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -177,30 +211,96 @@ button > svg {
     border-radius: var(--box-radius);
     background-color: var(--contrast-background-color);
 }
-#more-options {
-    display: none;
-    overflow: hidden;
-    position: absolute;
-    right: 0.25em;
-    bottom: calc(100% + 0.5em);
-    width: max-content;
+
+/* Turn indicator */
+#to-move {
+    display: flex;
+    align-items: center;
+    padding: var(--padding);
     background-color: var(--background-color);
+    border-top: var(--border);
+}
+#to-move > div {
+    width: 32px;
+    height: 32px;
+    margin-right: var(--margin);
+    background-color: white;
     border: var(--border);
     border-radius: var(--box-radius);
-    z-index: 5;
 }
-#more-options > button {
-    width: 100%;
-    margin: 0;
-    border-radius: 0;
-    outline-offset: -0.125em;
-}
+
+/* Button-containers */
 .options {
     display: flex;
     justify-content: flex-end;
     border-top: var(--border);
+    padding: 0;
 }
-.full-screen-menu-container {
+#options-overflow-container {
+    display: none;
+    position: absolute;
+    right: 4px;
+    bottom: calc(100% + 8px);
+    background-color: var(--background-color);
+    border: var(--border);
+    border-radius: var(--box-radius);
+    z-index: 7;
+}
+#options-overflow-container > button {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    outline-offset: -2px;
+}
+
+/* Drop-down menus */
+.drop-down-menu-container {
+    position: relative;
+    z-index: 9;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.drop-down-arrow {
+    position: absolute;
+    top: 50%;
+    right: var(--padding);
+    fill: var(--color);
+    background-color: var(--background-color);
+    transform: translateY(-50%) rotate(-180deg);
+    pointer-events: none;
+    will-change: transform;
+}
+.drop-down-menu-selection {
+    padding: var(--padding);
+    background-color: var(--background-color);
+    border: var(--border);
+    border-radius: var(--box-radius);
+    cursor: default;
+}
+.drop-down-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    margin-top: 2px;
+    background-color: var(--background-color);
+    border: var(--border);
+    border-radius: var(--box-radius);
+    box-shadow: 8px 16px 16px var(--shadow-color);
+}
+.drop-down-menu > button {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    outline-offset: -2px;
+}
+
+/* Full-screen boxes */
+.full-screen-box-container {
     display: none;
     position: fixed;
     top: 0;
@@ -208,7 +308,7 @@ button > svg {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    z-index: 6;
+    z-index: 8;
 }
 .input-box-container {
     position: absolute;
@@ -219,34 +319,32 @@ button > svg {
     border-radius: var(--box-radius);
     background-color: var(--background-color);
 }
-.input-box-container > div {
+.input-grid {
     display: grid;
-    grid-template-columns: repeat(3, auto);
-    padding: 1em;
+    padding: 16px;
+    background-color: var(--contrast-background-color);
 }
-.input-box-container > div > div, .input-box-container span {
+.input-grid > span {
     display: flex;
     align-items: center;
 }
+
+/* Settings-views (general, advanced, etc.) */
 .settings-view {
-    grid-template-columns: repeat(2, auto) !important;
-    gap: var(--margin);
-    background-color: var(--contrast-background-color);
-}
-.settings-view > div {
+    grid-template-columns: repeat(2, auto);
     gap: var(--margin);
 }
-.settings-view > div > label {
-    flex-direction: column;
-}
+
+/* Loading indicator */
 .loading-indicator-container {
     display: flex;
     gap: var(--margin);
+    width: max-content;
     transform: translate(-50%, -50%);
 }
 .loading-indicator {
-    width: 1em;
-    height: 1em;
+    width: 16px;
+    height: 16px;
     background-color: var(--active-color);
     border-radius: 50%;
     animation: pulse 1.6s infinite ease-in-out;
@@ -257,11 +355,12 @@ button > svg {
 .loading-indicator:nth-child(3) {
     animation-delay: 0.4s;
 }
+
+/* Feedback form loading indicator */
 #feedback-form-fallback {
     position: fixed;
     top: 50%;
     left: 50%;
-    width: max-content;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -275,8 +374,13 @@ button > svg {
         --shadow-color: rgba(0, 0, 0, 0.8);
     }
 }
-@media (max-width: 1300px) {
-    #options-view {
+@media (prefers-reduced-motion: reduce) {
+    .btn {
+        transition: none;
+    }
+}
+@media (max-width: 1254px) {
+    #board-info-options {
         grid-row: 4 / 5;
         grid-column: 2 / 3;
         width: calc(8 * var(--board-square-width));
@@ -286,10 +390,10 @@ button > svg {
     button > svg {
         margin-right: 0;
     }
-    button > .button-text {
+    .button-desc {
         display: none;
     }
-    #more-button > svg {
+    .more-button > svg {
         transform: rotate(90deg);
     }
     :root {
@@ -297,6 +401,17 @@ button > svg {
     }
 }
 
+/* Animations */
+@keyframes float-in {
+    from {
+        opacity: 0;
+        transform: translateY(-32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 @keyframes pulse {
     from, to {
         opacity: 1;
@@ -310,8 +425,8 @@ button > svg {
 
 /* .toggle-switch {
     position: relative;
-    width: 3em;
-    height: 1.5em;
+    width: 48px;
+    height: 24px;
 }
 .toggle-switch > input {
     display: none;
@@ -332,13 +447,13 @@ button > svg {
 .slider::before {
     content: "";
     position: absolute;
-    height: 0.75em;
-    width: 0.75em;
-    left: 0.375em;
-    bottom: 0.375em;
+    height: 12px;
+    width: 12px;
+    left: 6px;
+    bottom: 6px;
     background-color: var(--contrast-background-color);
     transition: transform 0.3s var(--emphasis-animation);
-    border-radius: 0.25em;
+    border-radius: 4px;
 }
 input:checked + .slider {
     background-color: var(--board-color);

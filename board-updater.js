@@ -106,7 +106,7 @@ function setUpEmptyBoard() {
     chessBoard.appendChild(fileList);
     const rankList = document.createElement("div");
     rankList.id = "rank-indicator";
-    rankList.style.left = "calc(var(--board-square-width) / 20)";
+    rankList.style.left = "2px";
     for (let rank = 1; rank < 9; rank++) {
         isLightSquare = !isLightSquare;
         const rankName = document.createElement("div");
@@ -119,7 +119,7 @@ function setUpEmptyBoard() {
     chessBoard.appendChild(rankList);
     document.getElementById("chess-board").remove();
     chessBoard.id = "chess-board";
-    document.getElementById("game-container").appendChild(chessBoard);
+    document.getElementById("game-area").appendChild(chessBoard);
 }
 function setUpPieces() {
     const chessBoard = document.getElementById("chess-board");
@@ -538,7 +538,7 @@ function addDragDropToMove() {
             } else {
                 square.style.outline = "calc(var(--board-square-width) / 25) solid white";
             }
-            square.style.zIndex = "1";
+            square.style.zIndex = "2";
             square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
             if (document.querySelector(`#${square.id}.capture-indicator`)) {
                 const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
@@ -583,7 +583,7 @@ function addDragDropToMove() {
         });
         square.addEventListener("dragenter", () => {
             square.style.outline = "calc(var(--board-square-width) / 25) solid white";
-            square.style.zIndex = "1";
+            square.style.zIndex = "2";
             square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
             if (document.querySelector(`#${square.id}.empty-move-indicator`)) {
                 const moveIndicator = document.querySelector(`#${square.id}.empty-move-indicator`).style;
