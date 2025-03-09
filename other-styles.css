@@ -383,6 +383,8 @@ input[type=text]:focus, textarea:focus {
     #board-info-options {
         grid-row: 4 / 5;
         grid-column: 2 / 3;
+        min-width: 0;
+        margin: 0 var(--padding);
         width: calc(8 * var(--board-square-width));
     }
 }
