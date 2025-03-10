@@ -11,6 +11,7 @@
     --contrast-background-color: white;
     --active-color: rgb(42, 100, 227);
     --active-background-color: rgba(0, 0, 0, 0.05);
+    --danger-color: rgb(255, 107, 107);
     --border-color: gainsboro;
     --shadow-color: rgba(0, 0, 0, 0.2);
 
@@ -103,11 +104,11 @@ button > svg {
     margin-right: auto;
 }
 .dangerous-button:hover {
-    color: rgb(255, 107, 107);
+    color: var(--danger-color);
 }
 .dangerous-button:focus-visible {
-    color: rgb(255, 107, 107);
-    outline-color: rgb(255, 107, 107);
+    color: var(--danger-color);
+    outline-color: var(--danger-color);
 }
 
 /* Text inputs */
@@ -150,7 +151,7 @@ input[type=text]:focus, textarea:focus {
     margin: 2px;
     margin-bottom: 4px;
     background-color: var(--background-color);
-    border-radius: var(--box-radius);
+    border-radius: var(--button-radius);
     outline: var(--border);
     outline-offset: 2px;
 }
@@ -159,6 +160,9 @@ input[type=text]:focus, textarea:focus {
 }
 .radio-input > input:checked ~ span {
     font-weight: bold;
+}
+.radio-input > div:focus-visible {
+  outline: var(--focus-outline);
 }
 
 /* Game area */

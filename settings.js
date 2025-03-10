@@ -67,50 +67,58 @@ function applyCurrentSettings() {
     setDropDownValue("font-selector", currentSettings.font, true);
 }
 
-const UserSettings = {
-    defaultSettings: {
-        version: "beta2",
+const settings = {
+    default: {
+        version: "beta6",
         appearance: "system",
         edges: "soft",
         buttons: "round",
         font: "system",
     },
-    areSettingsValid: function(settings) {
+    areValid: function(settings) {
         if (!settings) return false;
-        if (settings.version !== this.defaultSettings.version) {
+        if (settings.version !== this.default.version) {
             alert("Your settings have been reset to default due to a recent version update of our chess website. This ensures compatibility with the new features and improvements we’ve added. You can reconfigure your preferences in the ‘Settings’ menu.\n\nThank you for your understanding.");
             return false;
         }
-        const keys = Object.keys(this.defaultSettings);
+        const keys = Object.keys(this.default);
         for (const key of keys) {
             if (!(key in settings)) return false;
         }
         return true;
     },
-    saveSettings: function(settings, daysToExpire = 90) {
-        const encoded = JSON.stringify(settings);
-        document.cookie = `userSettings=${encoded}; path=/; max-age=${daysToExpire * 24 * 60 * 60}`;
-    },
-    getSettings: function() {
-        const cookie = document.cookie.split("; ").find(row => row.startsWith("userSettings="));
-        if (cookie) {
-            const settings = JSON.parse(cookie.split("=")[1]);
-            if (this.areSettingsValid(settings)) {
-                return settings;
-            }
+    save: function(settings) {
+        try {
+            localStorage.setItem("userSettings", JSON.stringify(settings));
+        } catch (error) {
+            console.error("Could not save settings to localStorage:", error);
         }
     },
-    resetSettings: function() {
-        UserSettings.saveSettings(this.defaultSettings);
-        currentSettings = {...this.defaultSettings};
+    get: function() {
+        try {
+            const stored = localStorage.getItem("userSettings");
+            if (stored) {
+                const settings = JSON.parse(localStorage.getItem("userSettings"));
+                if (this.areValid(settings)) {
+                    return settings;
+                }
+            }
+        } catch (error) {
+            console.error("Could not retrieve settings from localStorage:", error);
+        }
+        return null;
+    },
+    reset: function() {
+        currentSettings = {...this.default};
         applyCurrentSettings();
+        settings.save(settings.default);
     },
 };
 
-let currentSettings = UserSettings.getSettings();
+let currentSettings = settings.get();
 if (!currentSettings) {
-    UserSettings.saveSettings(UserSettings.defaultSettings);
-    currentSettings = UserSettings.defaultSettings;
+    settings.save(settings.default);
+    currentSettings = {...settings.default};
 }
 applyCurrentSettings();
 document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-color");

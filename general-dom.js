@@ -33,16 +33,25 @@ function setDropDownValue(dropDownId, newValue, isSetUp) {
     }
 }
 
-document.querySelectorAll(".loading-indicator-container").forEach(container => {
-    container.innerHTML = `
+document.querySelectorAll(".loading-indicator-container").forEach(indicatorContainer => {
+    indicatorContainer.innerHTML = `
         <div class="loading-indicator"></div>
         <div class="loading-indicator"></div>
         <div class="loading-indicator"></div>`;
 });
+document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
+    radioDiv.setAttribute("tabindex", "0");
+    radioDiv.addEventListener("keydown", (event) => {
+        if (event.key === " " || event.key === "Enter") {
+            event.preventDefault();
+            radioDiv.click();
+        }
+    });
+});
 document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => {
     let defaultValue = "", defaultValueText = "";
     menuContainer.querySelectorAll("button").forEach((option) => {
-        option.setAttribute("onclick", `setDropDownValue('${menuContainer.id}', value);`);
+        option.setAttribute("onclick", `setDropDownValue("${menuContainer.id}", value);`);
         if (option.getAttribute("selected") === "") {
             defaultValue = option.value;
             defaultValueText = option.innerText;

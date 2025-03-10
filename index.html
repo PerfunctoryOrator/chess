@@ -121,7 +121,7 @@
             </div>
             <div id="chess-board"></div>
         </div>
-        <div class="full-screen-box-container" id="settings-container">
+        <div class="full-screen-box-container" id="settings-container" style="display: block;">
             <div class="input-box-container">
                 <div class="options" style="justify-content: center; border-top: none; border-bottom: var(--border);">
                     <button>
@@ -138,9 +138,9 @@
                     <span>Appearance</span>
                     <div class="radio-input-area">
                         <label class="radio-input">
-                            <input type="radio" name="appearance" value="system" style="display: none;" onchange="setAppearance(value);" />
+                            <input type="radio" name="appearance" value="system" onchange="setAppearance(value);" />
                             <div style="background-color: var(--off-white); transform: rotate(180deg);">
-                                <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--dark-gray); transform: rotate(30deg);"></div>
+                            <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--dark-gray); transform: rotate(30deg);"></div>
                             </div>
                             <span>System</span>
                         </label>
@@ -201,11 +201,11 @@
                 <div class="options">
                     <button class="dangerous-button" onclick="{
                         if (confirm('Are you sure you want to reset all settings?')) {
-                            UserSettings.resetSettings();
+                            settings.reset();
                         }
                         }">Reset</button>
                     <button onclick="{
-                        UserSettings.saveSettings(currentSettings);
+                        settings.save(currentSettings);
                         document.getElementById('settings-container').style.display = '';
                         }">Done</button>
                 </div>
