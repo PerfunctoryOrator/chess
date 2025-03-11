@@ -666,8 +666,3 @@ if (isBoardFlipped) {
     isBoardFlipped = !isBoardFlipped;
     flipBoard();
 }
-
-function showFeedbackContainer() {
-    document.getElementById("feedback-input-container").appendChild(feedbackInputBox);
-    document.getElementById("feedback-input-container").style.display = "block";
-}

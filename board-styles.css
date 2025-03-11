@@ -1,3 +1,4 @@
+/* Variables */
 :root {
     --green-board-color: rgb(122, 148, 90);
     --green-light-square-color: rgb(235, 236, 211);
@@ -15,6 +16,7 @@
     calc((100vw - 2*var(--padding) - 32px - 4*2px - 2*var(--margin)) / 8));
 }
 
+/* Evaluation bar */
 #eval-bar {
     font-weight: bold;
     text-align: center;
@@ -33,6 +35,8 @@
     -ms-user-select: none;
     user-select: none;
 }
+
+/* Chess board and piece-area */
 #chess-board, #piece-area {
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -67,19 +71,13 @@
 .light-board-square {
     background-color: var(--light-square-color);
 }
-.highlight-square {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 0, 0.5);
-    outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
-    z-index: 2;
-    pointer-events: none;
-}
 .chess-piece {
     position: absolute;
     width: var(--board-square-width);
     height: var(--board-square-width);
 }
+
+/* File and rank indicators */
 #file-indicator, #rank-indicator {
     font-weight: bold;
     display: flex;
@@ -107,6 +105,30 @@
 .light-text-color {
     color: var(--light-square-color);
 }
+
+/* Ripple when any square is clicked */
+.ripple {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    animation: ripple-effect 0.5s ease-out;
+}
+
+/* Highlighted square */
+.highlight-square {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 0, 0.5);
+    outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Legal move indicators */
 .move-indicator {
     position: absolute;
     top: 50%;
@@ -114,9 +136,8 @@
     width: 30%;
     height: 30%;
     border-radius: 50%;
-    opacity: 0;
     transform: translate(-50%, -50%);
-    animation: fade-in 0.2s var(--emphasis-animation) forwards;
+    animation: fade-in 0.2s var(--emphasis-animation);
     transition: width 0.2s var(--emphasis-animation), height 0.2s var(--emphasis-animation);
     z-index: 4;
     pointer-events: none;
@@ -139,17 +160,8 @@
 .board-square:hover > .capture-indicator {
     box-shadow: inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color);
 }
-.ripple {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    border-radius: 50%;
-    animation: ripple-effect 0.5s ease-out;
-}
 
+/* Animations */
 @keyframes fade-in {
     from {
         opacity: 0;
@@ -171,11 +183,11 @@
     }
 }
 @keyframes ripple-effect {
-    0% {
+    from {
         transform: scale(0.4);
         opacity: 0.5;
     }
-    100% {
+    to {
         transform: scale(2);
         opacity: 0;
     }

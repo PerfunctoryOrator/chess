@@ -14,10 +14,10 @@ function setAppearance(mode) {
             setAppearanceColors(["", "", "", "", "", "", ""]);
             break;
         case "light":
-            setAppearanceColors(["var(--dark-gray)", "var(--off-white)", "white", "rgb(42, 100, 227)", "rgba(0, 0, 0, 0.05)", "gainsboro", "rgba(0, 0, 0, 0.2)"]);
+            setAppearanceColors(["var(--dark-gray)", "whitesmoke", "white", "rgb(42, 100, 227)", "rgba(0, 0, 0, 0.05)", "gainsboro", "rgba(0, 0, 0, 0.2)"]);
             break;
         case "dark":
-            setAppearanceColors(["var(--off-white)", "var(--dark-gray)", "black", "rgb(150, 200, 255)", "rgba(255, 255, 255, 0.2)", "rgb(112, 112, 112)", "rgba(0, 0, 0, 0.8)"]);
+            setAppearanceColors(["whitesmoke", "var(--dark-gray)", "black", "rgb(150, 200, 255)", "rgba(255, 255, 255, 0.2)", "rgb(112, 112, 112)", "rgba(0, 0, 0, 0.8)"]);
     }
     currentSettings.appearance = mode;
 }
@@ -91,27 +91,22 @@ const settings = {
         try {
             localStorage.setItem("userSettings", JSON.stringify(settings));
         } catch (error) {
-            console.error("Could not save settings to localStorage:", error);
+            console.error("Could not save settings to local storage:", error);
         }
     },
     get: function() {
         try {
             const stored = localStorage.getItem("userSettings");
             if (stored) {
-                const settings = JSON.parse(localStorage.getItem("userSettings"));
+                const settings = JSON.parse(stored);
                 if (this.areValid(settings)) {
                     return settings;
                 }
             }
         } catch (error) {
-            console.error("Could not retrieve settings from localStorage:", error);
+            console.error("Could not retrieve settings from local storage:", error);
         }
         return null;
-    },
-    reset: function() {
-        currentSettings = {...this.default};
-        applyCurrentSettings();
-        settings.save(settings.default);
     },
 };
 
@@ -121,4 +116,3 @@ if (!currentSettings) {
     currentSettings = {...settings.default};
 }
 applyCurrentSettings();
-document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-color");
