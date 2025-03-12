@@ -202,7 +202,7 @@ input[type=text]:focus, textarea:focus {
 }
 
 /* Moves-display and other options */
-#board-info-options {
+#board-info {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -213,6 +213,26 @@ input[type=text]:focus, textarea:focus {
     border: var(--border);
     border-radius: var(--box-radius);
     background-color: var(--contrast-background-color);
+}
+#move-grid {
+    flex: 1;
+    overflow-y: auto;
+}
+#move-grid > div {
+    display: flex;
+}
+#move-grid > div:nth-child(2n) {
+    background-color: var(--background-color);
+}
+#move-grid > div > div {
+    padding: var(--padding);
+    overflow-x: hidden;
+}
+#move-grid > div > div:nth-child(1) {
+    width: 10%;
+}
+#move-grid > div > div:nth-child(2), #move-grid > div > div:nth-child(3) {
+    width: 45%;
 }
 
 /* Turn indicator */

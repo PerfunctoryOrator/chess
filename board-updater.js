@@ -227,6 +227,7 @@ function getLegalMoves(pieceSquare) {
                 legalMoves.push(enPassantSquare);
             }
     }
+    return legalMoves;
 }
 function highlightLegalMoves(chessPiece, dragged = false) {
     if (!dragged) {
@@ -268,10 +269,22 @@ function highlightLegalMoves(chessPiece, dragged = false) {
         boardSquare.appendChild(moveIndicator);
     });
 }
+function getMoveNotation(fromSquare, toSquare, pieceType) {
+    const pieceIsPawn = pieceType.toLowerCase() === "p";
+    moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
+    moveNotation += "";
+    if (piecePositions[convertSquareToIndex(toSquare)] !== "" || toSquare === enPassantSquare && pieceIsPawn) {
+        if (pieceIsPawn) moveNotation += fromSquare[0];
+        moveNotation += "x";
+    }
+    moveNotation += toSquare;
+    return moveNotation;
+}
 function movePiece(targetSquare, dropped = false) {
     const file = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
     const rank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
+    getMoveNotation(activePiece.id, targetSquare, pieceType);
     piecePositions[convertSquareToIndex(activePiece.id)] = "";
     const previousRank = parseInt(activePiece.id[1]);
     document.querySelector(`#${activePiece.id}.board-square`).style.outline = "";
@@ -293,7 +306,7 @@ function movePiece(targetSquare, dropped = false) {
     enPassantSquare = "";
     if (pieceType.toLowerCase() === "p") {
         if (Math.abs(rank - previousRank) === 2) {
-            enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + file)}${3}` : `${String.fromCharCode("a".charCodeAt(0) + file)}${6}`;
+            enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + file)}3` : `${String.fromCharCode("a".charCodeAt(0) + file)}6`;
         } else if (rank === (pieceType === "p" ? 1 : 8)) {
             activePiece.classList.remove("P", "p");
             const promotedTo = pieceType === "p" ? "q" : "Q";
@@ -304,13 +317,21 @@ function movePiece(targetSquare, dropped = false) {
     if (activeColor === "w") {
         activeColor = "b";
         document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
+        const newMoveRow = document.createElement("div");
+        newMoveRow.innerHTML = `
+            <div>${fullmoveNumber}.</div>
+            <div>${moveNotation}</div>
+            <div>&nbsp;</div>
+            `;
+        document.getElementById("move-grid").appendChild(newMoveRow);
+        fullmoveNumber++;
     } else {
         activeColor = "w";
         document.getElementById("to-move").innerHTML = `<div></div><b>White</b>&nbsp;to move`;
+        document.getElementById("move-grid").lastChild.children[2].innerText = moveNotation;
     }
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++;
-    if (activeColor === "w") fullmoveNumber++;
 }
 function highlightSelectedSquare(square = "") {
     if (square && !lastMoveSquares.includes(square)) {
@@ -634,6 +655,7 @@ let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock =
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let lastMoveSquares = [], selectedSquare = "";
+let moveNotation = "e4";
 let prevFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let isFenValid = true;
 const fenInputBox = document.getElementById("fen-input");
