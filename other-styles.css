@@ -383,6 +383,9 @@ input[type=text]:focus, textarea:focus {
 #feedback-form-container > div {
     top: 50%;
 }
+#feedback-form {
+    opacity: 0;
+}
 #feedback-form-fallback {
     position: fixed;
     top: 50%;

@@ -7,18 +7,18 @@ function parseFen(fen) {
         let value = "";
         i++;
         if (i < fen.length) fenChar = fen[i];
-            else return;
+        else return;
         while (fenChar !== " ") {
             value += fenChar;
             i++;
             if (i < fen.length) fenChar = fen[i];
-                else break;
+            else break;
         }
         return value;
     }
     let i = 0, fenChar = "";
     if (i < fen.length) fenChar = fen[i];
-        else return false;
+    else return false;
     while (fenChar !== " ") {
         if (!(parseInt(fenChar) || fenChar === "/")) {
             switch (fenChar.toLowerCase()) {
@@ -39,7 +39,7 @@ function parseFen(fen) {
         }
         i++;
         if (i < fen.length) fenChar = fen[i];
-            else return false;
+        else return false;
     }
     if (evalPiecePositions.length !== 64 || ranksParsed !== 7) return false;
     evalActiveColor = readValueFromFen();
@@ -151,19 +151,19 @@ function setUpPieces() {
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
 }
-function getLegalMoves(pieceSquare) {
-    const piece = piecePositions[convertSquareToIndex(pieceSquare)];
+function getLegalMoves(pieceSquare, board = piecePositions) {
+    const piece = board[convertSquareToIndex(pieceSquare)];
     const pieceFile = pieceSquare[0];
     const pieceRank = parseInt(pieceSquare[1]);
     const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
     const boardRanks = [1, 2, 3, 4, 5, 6, 7, 8];
     let friendlyPieces = ["R", "N", "B", "Q", "K", "P"];
     if (!friendlyPieces.includes(piece)) friendlyPieces = ["r", "n", "b", "q", "k", "p"];
-    legalMoves = [];
+    let legalMovesForPiece = [];
     function isValidMove(file, rank) {
         if (boardFiles.includes(file) && boardRanks.includes(rank)) {
             const targetSquare = `${file}${rank}`;
-            const targetPiece = piecePositions[convertSquareToIndex(targetSquare)];
+            const targetPiece = board[convertSquareToIndex(targetSquare)];
             return !friendlyPieces.includes(targetPiece);
         }
         return false;
@@ -175,8 +175,8 @@ function getLegalMoves(pieceSquare) {
                 f = String.fromCharCode(f.charCodeAt(0) + fileStep);
                 r += rankStep;
                 if (!isValidMove(f, r)) break;
-                legalMoves.push(`${f}${r}`);
-                if (piecePositions[convertSquareToIndex(`${f}${r}`)]) break;
+                legalMovesForPiece.push(`${f}${r}`);
+                if (board[convertSquareToIndex(`${f}${r}`)]) break;
             }
         });
     }
@@ -194,40 +194,40 @@ function getLegalMoves(pieceSquare) {
             [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([df, dr]) => {
                 let f = String.fromCharCode(pieceFile.charCodeAt(0) + df);
                 let r = pieceRank + dr;
-                if (isValidMove(f, r)) legalMoves.push(`${f}${r}`);
+                if (isValidMove(f, r)) legalMovesForPiece.push(`${f}${r}`);
             });
             break;
         case "n":
             [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]].forEach(([df, dr]) => {
                 let f = String.fromCharCode(pieceFile.charCodeAt(0) + df);
                 let r = pieceRank + dr;
-                if (isValidMove(f, r)) legalMoves.push(`${f}${r}`);
+                if (isValidMove(f, r)) legalMovesForPiece.push(`${f}${r}`);
             });
             break;
         case "p":
             let forward = piece === "P" ? 1 : -1;
             let startRank = piece === "P" ? 2 : 7;
             let frontSquare = `${pieceFile}${pieceRank + forward}`;
-            if (!piecePositions[convertSquareToIndex(frontSquare)]) {
-                legalMoves.push(frontSquare);
+            if (!board[convertSquareToIndex(frontSquare)]) {
+                legalMovesForPiece.push(frontSquare);
                 if (pieceRank === startRank) {
                     let doubleFront = `${pieceFile}${pieceRank + 2 * forward}`;
-                    if (!piecePositions[convertSquareToIndex(doubleFront)]) legalMoves.push(doubleFront);
+                    if (!board[convertSquareToIndex(doubleFront)]) legalMovesForPiece.push(doubleFront);
                 }
             }
             [[-1, forward], [1, forward]].forEach(([df, dr]) => {
                 let f = String.fromCharCode(pieceFile.charCodeAt(0) + df);
                 let r = pieceRank + dr;
                 let captureSquare = `${f}${r}`;
-                if (isValidMove(f, r) && piecePositions[convertSquareToIndex(captureSquare)]) legalMoves.push(captureSquare);
+                if (isValidMove(f, r) && board[convertSquareToIndex(captureSquare)]) legalMovesForPiece.push(captureSquare);
             });
             if (enPassantSquare &&
                 Math.abs(pieceFile.charCodeAt(0) - enPassantSquare[0].charCodeAt(0)) === 1 &&
                 pieceRank + forward === parseInt(enPassantSquare[1])) {
-                legalMoves.push(enPassantSquare);
+                legalMovesForPiece.push(enPassantSquare);
             }
     }
-    return legalMoves;
+    return legalMovesForPiece;
 }
 function highlightLegalMoves(chessPiece, dragged = false) {
     if (!dragged) {
@@ -255,7 +255,7 @@ function highlightLegalMoves(chessPiece, dragged = false) {
         return;
     }
     activePiece = chessPiece;
-    getLegalMoves(chessPiece.id);
+    legalMoves = getLegalMoves(chessPiece.id);
     legalMoves.forEach(square => {
         const boardSquare = document.querySelector(`#${square}.board-square`);
         const moveIndicator = document.createElement("div");
@@ -269,51 +269,85 @@ function highlightLegalMoves(chessPiece, dragged = false) {
         boardSquare.appendChild(moveIndicator);
     });
 }
-function getMoveNotation(fromSquare, toSquare, pieceType) {
+function getMoveNotation(fromSquare, toSquare, promotedTo, board = piecePositions) {
+    const pieceType = board[convertSquareToIndex(fromSquare)];
     const pieceIsPawn = pieceType.toLowerCase() === "p";
-    moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
+    let moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
     moveNotation += "";
-    if (piecePositions[convertSquareToIndex(toSquare)] !== "" || toSquare === enPassantSquare && pieceIsPawn) {
+    if (board[convertSquareToIndex(toSquare)] !== "" || toSquare === enPassantSquare && pieceIsPawn) {
         if (pieceIsPawn) moveNotation += fromSquare[0];
         moveNotation += "x";
     }
     moveNotation += toSquare;
+    if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo;
     return moveNotation;
 }
+function showPromotionDialog() {
+    activePiece.draggable = false;
+    document.getElementById("chess-board").style.overflow = "visible";
+    const promotionBox = document.createElement("div");
+    promotionBox.className = "promotion-box";
+    if (isBoardFlipped === (activeColor === "b"))
+    promotionBox.innerHTML = `
+        <button class="chess-piece Q"></button>
+        <button class="chess-piece R" style="top: var(--board-square-width);"></button>
+        <button class="chess-piece N" style="top: calc(2 * var(--board-square-width));"></button>
+        <button class="chess-piece B" style="top: calc(3 * var(--board-square-width));"></button>
+        `;
+    activePiece.appendChild(promotionBox);
+    activePiece.draggable = true;
+    document.getElementById("chess-board").style.overflow = "";
+    return "Q";
+}
 function movePiece(targetSquare, dropped = false) {
-    const file = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
-    const rank = parseInt(targetSquare[1]);
+    // Basic variables
+    const toFile = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
+    const toRank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
-    getMoveNotation(activePiece.id, targetSquare, pieceType);
-    piecePositions[convertSquareToIndex(activePiece.id)] = "";
+
+    // Handle pawn promotion
+    let promotedTo = "";
     const previousRank = parseInt(activePiece.id[1]);
-    document.querySelector(`#${activePiece.id}.board-square`).style.outline = "";
-    highlightMoveSquares(activePiece.id, targetSquare);
-    activePiece.id = targetSquare;
+    promotedTo = showPromotionDialog();
+    if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
+        promotedTo = showPromotionDialog();
+        activePiece.classList.remove("P", "p");
+        activePiece.classList.add(promotedTo);
+    }
+
+    // Get move notation
+    const moveNotation = getMoveNotation(activePiece.id, targetSquare, promotedTo);
+
+    // Change the position of piece
     const activePieceStyle = activePiece.style;
     if (!dropped) activePieceStyle.transition = `top 0.3s ${pieceMoveAnimation}, left 0.3s ${pieceMoveAnimation}, opacity 0.3s ease-out`;
-    activePieceStyle.top = `calc(${isBoardFlipped ? rank - 1 : 8 - rank} * var(--board-square-width))`;
-    activePieceStyle.left = `calc(${isBoardFlipped ? 7 - file : file} * var(--board-square-width))`;
+    activePieceStyle.top = `calc(${isBoardFlipped ? toRank - 1 : 8 - toRank} * var(--board-square-width))`;
+    activePieceStyle.left = `calc(${isBoardFlipped ? 7 - toFile : toFile} * var(--board-square-width))`;
     if (!dropped) setTimeout(() => activePieceStyle.transition = "opacity 0.3s ease-out", 300);
+
+    // Handle en passant
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
-        const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + file)}${previousRank}`;
+        const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + toFile)}${previousRank}`;
         const enemyPawn = document.querySelector(`#${enemyPawnSquare}.chess-piece`);
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = "";
         enemyPawn.style.opacity = "0";
         setTimeout(() => enemyPawn.remove(), 300);
     }
-    piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
-    enPassantSquare = "";
-    if (pieceType.toLowerCase() === "p") {
-        if (Math.abs(rank - previousRank) === 2) {
-            enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + file)}3` : `${String.fromCharCode("a".charCodeAt(0) + file)}6`;
-        } else if (rank === (pieceType === "p" ? 1 : 8)) {
-            activePiece.classList.remove("P", "p");
-            const promotedTo = pieceType === "p" ? "q" : "Q";
-            activePiece.classList.add(promotedTo);
-            piecePositions[convertSquareToIndex(activePiece.id)] = promotedTo;
-        }
-    }
+
+    // Set new en passant square
+    if (pieceType.toLowerCase() === "p" && Math.abs(toRank - previousRank) === 2) {
+        enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + toFile)}3` : `${String.fromCharCode("a".charCodeAt(0) + toFile)}6`;
+    } else enPassantSquare = "";
+
+    // Update `piecePositions` and highlight move squares
+    piecePositions[convertSquareToIndex(activePiece.id)] = "";
+    document.querySelector(`#${activePiece.id}.board-square`).style.outline = "";
+    highlightMoveSquares(activePiece.id, targetSquare);
+    activePiece.id = targetSquare;
+    if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
+    else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
+
+    // Write move notation to `#move-grid` and update the `#to-move` indicator
     if (activeColor === "w") {
         activeColor = "b";
         document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
@@ -330,8 +364,10 @@ function movePiece(targetSquare, dropped = false) {
         document.getElementById("to-move").innerHTML = `<div></div><b>White</b>&nbsp;to move`;
         document.getElementById("move-grid").lastChild.children[2].innerText = moveNotation;
     }
+
+    // Handle halfmove clock
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
-    else halfmoveClock++;
+    else halfmoveClock++; // If a capture takes place, then `highlightLegalMoves()` takes care of it.
 }
 function highlightSelectedSquare(square = "") {
     if (square && !lastMoveSquares.includes(square)) {
@@ -437,7 +473,7 @@ function checkFenValidity(fen) {
                 <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
             </svg>`;
         if (activeColor === "w") document.getElementById("to-move").innerHTML = `<div></div><b>White</b>&nbsp;to move`;
-            else document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
+        else document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
     } else {
         document.getElementById("fen-validity-indicator").innerHTML = `
             <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
@@ -655,7 +691,6 @@ let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock =
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let lastMoveSquares = [], selectedSquare = "";
-let moveNotation = "e4";
 let prevFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let isFenValid = true;
 const fenInputBox = document.getElementById("fen-input");

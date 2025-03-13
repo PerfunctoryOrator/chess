@@ -219,12 +219,18 @@
             </div>
         </div>
         <div class="full-screen-box-container" id="feedback-form-container">
-            <iframe id="feedback-iframe" src="https://docs.google.com/forms/d/e/1FAIpQLSfc-0_yyy5HUmWkbde4UrtAEAxdL8OQlyTuE8DjQsGsw0Vzcw/viewform?embedded=true" frameborder="0" marginheight="0" marginwidth="0" loading="lazy" style="width: 60vw; height: 75vh;" onload="document.getElementById('feedback-form-fallback').style.display = 'none';"></iframe>
+            <iframe id="feedback-form" src="https://docs.google.com/forms/d/e/1FAIpQLSfc-0_yyy5HUmWkbde4UrtAEAxdL8OQlyTuE8DjQsGsw0Vzcw/viewform?embedded=true" frameborder="0" marginheight="0" marginwidth="0" loading="lazy" style="width: 60vw; height: 75vh;" onload="{
+                document.getElementById('feedback-form-fallback').style.display = 'none';
+                this.style.backgroundColor = 'rgb(227, 217, 212)';
+                this.style.opacity = '1';
+                }"></iframe>
             <div id="feedback-form-fallback" class="loading-indicator-container"></div>
             <div class="options">
                 <button class="dangerous-button" onclick="{
                     if (confirm('Are you sure you want to reload the form?')) {
-                        document.getElementById('feedback-iframe').src = document.getElementById('feedback-iframe').src;
+                        const feedbackForm = document.getElementById('feedback-form');
+                        feedbackForm.src = document.getElementById('feedback-form').src;
+                        feedbackForm.style.opacity = '';
                         document.getElementById('feedback-form-fallback').style.display = '';
                     }
                     }">Reload</button>
