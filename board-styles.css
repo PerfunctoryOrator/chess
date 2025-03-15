@@ -165,10 +165,12 @@
 .promotion-box {
     position: relative;
     overflow: hidden;
+    width: var(--board-square-width);
     height: calc(4 * var(--board-square-width));
     background-color: whitesmoke;
     border: var(--border);
     box-shadow: 8px 16px 16px var(--shadow-color);
+    animation: appear 0.3s ease-in-out;
     z-index: 6;
 }
 .promotion-box > button {
@@ -206,5 +208,14 @@
     to {
         transform: scale(2);
         opacity: 0;
+    }
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }

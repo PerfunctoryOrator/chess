@@ -282,21 +282,22 @@ function getMoveNotation(fromSquare, toSquare, promotedTo, board = piecePosition
     if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo;
     return moveNotation;
 }
-function showPromotionDialog() {
+function showPromotionDialog(targetSquare) {
     activePiece.draggable = false;
-    document.getElementById("chess-board").style.overflow = "visible";
     const promotionBox = document.createElement("div");
     promotionBox.className = "promotion-box";
+    promotionBox.style.top = `calc(${8 - parseInt(targetSquare[1])}*var(--board-square-width) - 2px)`;
+    promotionBox.style.left = `calc(${targetSquare[0].charCodeAt(0) - "a".charCodeAt(0)}*var(--board-square-width) - 2px)`;
     if (isBoardFlipped === (activeColor === "b"))
     promotionBox.innerHTML = `
         <button class="chess-piece Q"></button>
-        <button class="chess-piece R" style="top: var(--board-square-width);"></button>
-        <button class="chess-piece N" style="top: calc(2 * var(--board-square-width));"></button>
+        <button class="chess-piece N" style="top: var(--board-square-width);"></button>
+        <button class="chess-piece R" style="top: calc(2 * var(--board-square-width));"></button>
         <button class="chess-piece B" style="top: calc(3 * var(--board-square-width));"></button>
         `;
-    activePiece.appendChild(promotionBox);
+    document.getElementById("piece-area").appendChild(promotionBox);
+    promotionBox.remove();
     activePiece.draggable = true;
-    document.getElementById("chess-board").style.overflow = "";
     return "Q";
 }
 function movePiece(targetSquare, dropped = false) {
@@ -304,15 +305,16 @@ function movePiece(targetSquare, dropped = false) {
     const toFile = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
     const toRank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
+    const previousRank = parseInt(activePiece.id[1]);
 
     // Handle pawn promotion
     let promotedTo = "";
-    const previousRank = parseInt(activePiece.id[1]);
-    promotedTo = showPromotionDialog();
-    if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-        promotedTo = showPromotionDialog();
-        activePiece.classList.remove("P", "p");
-        activePiece.classList.add(promotedTo);
+    if (pieceType.toLowerCase() === "p") {
+        if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
+            promotedTo = showPromotionDialog(targetSquare);
+            activePiece.classList.remove("P", "p");
+            activePiece.classList.add(promotedTo);
+        }
     }
 
     // Get move notation
