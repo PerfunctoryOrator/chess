@@ -1,79 +1,351 @@
-function parseFen(fen) {
-    isFenValid = false;
-    let ranksParsed = 0;
-    let evalPiecePositions = [];
-    let evalActiveColor = "", evalCastlingRights = "", evalEnPassantSquare = "", evalHalfmoveClock = "", evalFullmoveNumber = "";
-    function readValueFromFen() {
-        let value = "";
-        i++;
-        if (i < fen.length) fenChar = fen[i];
-        else return;
-        while (fenChar !== " ") {
-            value += fenChar;
-            i++;
+const Notation = {
+    read: {
+        san: (san) => {
+
+        },
+        fen: (fen) => {
+            let ranksParsed = 0;
+            let piecePositions = [];
+            let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock = "", fullmoveNumber = "";
+            function readValueFromFen() {
+                let value = "";
+                i++;
+                if (i < fen.length) fenChar = fen[i];
+                else return;
+                while (fenChar !== " ") {
+                    value += fenChar;
+                    i++;
+                    if (i < fen.length) fenChar = fen[i];
+                    else break;
+                }
+                return value;
+            }
+            let i = 0, fenChar = "";
             if (i < fen.length) fenChar = fen[i];
-            else break;
-        }
-        return value;
-    }
-    let i = 0, fenChar = "";
-    if (i < fen.length) fenChar = fen[i];
-    else return false;
-    while (fenChar !== " ") {
-        if (!(parseInt(fenChar) || fenChar === "/")) {
-            switch (fenChar.toLowerCase()) {
-                case "r": break;
-                case "n": break;
-                case "b": break;
-                case "q": break;
-                case "k": break;
-                case "p": break;
-                default: return false;
+            else return false;
+            while (fenChar !== " ") {
+                if (!(parseInt(fenChar) || fenChar === "/")) {
+                    switch (fenChar.toLowerCase()) {
+                        case "r": break;
+                        case "n": break;
+                        case "b": break;
+                        case "q": break;
+                        case "k": break;
+                        case "p": break;
+                        default: return false;
+                    }
+                    piecePositions.push(fenChar);
+                } else if (fenChar === "/") {
+                    ranksParsed++;
+                    if (piecePositions.length !== 8 * ranksParsed) return false;
+                } else {
+                    for (let j = parseInt(fenChar); j > 0; j--) piecePositions.push("");
+                }
+                i++;
+                if (i < fen.length) fenChar = fen[i];
+                else return false;
             }
-            evalPiecePositions.push(fenChar);
-        } else if (fenChar === "/") {
-            ranksParsed++;
-            if (evalPiecePositions.length !== 8 * ranksParsed) return false;
-        } else {
-            for (let j = parseInt(fenChar); j > 0; j--) evalPiecePositions.push("");
-        }
-        i++;
-        if (i < fen.length) fenChar = fen[i];
-        else return false;
-    }
-    if (evalPiecePositions.length !== 64 || ranksParsed !== 7) return false;
-    evalActiveColor = readValueFromFen();
-    if (!evalActiveColor == true || !(evalActiveColor === "w" || evalActiveColor === "b")) return false;
-    evalCastlingRights = readValueFromFen();
-    if (!evalCastlingRights == true || evalCastlingRights.length > 4) return false;
-    if (evalCastlingRights !== "-") {
-        for (const char of evalCastlingRights) {
-            switch (char) {
-                case "K": break;
-                case "Q": break;
-                case "k": break;
-                case "q": break;
-                default: return false;
+            if (piecePositions.length !== 64 || ranksParsed !== 7) return false;
+            activeColor = readValueFromFen();
+            if (!activeColor == true || !(activeColor === "w" || activeColor === "b")) return false;
+            castlingRights = readValueFromFen();
+            if (!castlingRights == true || castlingRights.length > 4) return false;
+            if (castlingRights !== "-") {
+                for (const char of castlingRights) {
+                    switch (char) {
+                        case "K": break;
+                        case "Q": break;
+                        case "k": break;
+                        case "q": break;
+                        default: return false;
+                    }
+                }
             }
-        }
-    }
-    evalEnPassantSquare = readValueFromFen();
-    if (!evalEnPassantSquare == true || evalEnPassantSquare.length > 2 || (evalEnPassantSquare !== "-" && (evalEnPassantSquare[1] !== "3" && evalEnPassantSquare[1] !== "6"))) return false;
-    if (evalEnPassantSquare === "-") evalEnPassantSquare = "";
-    evalHalfmoveClock = Number(readValueFromFen());
-    if (!evalHalfmoveClock == true && evalHalfmoveClock !== 0) return false;
-    evalFullmoveNumber = parseInt(readValueFromFen());
-    if (!evalFullmoveNumber == true) return false;
-    if (evalPiecePositions.filter(x => x === "K").length !== 1 || evalPiecePositions.filter(x => x === "k").length !== 1) return false;
-    isFenValid = true;
-    piecePositions = evalPiecePositions;
-    activeColor = evalActiveColor;
-    castlingRights = evalCastlingRights;
-    enPassantSquare = evalEnPassantSquare;
-    halfmoveClock = evalHalfmoveClock;
-    fullmoveNumber = evalFullmoveNumber;
-    return true;
-}
+            enPassantSquare = readValueFromFen();
+            if (!enPassantSquare == true || enPassantSquare.length > 2 || (enPassantSquare !== "-" && (enPassantSquare[1] !== "3" && enPassantSquare[1] !== "6"))) return false;
+            if (enPassantSquare === "-") enPassantSquare = "";
+            halfmoveClock = parseInt(readValueFromFen());
+            if (!halfmoveClock == true && halfmoveClock !== 0) return false;
+            fullmoveNumber = parseInt(readValueFromFen());
+            if (!fullmoveNumber == true) return false;
+            if (piecePositions.filter(x => x === "K").length !== 1 || piecePositions.filter(x => x === "k").length !== 1) return false;
+            return [
+                piecePositions,
+                activeColor,
+                castlingRights,
+                enPassantSquare,
+                halfmoveClock,
+                fullmoveNumber,
+            ];
+        },
+        pgn: (pgn) => {
+
+        },
+    },
+    write: {
+        san: (fromSquare, toSquare, promotedTo, board = piecePositions) => {
+            const pieceType = board[convertSquareToIndex(fromSquare)];
+            const pieceIsPawn = pieceType.toLowerCase() === "p";
+            let moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
+            moveNotation += "";
+            if (board[convertSquareToIndex(toSquare)] !== "" || toSquare === enPassantSquare && pieceIsPawn) {
+                if (pieceIsPawn) moveNotation += fromSquare[0];
+                moveNotation += "x";
+            }
+            moveNotation += toSquare;
+            if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo;
+            const newBoard = board.slice();
+            newBoard[convertSquareToIndex(fromSquare)] = "";
+            newBoard[convertSquareToIndex(toSquare)] = promotedTo ? promotedTo : pieceType;
+            if (isKingInCheck(newBoard, activeColor)) {
+                moveNotation += isCheckmate(activeColor, newBoard) ? "#" : "+";
+            }
+            return moveNotation;
+        },
+        fen: () => {
+
+        },
+        pgn: () => {
+
+        },
+    },
+    assign: {
+        parsedFen: (parsedFen) => {
+            piecePositions = parsedFen[0];
+            activeColor = parsedFen[1];
+            castlingRights = parsedFen[2];
+            enPassantSquare = parsedFen[3];
+            halfmoveClock = parsedFen[4];
+            fullmoveNumber = parsedFen[5];
+        },
+    },
+};
+const PieceMoveMethods = {
+    click: {
+        piece: (event) => {
+            highlightLegalMoves(event.currentTarget);
+        },
+        square: (event) => {
+            if (activePiece && legalMoves.includes(event.target.id)) movePiece(event.target.id);
+        },
+        document: (event) => {
+            if (!event.target.classList.contains("chess-piece")) {
+                document.querySelectorAll(".move-indicator").forEach(indicator => {
+                    indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
+                    setTimeout(() => indicator.remove(), 200);
+                });
+                highlightSelectedSquare();
+                activePiece = null;
+            }
+        },
+        remove: function() {
+            document.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.removeEventListener("click", this.piece);
+            });
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.removeEventListener("click", this.square);
+            });
+            document.removeEventListener("click", this.document);
+        },
+        add: function() {
+            this.remove();
+            document.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.addEventListener("click", this.piece);
+            });
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.addEventListener("click", this.square);
+            });
+            document.addEventListener("click", this.document);
+        },
+    },
+    dragDrop: {
+        piece: {
+            dragstart: (event) => {
+                draggedPieceId = event.target.id;
+                if (document.querySelector(`#${event.target.id}.highlight-square`)) {
+                    document.querySelector(`#${event.target.id}.highlight-square`).style.outline = "none";
+                }
+                document.querySelector(`#${event.target.id}.board-square`).style.outline = "none";
+                if (document.querySelector(`#${event.target.id}.file-name`)) {
+                    document.querySelector(`#${event.target.id}.file-name`).style.opacity = "0";
+                }
+                if (document.querySelector(`#${event.target.id}.rank-name`)) {
+                    document.querySelector(`#${event.target.id}.rank-name`).style.opacity = "0";
+                }
+                activePiece = null;
+                highlightSelectedSquare();
+                highlightLegalMoves(event.target, true);
+                event.dataTransfer.effectAllowed = "move";
+                event.target.style.transition = "";
+                setTimeout(() => event.target.style.opacity = "0.5", 0);
+            },
+            dragend: (event) => {
+                if (document.querySelector(`#${draggedPieceId}.file-name`)) {
+                    document.querySelector(`#${draggedPieceId}.file-name`).style.opacity = "";
+                }
+                if (document.querySelector(`#${draggedPieceId}.rank-name`)) {
+                    document.querySelector(`#${draggedPieceId}.rank-name`).style.opacity = "";
+                }
+                if (draggedPieceId !== event.target.id) {
+                    const ripple = document.createElement("div");
+                    ripple.className = "ripple";
+                    document.querySelector(`#${event.target.id}.board-square`).appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 500);
+                }
+                highlightSelectedSquare(event.target.id);
+                document.querySelectorAll(".move-indicator").forEach(indicator => {
+                    indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
+                    setTimeout(() => indicator.remove(), 200);
+                });
+                draggedPieceId = "";
+                activePiece = null;
+                legalMoves = [];
+                event.target.style.opacity = "";
+                event.target.style.transition = "opacity 0.3s ease-out";
+            },
+            dragover: (event) => {
+                event.preventDefault();
+            },
+            dragenter: (event) => {
+                const square = document.querySelector(`#${event.target.id}.board-square`);
+                if (document.querySelector(`#${square.id}.highlight-square`)) {
+                    document.querySelector(`#${square.id}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
+                } else {
+                    square.style.outline = "calc(var(--board-square-width) / 25) solid white";
+                }
+                square.style.zIndex = "2";
+                square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
+                if (document.querySelector(`#${square.id}.capture-indicator`)) {
+                    const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
+                    moveIndicator.width = moveIndicator.height = "70%";
+                    moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
+                }
+            },
+            dragleave: (event) => {
+                const square = document.querySelector(`#${event.target.id}.board-square`);
+                if (document.querySelector(`#${square.id}.highlight-square`)) {
+                    document.querySelector(`#${square.id}.highlight-square`).style.outline = "";
+                }
+                square.style.outline = "";
+                square.style.zIndex = "";
+                square.style.boxShadow = "";
+                if (document.querySelector(`#${square.id}.capture-indicator`)) {
+                    const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
+                    moveIndicator.width = moveIndicator.height = "";
+                    moveIndicator.boxShadow = "";
+                }
+            },
+            drop: (event) => {
+                event.preventDefault();
+                const square = document.querySelector(`#${event.target.id}.board-square`);
+                if (document.querySelector(`#${square.id}.highlight-square`)) {
+                    document.querySelector(`#${square.id}.highlight-square`).style.outline = "";
+                }
+                square.style.outline = "";
+                square.style.zIndex = "";
+                square.style.boxShadow = "";
+                if (legalMoves.includes(square.id)) {
+                    event.target.style.opacity = "0";
+                    setTimeout(() => event.target.remove(), 300);
+                    movePiece(square.id, true);
+                    halfmoveClock = 0;
+                }
+            },
+        },
+        square: {
+            dragover: (event) => {
+                event.preventDefault();
+            },
+            dragenter: (event) => {
+                event.target.style.outline = "calc(var(--board-square-width) / 25) solid white";
+                event.target.style.zIndex = "2";
+                event.target.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
+                if (document.querySelector(`#${event.target.id}.empty-move-indicator`)) {
+                    const moveIndicator = document.querySelector(`#${event.target.id}.empty-move-indicator`).style;
+                    moveIndicator.width = moveIndicator.height = "50%";
+                } else if (document.querySelector(`#${event.target.id}.capture-indicator`)) {
+                    const moveIndicator = document.querySelector(`#${event.target.id}.capture-indicator`).style;
+                    moveIndicator.width = moveIndicator.height = "70%";
+                    moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
+                }
+            },
+            dragleave: (event) => {
+                event.target.style.outline = "";
+                event.target.style.zIndex = "";
+                event.target.style.boxShadow = "";
+                if (document.querySelector(`#${event.target.id}.empty-move-indicator`)) {
+                    const moveIndicator = document.querySelector(`#${event.target.id}.empty-move-indicator`).style;
+                    moveIndicator.width = moveIndicator.height = "";
+                } else if (document.querySelector(`#${event.target.id}.capture-indicator`)) {
+                    const moveIndicator = document.querySelector(`#${event.target.id}.capture-indicator`).style;
+                    moveIndicator.width = moveIndicator.height = "";
+                    moveIndicator.boxShadow = "";
+                }
+            },
+            drop: (event) => {
+                event.preventDefault();
+                event.target.style.outline = "";
+                event.target.style.zIndex = "";
+                event.target.style.boxShadow = "";
+                if (legalMoves.includes(event.target.id)) movePiece(event.target.id, true);
+            },
+        },
+        document: {
+            dragover: (event) => {
+                event.preventDefault();
+            },
+            drop: (event) => {
+                event.preventDefault();
+                if (!event.target.classList.contains("board-square")) {
+                    document.querySelectorAll(".move-indicator").forEach(indicator => {
+                        indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
+                        setTimeout(() => indicator.remove(), 200);
+                    });
+                }
+            }
+        },
+        remove: function() {
+            document.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.draggable = false;
+                piece.removeEventListener("dragstart", this.piece.dragstart);
+                piece.removeEventListener("dragend", this.piece.dragend);
+                piece.removeEventListener("dragover", this.piece.dragover);
+                piece.removeEventListener("dragenter", this.piece.dragenter);
+                piece.removeEventListener("dragleave", this.piece.dragleave);
+                piece.removeEventListener("drop", this.piece.drop);
+            });
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.removeEventListener("dragover", this.square.dragover);
+                square.removeEventListener("dragenter", this.square.dragenter);
+                square.removeEventListener("dragleave", this.square.dragleave);
+                square.removeEventListener("drop", this.square.drop);
+            });
+            document.removeEventListener("dragover", this.document.dragover);
+            document.removeEventListener("drop", this.document.drop);
+        },
+        add: function() {
+            this.remove();
+            document.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.draggable = true;
+                piece.addEventListener("dragstart", this.piece.dragstart);
+                piece.addEventListener("dragend", this.piece.dragend);
+                piece.addEventListener("dragover", this.piece.dragover);
+                piece.addEventListener("dragenter", this.piece.dragenter);
+                piece.addEventListener("dragleave", this.piece.dragleave);
+                piece.addEventListener("drop", this.piece.drop);
+            });
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.addEventListener("dragover", this.square.dragover);
+                square.addEventListener("dragenter", this.square.dragenter);
+                square.addEventListener("dragleave", this.square.dragleave);
+                square.addEventListener("drop", this.square.drop);
+            });
+            document.addEventListener("dragover", this.document.dragover);
+            document.addEventListener("drop", this.document.drop);
+        },
+    },
+};
+const convertSquareToIndex = (square) => 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
 function setUpEmptyBoard() {
     const chessBoard = document.createElement("div");
     let isLightSquare;
@@ -145,11 +417,8 @@ function setUpPieces() {
     if (document.getElementById("piece-area")) document.getElementById("piece-area").remove();
     pieceArea.id = "piece-area";
     chessBoard.appendChild(pieceArea);
-    addClickToMove();
-    addDragDropToMove();
-}
-function convertSquareToIndex(square) {
-    return 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
+    PieceMoveMethods.click.add();
+    PieceMoveMethods.dragDrop.add();
 }
 function getCandidateMoves(pieceSquare, board) {
     let candidateMoves = [];
@@ -260,6 +529,7 @@ function isKingInCheck(board, kingColor) {
             break;
         }
     }
+    if (kingSquare === "") return false;
     return isSquareAttacked(board, kingSquare, kingColor === "w" ? "b" : "w");
 }
 function getLegalMoves(pieceSquare, board = piecePositions) {
@@ -350,64 +620,60 @@ function highlightLegalMoves(chessPiece, dragged = false) {
         boardSquare.appendChild(moveIndicator);
     });
 }
-function getMoveNotation(fromSquare, toSquare, promotedTo, board = piecePositions) {
-    const pieceType = board[convertSquareToIndex(fromSquare)];
-    const pieceIsPawn = pieceType.toLowerCase() === "p";
-    let moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
-    moveNotation += "";
-    if (board[convertSquareToIndex(toSquare)] !== "" || toSquare === enPassantSquare && pieceIsPawn) {
-        if (pieceIsPawn) moveNotation += fromSquare[0];
-        moveNotation += "x";
-    }
-    moveNotation += toSquare;
-    if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo;
-    const newBoard = board.slice();
-    newBoard[convertSquareToIndex(toSquare)] = promotedTo ? promotedTo : pieceType;
-    if (isKingInCheck(newBoard, activeColor)) {
-        moveNotation += isCheckmate(activeColor, newBoard) ? "#" : "+";
-    }
-    return moveNotation;
-}
 function showPromotionDialog(targetSquare) {
-    activePiece.draggable = false;
-    const promotionBox = document.createElement("div");
-    promotionBox.className = "promotion-box";
-    promotionBox.style.top = `calc(${8 - parseInt(targetSquare[1])}*var(--board-square-width) - 2px)`;
-    promotionBox.style.left = `calc(${targetSquare[0].charCodeAt(0) - "a".charCodeAt(0)}*var(--board-square-width) - 2px)`;
-    if (isBoardFlipped === (activeColor === "b"))
-    promotionBox.innerHTML = `
-        <button class="chess-piece Q"></button>
-        <button class="chess-piece N" style="top: var(--board-square-width);"></button>
-        <button class="chess-piece R" style="top: calc(2 * var(--board-square-width));"></button>
-        <button class="chess-piece B" style="top: calc(3 * var(--board-square-width));"></button>
+    return new Promise(resolve => {
+        const promotionBox = document.createElement("div");
+        promotionBox.className = "promotion-box";
+        promotionBox.style.top = `calc(${8 - parseInt(targetSquare[1])}*var(--board-square-width) - 2px)`;
+        promotionBox.style.left = `calc(${targetSquare[0].charCodeAt(0) - "a".charCodeAt(0)}*var(--board-square-width) - 2px)`;
+
+        if (isBoardFlipped) {
+            promotionBox.style.top = `calc(${parseInt(targetSquare[1]) - 1}*var(--board-square-width) - 2px)`;
+            promotionBox.style.left = `calc(${"h".charCodeAt(0) - targetSquare[0].charCodeAt(0)}*var(--board-square-width) - 2px)`;
+        }
+
+        promotionBox.innerHTML = `
+            <button class="chess-piece ${activeColor === "w" ? "Q" : "q"} value="Q"></button>
+            <button class="chess-piece ${activeColor === "w" ? "N" : "n"} value="N" style="top: var(--board-square-width);"></button>
+            <button class="chess-piece ${activeColor === "w" ? "R" : "r"} value="R" style="top: calc(2 * var(--board-square-width));"></button>
+            <button class="chess-piece ${activeColor === "w" ? "B" : "b"} value="B" style="top: calc(3 * var(--board-square-width));"></button>
         `;
-    document.getElementById("piece-area").appendChild(promotionBox);
-    promotionBox.remove();
-    activePiece.draggable = true;
-    return "Q";
+
+        document.getElementById("piece-area").appendChild(promotionBox);
+
+        // Add click event listeners to all promotion pieces
+        promotionBox.querySelectorAll("button").forEach(button => {
+            button.addEventListener("click", function() {
+                const selectedPiece = this.getAttribute("value");
+                promotionBox.remove();
+                // Return the selected piece
+                resolve(selectedPiece);
+            });
+        });
+    });
 }
-function movePiece(targetSquare, dropped = false) {
+async function movePiece(targetSquare, dropped = false) {
     // Basic variables
     const toFile = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
     const toRank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
     const previousRank = parseInt(activePiece.id[1]);
 
-    // Set `activeColor`
-    activeColor = activeColor === "w" ? "b" : "w";
-
     // Handle pawn promotion
     let promotedTo = "";
     if (pieceType.toLowerCase() === "p") {
         if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-            promotedTo = showPromotionDialog(targetSquare);
+            promotedTo = await showPromotionDialog(targetSquare);
             activePiece.classList.remove("P", "p");
             activePiece.classList.add(promotedTo);
         }
     }
 
+    // Set active color
+    activeColor = activeColor === "w" ? "b" : "w";
+
     // Get move notation
-    const moveNotation = getMoveNotation(activePiece.id, targetSquare, promotedTo);
+    const moveNotation = Notation.write.san(activePiece.id, targetSquare, promotedTo);
 
     // Change the position of piece
     const activePieceStyle = activePiece.style;
@@ -458,7 +724,6 @@ function movePiece(targetSquare, dropped = false) {
             <div>&nbsp;</div>
             `;
         document.getElementById("move-grid").appendChild(newMoveRow);
-        fullmoveNumber++;
     } else {
         if (isCheckmate(activeColor)) {
             document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;wins by checkmate!`;
@@ -471,7 +736,19 @@ function movePiece(targetSquare, dropped = false) {
         } else {
             document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
         }
-        document.getElementById("move-grid").lastChild.children[2].innerText = moveNotation;
+        const moveGrid = document.getElementById("move-grid");
+        if (moveGrid.lastChild) {
+            moveGrid.lastChild.children[2].innerText = moveNotation;
+        } else {
+            const newMoveRow = document.createElement("div");
+            newMoveRow.innerHTML = `
+                <div>${fullmoveNumber}.</div>
+                <div>…</div>
+                <div>${moveNotation}</div>
+                `;
+            moveGrid.appendChild(newMoveRow);
+        }
+        fullmoveNumber++;
     }
 
     // Handle halfmove clock
@@ -575,21 +852,21 @@ function mouseLeavesPiece(square) {
     }
 }
 function checkFenValidity(fen) {
-    if (parseFen(fen.trim())) {
+    const parsedFen = Notation.read.fen(fen.trim());
+    if (parsedFen) {
         document.getElementById("fen-validity-indicator").innerHTML = `
             <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--color)" opacity="0.6">
                 <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
             </svg>`;
-        if (activeColor === "w") document.getElementById("to-move").innerHTML = `<div></div><b>White</b>&nbsp;to move`;
-        else document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
-    } else {
-        document.getElementById("fen-validity-indicator").innerHTML = `
-            <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--danger-color)">
-                <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-            </svg>`;
+        return parsedFen;
     }
+    document.getElementById("fen-validity-indicator").innerHTML = `
+        <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--danger-color)">
+            <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+        </svg>`;
+    return false;
 }
 function flipBoard() {
     isBoardFlipped = !isBoardFlipped;
@@ -627,189 +904,21 @@ function flipBoard() {
         piece.style.left = isBoardFlipped ? `calc(${7 - file} * var(--board-square-width))` : `calc(${file} * var(--board-square-width))`;
     });
 }
-function addClickToMove() {
-    document.querySelectorAll(".chess-piece").forEach(piece => {
-        piece.addEventListener("click", () => highlightLegalMoves(piece));
-    });
-    document.querySelectorAll(".board-square").forEach(square => {
-        square.addEventListener("click", () => {
-            if (activePiece && legalMoves.includes(square.id)) movePiece(square.id);
-        });
-    });
-    document.addEventListener("click", (event) => {
-        if (!event.target.classList.contains("chess-piece")) {
-            document.querySelectorAll(".move-indicator").forEach(indicator => {
-                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-                setTimeout(() => indicator.remove(), 200);
-            });
-            highlightSelectedSquare();
-            activePiece = null;
-        }
-    });
-}
-function addDragDropToMove() {
-    let draggedPieceId = "";
-    document.querySelectorAll(".chess-piece").forEach(piece => {
-        piece.draggable = true;
-        piece.addEventListener("dragstart", (event) => {
-            draggedPieceId = piece.id;
-            if (document.querySelector(`#${piece.id}.highlight-square`)) {
-                document.querySelector(`#${piece.id}.highlight-square`).style.outline = "none";
-            }
-            document.querySelector(`#${piece.id}.board-square`).style.outline = "none";
-            if (document.querySelector(`#${piece.id}.file-name`)) {
-                document.querySelector(`#${piece.id}.file-name`).style.opacity = "0";
-            }
-            if (document.querySelector(`#${piece.id}.rank-name`)) {
-                document.querySelector(`#${piece.id}.rank-name`).style.opacity = "0";
-            }
-            activePiece = null;
-            highlightSelectedSquare();
-            highlightLegalMoves(piece, true);
-            event.dataTransfer.effectAllowed = "move";
-            piece.style.transition = "";
-            setTimeout(() => piece.style.opacity = "0.5", 0);
-        });
-        piece.addEventListener("dragend", () => {
-            if (document.querySelector(`#${draggedPieceId}.file-name`)) {
-                document.querySelector(`#${draggedPieceId}.file-name`).style.opacity = "";
-            }
-            if (document.querySelector(`#${draggedPieceId}.rank-name`)) {
-                document.querySelector(`#${draggedPieceId}.rank-name`).style.opacity = "";
-            }
-            if (draggedPieceId !== piece.id) {
-                const ripple = document.createElement("div");
-                ripple.className = "ripple";
-                document.querySelector(`#${piece.id}.board-square`).appendChild(ripple);
-                setTimeout(() => ripple.remove(), 500);
-            }
-            highlightSelectedSquare(piece.id);
-            document.querySelectorAll(".move-indicator").forEach(indicator => {
-                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-                setTimeout(() => indicator.remove(), 200);
-            });
-            draggedPieceId = "";
-            activePiece = null;
-            legalMoves = [];
-            piece.style.opacity = "";
-            piece.style.transition = "opacity 0.3s ease-out";
-        });
-        piece.addEventListener("dragover", (event) => {
-            event.preventDefault();
-        });
-        piece.addEventListener("dragenter", () => {
-            const square = document.querySelector(`#${piece.id}.board-square`);
-            if (document.querySelector(`#${square.id}.highlight-square`)) {
-                document.querySelector(`#${square.id}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
-            } else {
-                square.style.outline = "calc(var(--board-square-width) / 25) solid white";
-            }
-            square.style.zIndex = "2";
-            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
-            if (document.querySelector(`#${square.id}.capture-indicator`)) {
-                const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
-                moveIndicator.width = moveIndicator.height = "70%";
-                moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
-            }
-        });
-        piece.addEventListener("dragleave", () => {
-            const square = document.querySelector(`#${piece.id}.board-square`);
-            if (document.querySelector(`#${square.id}.highlight-square`)) {
-                document.querySelector(`#${square.id}.highlight-square`).style.outline = "";
-            }
-            square.style.outline = "";
-            square.style.zIndex = "";
-            square.style.boxShadow = "";
-            if (document.querySelector(`#${square.id}.capture-indicator`)) {
-                const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
-                moveIndicator.width = moveIndicator.height = "";
-                moveIndicator.boxShadow = "";
-            }
-        });
-        piece.addEventListener("drop", (event) => {
-            event.preventDefault();
-            const square = document.querySelector(`#${piece.id}.board-square`);
-            if (document.querySelector(`#${square.id}.highlight-square`)) {
-                document.querySelector(`#${square.id}.highlight-square`).style.outline = "";
-            }
-            square.style.outline = "";
-            square.style.zIndex = "";
-            square.style.boxShadow = "";
-            if (legalMoves.includes(square.id)) {
-                piece.style.opacity = "0";
-                setTimeout(() => piece.remove(), 300);
-                movePiece(square.id, true);
-                halfmoveClock = 0;
-            }
-        });
-    });
-    document.querySelectorAll(".board-square").forEach(square => {
-        square.addEventListener("dragover", (event) => {
-            event.preventDefault();
-        });
-        square.addEventListener("dragenter", () => {
-            square.style.outline = "calc(var(--board-square-width) / 25) solid white";
-            square.style.zIndex = "2";
-            square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
-            if (document.querySelector(`#${square.id}.empty-move-indicator`)) {
-                const moveIndicator = document.querySelector(`#${square.id}.empty-move-indicator`).style;
-                moveIndicator.width = moveIndicator.height = "50%";
-            } else if (document.querySelector(`#${square.id}.capture-indicator`)) {
-                const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
-                moveIndicator.width = moveIndicator.height = "70%";
-                moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
-            }
-        });
-        square.addEventListener("dragleave", () => {
-            square.style.outline = "";
-            square.style.zIndex = "";
-            square.style.boxShadow = "";
-            if (document.querySelector(`#${square.id}.empty-move-indicator`)) {
-                const moveIndicator = document.querySelector(`#${square.id}.empty-move-indicator`).style;
-                moveIndicator.width = moveIndicator.height = "";
-            } else if (document.querySelector(`#${square.id}.capture-indicator`)) {
-                const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
-                moveIndicator.width = moveIndicator.height = "";
-                moveIndicator.boxShadow = "";
-            }
-        });
-        square.addEventListener("drop", (event) => {
-            event.preventDefault();
-            square.style.outline = "";
-            square.style.zIndex = "";
-            square.style.boxShadow = "";
-            if (legalMoves.includes(square.id)) movePiece(square.id, true);
-        });
-    });
-    document.addEventListener("dragover", (event) => {
-        event.preventDefault();
-    });
-    document.addEventListener("drop", (event) => {
-        event.preventDefault();
-        if (!event.target.classList.contains("board-square")) {
-            document.querySelectorAll(".move-indicator").forEach(indicator => {
-                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-                setTimeout(() => indicator.remove(), 200);
-            });
-        }
-    });
-}
+
 let isBoardFlipped = false;
 let piecePositions = [];
 let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock = "", fullmoveNumber = "";
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let lastMoveSquares = [], selectedSquare = "";
-let prevFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-let isFenValid = true;
 const fenInputBox = document.getElementById("fen-input");
-fenInputBox.value = prevFen;
+let fenOnBoard = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const parameters = location.search.replace(/%20/g, " ").split("?");
 if (parameters != "") {
     const firstParameter = parameters[1];
     switch (firstParameter.slice(0, 4)) {
         case "fen=":
-            prevFen = fenInputBox.value = firstParameter.slice(4, firstParameter.length);
+            fenOnBoard = firstParameter.slice(4, firstParameter.length);
             if (parameters[2] && parameters[2].includes("flip")) isBoardFlipped = true;
             break;
         case "pgn=":
@@ -820,15 +929,28 @@ if (parameters != "") {
             isBoardFlipped = true;
     }
 }
-checkFenValidity(fenInputBox.value);
-if (!isFenValid) {
+const parsedFen = checkFenValidity(fenOnBoard);
+if (parsedFen) {
+    Notation.assign.parsedFen(parsedFen);
+    fenInputBox.value = fenOnBoard;
+} else {
     alert("The FEN specified by the URL is not valid.\nEnter a valid FEN.");
-    fenInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    checkFenValidity(fenInputBox.value);
+    fenOnBoard = fenInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    Notation.assign.parsedFen(Notation.read.fen(fenOnBoard));
+    document.getElementById("fen-validity-indicator").innerHTML = `
+        <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--color)" opacity="0.6">
+            <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+        </svg>`;
 }
 setUpEmptyBoard();
 setUpPieces();
 if (isBoardFlipped) {
     isBoardFlipped = !isBoardFlipped;
     flipBoard();
+}
+if (activeColor === "b") {
+    document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
+} else {
+    document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
 }

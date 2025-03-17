@@ -185,12 +185,12 @@
             <div class="options">
                 <button class="dangerous-button" onclick="{
                     if (confirm('Are you sure you want to reset all settings?')) {
-                    currentSettings = {...settings.default};
+                    currentSettings = {...Settings.default};
                     applyCurrentSettings();
                     }
                     }">Reset</button>
                 <button onclick="{
-                    settings.save(currentSettings);
+                    Settings.save(currentSettings);
                     hideFullScreenBox('settings-container');
                     }">Done</button>
             </div>
@@ -207,11 +207,19 @@
             <div class="options">
                 <button onclick="{
                     hideFullScreenBox('board-position-input-container');
-                    fenInputBox.value = prevFen;
+                    fenInputBox.value = fenOnBoard;
                     }">Cancel</button>
                 <button onclick="{
-                    if (isFenValid) {
-                        prevFen = fenInputBox.value;
+                    const parsedFen = checkFenValidity(fenInputBox.value);
+                    if (parsedFen) {
+                        fenOnBoard = fenInputBox.value;
+                        Notation.assign.parsedFen(parsedFen);
+                        if (activeColor === 'b') {
+                            document.getElementById('to-move').innerHTML = `<div style='background-color: black;'></div><b>Black</b>&nbsp;to move`;
+                        } else {
+                            document.getElementById('to-move').innerHTML = `<div style='background-color: white;'></div><b>White</b>&nbsp;to move`;
+                        }
+                        document.getElementById('move-grid').innerHTML = '';
                         setUpPieces();
                         hideFullScreenBox('board-position-input-container');
                     } else alert('The entered FEN is not valid.');

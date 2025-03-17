@@ -67,7 +67,7 @@ function applyCurrentSettings() {
     setDropDownValue("font-selector", currentSettings.font, true);
 }
 
-const settings = {
+const Settings = {
     default: {
         version: "beta6",
         appearance: "system",
@@ -110,9 +110,9 @@ const settings = {
     },
 };
 
-let currentSettings = settings.get();
+let currentSettings = Settings.get();
 if (!currentSettings) {
-    settings.save(settings.default);
-    currentSettings = {...settings.default};
+    Settings.save(Settings.default);
+    currentSettings = {...Settings.default};
 }
 applyCurrentSettings();
