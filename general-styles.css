@@ -65,12 +65,12 @@ a {
     color: var(--active-color);
     border-radius: var(--button-radius);
     outline-offset: 2px;
-}
-a:hover, a:focus-visible {
-    text-decoration-color: var(--active-color);
-}
-a:focus-visible {
-    outline: var(--focus-outline);
+    &:hover, &:focus-visible {
+        text-decoration-color: var(--active-color);
+    }
+    &:focus-visible {
+        outline: var(--focus-outline);
+    }
 }
 
 /* Buttons */
@@ -87,27 +87,27 @@ button {
     color: var(--color);
     background-color: transparent;
     cursor: pointer;
-}
-button:hover, button:focus-visible {
-    fill: var(--active-color);
-    color: var(--active-color);
-    background-color: var(--active-background-color);
-}
-button:focus-visible {
-    outline: var(--focus-outline);
-}
-button > svg {
-    margin-right: var(--padding);
+    &:hover, &:focus-visible {
+        fill: var(--active-color);
+        color: var(--active-color);
+        background-color: var(--active-background-color);
+    }
+    &:focus-visible {
+        outline: var(--focus-outline);
+    }
+    & > svg {
+        margin-right: var(--padding);
+    }
 }
 .dangerous-button {
     margin-right: auto;
-}
-.dangerous-button:hover {
-    color: var(--danger-color);
-}
-.dangerous-button:focus-visible {
-    color: var(--danger-color);
-    outline-color: var(--danger-color);
+    &:hover {
+        color: var(--danger-color);
+    }
+    &:focus-visible {
+        color: var(--danger-color);
+        outline-color: var(--danger-color);
+    }
 }
 
 /* Text inputs */
@@ -122,10 +122,10 @@ input[type=text], textarea {
     color: var(--color);
     background-color: var(--background-color);
     resize: none;
-}
-input[type=text]:focus, textarea:focus {
-    border-color: var(--active-color);
-    outline: none;
+    &:focus {
+        border-color: var(--active-color);
+        outline: none;
+    }
 }
 
 /* Illustrated radio inputs */
@@ -138,30 +138,32 @@ input[type=text]:focus, textarea:focus {
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-}
-.radio-input > input {
-    display: none;
-}
-.radio-input > input + div {
-    overflow: hidden;
-    position: relative;
-    width: calc(sqrt(3) * 40px);
-    height: 40px;
-    margin: 2px;
-    margin-bottom: 4px;
-    background-color: var(--background-color);
-    border-radius: var(--button-radius);
-    outline: var(--border);
-    outline-offset: 2px;
-}
-.radio-input > input:checked + div {
-    outline-color: var(--active-color);
-}
-.radio-input > input:checked ~ span {
-    font-weight: bold;
-}
-.radio-input > div:focus-visible {
-  outline: var(--focus-outline);
+    & > input {
+        display: none;
+        & + div {
+            overflow: hidden;
+            position: relative;
+            width: calc(sqrt(3) * 40px);
+            height: 40px;
+            margin: 2px;
+            margin-bottom: 4px;
+            background-color: var(--background-color);
+            border-radius: var(--button-radius);
+            outline: var(--border);
+            outline-offset: 2px;
+        }
+        &:checked {
+            & + div {
+                outline-color: var(--active-color);
+            }
+            & ~ span {
+                font-weight: bold;
+            }
+        }
+    }
+    & > div:focus-visible {
+        outline: var(--focus-outline);
+    }
 }
 
 /* Game area */
@@ -193,12 +195,12 @@ input[type=text]:focus, textarea:focus {
 }
 .player-rating {
     color: rgb(112, 112, 112);
-}
-.player-rating::before {
-    content: "(";
-}
-.player-rating::after {
-    content: ")";
+    &::before {
+        content: "(";
+    }
+    &::after {
+        content: ")";
+    }
 }
 
 /* Moves-display and other options */
@@ -217,22 +219,22 @@ input[type=text]:focus, textarea:focus {
 #move-grid {
     flex: 1;
     overflow-y: auto;
-}
-#move-grid > div {
-    display: flex;
-}
-#move-grid > div:nth-child(2n) {
-    background-color: var(--background-color);
-}
-#move-grid > div > div {
-    padding: var(--padding);
-    overflow-x: hidden;
-}
-#move-grid > div > div:nth-child(1) {
-    width: 10%;
-}
-#move-grid > div > div:nth-child(2), #move-grid > div > div:nth-child(3) {
-    width: 45%;
+    & > div {
+        display: flex;
+        &:nth-child(2n) {
+            background-color: var(--background-color);
+        }
+        & > div {
+            padding: var(--padding);
+            overflow-x: hidden;
+            &:nth-child(1) {
+                width: 10%;
+            }
+            &:nth-child(2), &:nth-child(3) {
+                width: 45%;
+            }
+        }
+    }
 }
 
 /* Turn indicator */
@@ -242,22 +244,22 @@ input[type=text]:focus, textarea:focus {
     padding: var(--padding);
     background-color: var(--background-color);
     border-top: var(--border);
-}
-#to-move > div {
-    overflow: hidden;
-    position: relative;
-    width: 32px;
-    height: 32px;
-    margin-right: var(--margin);
-    background-color: white;
-    border: var(--border);
-    border-radius: var(--box-radius);
-}
-#to-move > div > div {
-    position: absolute;
-    left: 50%;
-    width: 100%;
-    height: 100%;
+    & > div {
+        overflow: hidden;
+        position: relative;
+        width: 32px;
+        height: 32px;
+        margin-right: var(--margin);
+        background-color: white;
+        border: var(--border);
+        border-radius: var(--box-radius);
+        & > div {
+            position: absolute;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+        }
+    }
 }
 
 /* Button-containers */
@@ -267,6 +269,8 @@ input[type=text]:focus, textarea:focus {
     border-top: var(--border);
     padding: 0;
 }
+
+/* Overflow menus */
 .overflow-container {
     display: none;
     position: absolute;
@@ -276,12 +280,16 @@ input[type=text]:focus, textarea:focus {
     border: var(--border);
     border-radius: var(--box-radius);
     z-index: 7;
+    will-change: transform;
+    & > button {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        outline-offset: -2px;
+    }
 }
-.overflow-container > button {
-    width: 100%;
-    margin: 0;
-    border-radius: 0;
-    outline-offset: -2px;
+.more-button > * {
+    pointer-events: none;
 }
 
 /* Drop-down menus */
@@ -322,12 +330,12 @@ input[type=text]:focus, textarea:focus {
     border: var(--border);
     border-radius: var(--box-radius);
     box-shadow: 8px 16px 16px var(--shadow-color);
-}
-.drop-down-menu > button {
-    width: 100%;
-    margin: 0;
-    border-radius: 0;
-    outline-offset: -2px;
+    & > button {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        outline-offset: -2px;
+    }
 }
 
 /* Full-screen boxes */
@@ -340,24 +348,24 @@ input[type=text]:focus, textarea:focus {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 8;
-}
-.full-screen-box-container > div {
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: var(--border);
-    border-radius: var(--box-radius);
-    background-color: var(--background-color);
+    & > div {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: var(--border);
+        border-radius: var(--box-radius);
+        background-color: var(--background-color);
+    }
 }
 .input-grid {
     display: grid;
     padding: 16px;
     background-color: var(--contrast-background-color);
-}
-.input-grid > span {
-    display: flex;
-    align-items: center;
+    & > span {
+        display: flex;
+        align-items: center;
+    }
 }
 
 /* Settings-views (general, advanced, etc.) */

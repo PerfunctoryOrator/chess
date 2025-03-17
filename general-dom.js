@@ -21,12 +21,11 @@ function toggleDropDownMenu(id) {
         );
     }
 }
-function setDropDownValue(dropDownId, newValue, isSetUp) {
+function setDropDownValue(dropDownId, newValue) {
     const menu = document.getElementById(dropDownId);
     const menuDisplay = menu.children[0];
     menuDisplay.setAttribute("value", newValue);
     menuDisplay.innerText = menu.querySelector(`button[value=${newValue}]`).innerText;
-    if (!isSetUp) toggleDropDownMenu(dropDownId);
     if (dropDownId === "font-selector") {
         setFont(newValue);
     }
@@ -102,7 +101,8 @@ document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
 });
 document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => {
     let defaultValue = "", defaultValueText = "";
-    menuContainer.querySelectorAll("button").forEach((option) => {
+    menuContainer.querySelectorAll("button").forEach(option => {
+        option.classList.add("drop-down-options");
         option.setAttribute("onclick", `setDropDownValue("${menuContainer.id}", value);`);
         if (option.getAttribute("selected") === "") {
             defaultValue = option.value;
@@ -130,4 +130,26 @@ document.querySelectorAll(".full-screen-box-container").forEach(box => {
 
 document.querySelectorAll(".more-button").forEach(button => {
     button.addEventListener("click", () => toggleOverflowContainer(button.id));
+});
+document.querySelectorAll(".overflow-container > button").forEach(button => {
+    button.classList.add("overflow-button");
+});
+
+document.addEventListener("click", (event) => {
+    const targetClass = event.target.classList;
+    if (!(targetClass.contains("more-button") ||
+        targetClass.contains("overflow-container") ||
+        targetClass.contains("drop-down-menu-selection") ||
+        targetClass.contains("drop-down-menu"))) {
+        document.querySelectorAll(".more-button").forEach(button => {
+            if (document.querySelector(`#${button.id} + .overflow-container`).style.display !== "") {
+                toggleOverflowContainer(button.id);
+            }
+        });
+        document.querySelectorAll(".drop-down-menu-container").forEach(container => {
+            if (container.children[2].style.display === "block") {
+                toggleDropDownMenu(container.id);
+            }
+        });
+    }
 });

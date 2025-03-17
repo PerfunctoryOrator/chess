@@ -153,12 +153,14 @@
     box-shadow: inset 0 0 var(--move-indicator-color);
     transition: box-shadow 0.2s var(--emphasis-animation);
 }
-.board-square:hover > .empty-move-indicator {
-    width: 50%;
-    height: 50%;
-}
-.board-square:hover > .capture-indicator {
-    box-shadow: inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color);
+.board-square:hover {
+    & > .empty-move-indicator {
+        width: 50%;
+        height: 50%;
+    }
+    & > .capture-indicator {
+        box-shadow: inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color);
+    }
 }
 
 /* Promotion box */
@@ -168,15 +170,22 @@
     width: var(--board-square-width);
     height: calc(4 * var(--board-square-width));
     background-color: whitesmoke;
-    border: var(--border);
-    box-shadow: 8px 16px 16px var(--shadow-color);
+    border: 2px solid gainsboro;
+    box-shadow: 8px 16px 16px rgba(0, 0, 0, 0.2);
     animation: appear 0.3s ease-in-out;
-    z-index: 6;
-}
-.promotion-box > button {
-    padding: 0;
-    margin: 0;
-    border-radius: 0;
+    z-index: 7;
+    & > button {
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        outline-offset: -2px;
+    }
+    & > button:hover, & > button:focus-visible {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    & > button:focus-visible {
+        outline: 2px solid rgb(42, 100, 227);
+    }
 }
 
 /* Animations */
@@ -210,7 +219,6 @@
         opacity: 0;
     }
 }
-
 @keyframes appear {
     from {
         opacity: 0;

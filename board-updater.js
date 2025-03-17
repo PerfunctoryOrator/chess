@@ -93,7 +93,7 @@ const Notation = {
                 moveNotation += "x";
             }
             moveNotation += toSquare;
-            if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo;
+            if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo.toUpperCase();
             const newBoard = board.slice();
             newBoard[convertSquareToIndex(fromSquare)] = "";
             newBoard[convertSquareToIndex(toSquare)] = promotedTo ? promotedTo : pieceType;
@@ -177,15 +177,19 @@ const PieceMoveMethods = {
                 highlightLegalMoves(event.target, true);
                 event.dataTransfer.effectAllowed = "move";
                 event.target.style.transition = "";
-                setTimeout(() => event.target.style.opacity = "0.5", 0);
+                event.target.style.transform = "scale(1.2)";
+                setTimeout(() => {
+                    event.target.style.opacity = "0.5";
+                    event.target.style.transform = "";
+                    if (document.querySelector(`#${draggedPieceId}.file-name`)) {
+                        document.querySelector(`#${draggedPieceId}.file-name`).style.opacity = "";
+                    }
+                    if (document.querySelector(`#${draggedPieceId}.rank-name`)) {
+                        document.querySelector(`#${draggedPieceId}.rank-name`).style.opacity = "";
+                    }
+                }, 0);
             },
             dragend: (event) => {
-                if (document.querySelector(`#${draggedPieceId}.file-name`)) {
-                    document.querySelector(`#${draggedPieceId}.file-name`).style.opacity = "";
-                }
-                if (document.querySelector(`#${draggedPieceId}.rank-name`)) {
-                    document.querySelector(`#${draggedPieceId}.rank-name`).style.opacity = "";
-                }
                 if (draggedPieceId !== event.target.id) {
                     const ripple = document.createElement("div");
                     ripple.className = "ripple";
@@ -622,32 +626,30 @@ function highlightLegalMoves(chessPiece, dragged = false) {
 }
 function showPromotionDialog(targetSquare) {
     return new Promise(resolve => {
+        const pieceToPromote = activePiece;
         const promotionBox = document.createElement("div");
+        const promotionChoices = activeColor === "w" ? ["Q", "N", "R", "B"] : ["q", "n", "r", "b"];
+        if (activeColor === "w" === isBoardFlipped) promotionChoices.reverse();
         promotionBox.className = "promotion-box";
-        promotionBox.style.top = `calc(${8 - parseInt(targetSquare[1])}*var(--board-square-width) - 2px)`;
-        promotionBox.style.left = `calc(${targetSquare[0].charCodeAt(0) - "a".charCodeAt(0)}*var(--board-square-width) - 2px)`;
-
         if (isBoardFlipped) {
-            promotionBox.style.top = `calc(${parseInt(targetSquare[1]) - 1}*var(--board-square-width) - 2px)`;
+            promotionBox.style.top = `calc(${parseInt(targetSquare[1]) - (activeColor === "w" ? 4 : 1)}*var(--board-square-width) - 2px)`;
             promotionBox.style.left = `calc(${"h".charCodeAt(0) - targetSquare[0].charCodeAt(0)}*var(--board-square-width) - 2px)`;
+        } else {
+            promotionBox.style.top = `calc(${(activeColor === "w" ? 8 : 5) - parseInt(targetSquare[1])}*var(--board-square-width) - 2px)`;
+            promotionBox.style.left = `calc(${targetSquare[0].charCodeAt(0) - "a".charCodeAt(0)}*var(--board-square-width) - 2px)`;
         }
-
         promotionBox.innerHTML = `
-            <button class="chess-piece ${activeColor === "w" ? "Q" : "q"} value="Q"></button>
-            <button class="chess-piece ${activeColor === "w" ? "N" : "n"} value="N" style="top: var(--board-square-width);"></button>
-            <button class="chess-piece ${activeColor === "w" ? "R" : "r"} value="R" style="top: calc(2 * var(--board-square-width));"></button>
-            <button class="chess-piece ${activeColor === "w" ? "B" : "b"} value="B" style="top: calc(3 * var(--board-square-width));"></button>
+            <button class="chess-piece ${promotionChoices[0]}" value="${promotionChoices[0]}"></button>
+            <button class="chess-piece ${promotionChoices[1]}" value="${promotionChoices[1]}" style="top: var(--board-square-width);"></button>
+            <button class="chess-piece ${promotionChoices[2]}" value="${promotionChoices[2]}" style="top: calc(2 * var(--board-square-width));"></button>
+            <button class="chess-piece ${promotionChoices[3]}" value="${promotionChoices[3]}" style="top: calc(3 * var(--board-square-width));"></button>
         `;
-
         document.getElementById("piece-area").appendChild(promotionBox);
-
-        // Add click event listeners to all promotion pieces
         promotionBox.querySelectorAll("button").forEach(button => {
             button.addEventListener("click", function() {
                 const selectedPiece = this.value;
                 promotionBox.remove();
-                // Return the selected piece
-                resolve(selectedPiece);
+                resolve([pieceToPromote, selectedPiece]);
             });
         });
     });
@@ -659,11 +661,26 @@ async function movePiece(targetSquare, dropped = false) {
     const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
     const previousRank = parseInt(activePiece.id[1]);
 
+    // Change the position of piece
+    const activePieceStyle = activePiece.style;
+    if (!dropped) {
+        activePieceStyle.outline = "none";
+        activePieceStyle.transition = `top 0.3s ${pieceMoveAnimation}, left 0.3s ${pieceMoveAnimation}, opacity 0.3s ease-out`;
+    }
+    activePieceStyle.top = `calc(${isBoardFlipped ? toRank - 1 : 8 - toRank} * var(--board-square-width))`;
+    activePieceStyle.left = `calc(${isBoardFlipped ? 7 - toFile : toFile} * var(--board-square-width))`;
+    if (!dropped) setTimeout(() => {
+        activePieceStyle.outline = "";
+        activePieceStyle.transition = "opacity 0.3s ease-out";
+    }, 300);
+
     // Handle pawn promotion
     let promotedTo = "";
     if (pieceType.toLowerCase() === "p") {
         if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
             promotedTo = await showPromotionDialog(targetSquare);
+            activePiece = promotedTo[0];
+            promotedTo = promotedTo[1];
             activePiece.classList.remove("P", "p");
             activePiece.classList.add(promotedTo);
         }
@@ -674,13 +691,6 @@ async function movePiece(targetSquare, dropped = false) {
 
     // Get move notation
     const moveNotation = Notation.write.san(activePiece.id, targetSquare, promotedTo);
-
-    // Change the position of piece
-    const activePieceStyle = activePiece.style;
-    if (!dropped) activePieceStyle.transition = `top 0.3s ${pieceMoveAnimation}, left 0.3s ${pieceMoveAnimation}, opacity 0.3s ease-out`;
-    activePieceStyle.top = `calc(${isBoardFlipped ? toRank - 1 : 8 - toRank} * var(--board-square-width))`;
-    activePieceStyle.left = `calc(${isBoardFlipped ? 7 - toFile : toFile} * var(--board-square-width))`;
-    if (!dropped) setTimeout(() => activePieceStyle.transition = "opacity 0.3s ease-out", 300);
 
     // Handle en passant
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {

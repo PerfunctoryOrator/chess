@@ -64,7 +64,7 @@ function applyCurrentSettings() {
     setAppearance(currentSettings.appearance);
     setEdges(currentSettings.edges);
     setButtons(currentSettings.buttons);
-    setDropDownValue("font-selector", currentSettings.font, true);
+    setDropDownValue("font-selector", currentSettings.font);
 }
 
 const Settings = {
