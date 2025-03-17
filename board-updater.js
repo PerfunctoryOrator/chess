@@ -644,7 +644,7 @@ function showPromotionDialog(targetSquare) {
         // Add click event listeners to all promotion pieces
         promotionBox.querySelectorAll("button").forEach(button => {
             button.addEventListener("click", function() {
-                const selectedPiece = this.getAttribute("value");
+                const selectedPiece = this.value;
                 promotionBox.remove();
                 // Return the selected piece
                 resolve(selectedPiece);
