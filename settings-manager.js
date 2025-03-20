@@ -8,16 +8,17 @@ function setAppearance(mode) {
         root.setProperty("--border-color", values[5]);
         root.setProperty("--shadow-color", values[6]);
         root.setProperty("--star-color", values[7]);
+        root.setProperty("--sent-message-color", values[8]);
     }
     switch (mode) {
         case "system":
-            setAppearanceColors(["", "", "", "", "", "", "", ""]);
+            setAppearanceColors(["", "", "", "", "", "", "", "", ""]);
             break;
         case "light":
-            setAppearanceColors(["var(--dark-gray)", "whitesmoke", "white", "rgb(42, 100, 227)", "rgba(0, 0, 0, 0.05)", "gainsboro", "rgba(0, 0, 0, 0.2)", "gold"]);
+            setAppearanceColors(["var(--dark-gray)", "whitesmoke", "white", "rgb(42, 100, 227)", "rgba(0, 0, 0, 0.05)", "gainsboro", "rgba(0, 0, 0, 0.2)", "gold", "peachpuff"]);
             break;
         case "dark":
-            setAppearanceColors(["whitesmoke", "var(--dark-gray)", "black", "rgb(150, 200, 255)", "rgba(255, 255, 255, 0.2)", "rgb(112, 112, 112)", "rgba(0, 0, 0, 0.8)", "goldenrod"]);
+            setAppearanceColors(["whitesmoke", "var(--dark-gray)", "black", "rgb(150, 200, 255)", "rgba(255, 255, 255, 0.2)", "rgb(112, 112, 112)", "rgba(0, 0, 0, 0.8)", "goldenrod", "rgb(205, 92, 68)"]);
             break;
     }
     currentSettings.appearance = mode;
@@ -96,7 +97,7 @@ function applyCurrentSettings() {
 
 const Settings = {
     default: {
-        version: "beta10",
+        version: "beta11",
         appearance: "system",
         edges: "soft",
         buttons: "round",

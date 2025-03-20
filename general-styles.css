@@ -14,6 +14,7 @@
     --border-color: gainsboro;
     --shadow-color: rgba(0, 0, 0, 0.2);
     --star-color: gold;
+    --sent-message-color: peachpuff;
 
     --font-family: var(--system-font-stack);
     --padding: 8px;
@@ -421,6 +422,75 @@ input[type="text"], input[type="email"], textarea {
     animation-delay: 0.4s;
 }
 
+/* Chat box elements */
+#chat-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    grid-row: 2 / 3;
+    grid-column: 3 / 4;
+    min-width: 25em;
+    height: calc(8 * var(--board-square-width));
+    border: var(--border);
+    border-radius: var(--box-radius);
+    background-color: var(--contrast-background-color);
+}
+#chat-area {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden auto;
+}
+#chat-area > div {
+    padding: var(--padding);
+    margin: var(--padding);
+    position: relative;
+    overflow-wrap: break-word;
+    max-width: 20em;
+    border-radius: var(--box-radius);
+}
+#chat-area > div > .user-id {
+    font-size: 12px;
+    font-style: italic;
+    color: darkgray;
+}
+#chat-area > .sent {
+    background-color: var(--sent-message-color);
+    align-self: flex-end;
+    animation: send 0.3s var(--emphasis-animation);
+}
+#chat-area > .received {
+    background-color: var(--active-background-color);
+    align-self: flex-start;
+    animation: receive 0.3s var(--emphasis-animation);
+}
+#chat-area > .system {
+    font-style: italic;
+    color: darkgray;
+    animation: receive 0.3s var(--emphasis-animation);
+}
+#chat-container > .options {
+    background-color: var(--background-color);
+}
+#chat-container > .options > input {
+    flex: 1;
+    border: none;
+    border-radius: 0;
+    border-bottom-left-radius: var(--box-radius);
+    outline-offset: -2px;
+    &:focus {
+        outline: var(--focus-outline);
+    }
+}
+#chat-container .options > button {
+    padding: var(--margin);
+    margin: 0;
+    border-radius: 0;
+    border-bottom-right-radius: var(--box-radius);
+    outline-offset: -2px;
+}
+
 /* Special styles */
 #position-input {
     width: 640px;
@@ -440,6 +510,7 @@ input[type="text"], input[type="email"], textarea {
         --border-color: rgb(112, 112, 112);
         --shadow-color: rgba(0, 0, 0, 0.8);
         --star-color: goldenrod;
+        --sent-message-color: rgb(205, 92, 68);
     }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -482,6 +553,26 @@ input[type="text"], input[type="email"], textarea {
         transform: scale(0.7);
     }
 }
+@keyframes send {
+    from {
+        opacity: 0;
+        transform: translateX(32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+@keyframes receive {
+    from {
+        opacity: 0;
+        transform: translateX(-32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
 
 /* .toggle-switch {
     position: relative;
@@ -521,76 +612,3 @@ input:checked + .slider {
 input:checked + .slider::before {
     transform: translateX(1.5em) scale(150%);
 } */
-
-#chat-container {
-    height: calc(8 * var(--board-square-width));
-}
-#chat-container input {
-    outline-offset: -2px;
-}
-#chat-container input:focus {
-    outline: var(--focus-outline);
-}
-#chat-container button {
-    border-radius: 0;
-    border-bottom-right-radius: var(--box-radius);
-    margin: 0;
-    padding: var(--margin);
-    outline-offset: -2px;
-}
-#chat-grid {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden auto;
-    flex: 1;
-}
-#chat-grid > div {
-    padding: var(--padding);
-    margin: var(--padding);
-    position: relative;
-    overflow-wrap: break-word;
-    max-width: 20em;
-    border-radius: var(--box-radius);
-}
-#chat-grid > .sent {
-    background-color: peachpuff;
-    align-self: flex-end;
-    animation: send 0.3s var(--emphasis-animation);
-}
-#chat-grid > .received {
-    background-color: var(--active-background-color);
-    align-self: flex-start;
-    animation: receive 0.3s var(--emphasis-animation);
-}
-#chat-grid > .system {
-    font-style: italic;
-    color: darkgray;
-    animation: receive 0.3s var(--emphasis-animation);
-}
-
-@media (prefers-color-scheme: dark) {
-    #chat-grid > .sent {
-        background-color: rgb(205, 92, 68);
-        align-self: flex-end;
-    }
-}
-@keyframes send {
-    from {
-        opacity: 0;
-        transform: translateX(32px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-@keyframes receive {
-    from {
-        opacity: 0;
-        transform: translateX(-32px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}

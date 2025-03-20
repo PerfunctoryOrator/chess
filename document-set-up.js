@@ -1,5 +1,4 @@
 function toggleDropDownMenu(id) {
-    const menuSelectionDisplay = document.getElementById(id).children[0].style;
     const arrow = document.getElementById(id).children[1].style;
     const menu = document.getElementById(id).children[2];
     const menuOptions = menu.children;

@@ -12,28 +12,34 @@
         <link rel="stylesheet" href="board-styles.css" />
         <link rel="stylesheet" href="board-pieces.css" />
         <link rel="stylesheet" href="general-styles.css" />
-        <script src="document-set-up.js" defer></script>
-        <script src="settings-manager.js" defer></script>
-        <script src="board-updater.js" defer></script>
         <script type="module">
           // Import the functions you need from the SDKs you need
           import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-          // TODO: Add SDKs for Firebase products that you want to use
-          // https://firebase.google.com/docs/web/setup#available-libraries
-
-          // Your web app's Firebase configuration
+          import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+          import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+          // Firebase configuration
           const firebaseConfig = {
             apiKey: "AIzaSyDnghgqxt0zCbgzogKWhliJuDlGQSyJy0o",
             authDomain: "chess-57.firebaseapp.com",
+            databaseURL: "https://chess-57-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "chess-57",
             storageBucket: "chess-57.firebasestorage.app",
             messagingSenderId: "452702142334",
-            appId: "1:452702142334:web:0aa60a6d5b214ef925fd2f"
+            appId: "1:452702142334:web:0aa60a6d5b214ef925fd2f",
           };
-
           // Initialize Firebase
           const app = initializeApp(firebaseConfig);
+          const db = getDatabase(app);
+          const auth = getAuth();
+          // Sign in user anonymously
+          signInAnonymously(auth)
+            .then(() => console.log("Signed in anonymously"))
+            .catch((error) => console.error("Auth error:", error));
         </script>
+        <script src="document-set-up.js" defer></script>
+        <script src="settings-manager.js" defer></script>
+        <script src="board-updater.js" defer></script>
+        <script src="chat.js" type="module" defer></script>
     </head>
     <body>
         <div id="game-area">
@@ -126,20 +132,11 @@
                     </div>
                 </div>
             </div>
-            <div id="chat-container" style="display: flex; flex-direction: column; position: relative; grid-row: 2 / 3; grid-column: 3 / 4; min-width: 25em; border: var(--border); border-radius: var(--box-radius); background-color: var(--contrast-background-color); overflow: hidden;">
-                <div id="chat-grid"></div>
-                <div class="options" style="background-color: var(--background-color);">
-                    <input type="text" placeholder="Enter a message…" style="border-radius: 0; border: none; flex: 1; border-bottom-left-radius: var(--box-radius);" onkeydown="{
-                        if (event.key === 'Enter') {
-                            const newMessage = document.createElement('div');
-                            newMessage.className = 'sent';
-                            newMessage.innerText = value;
-                            value = '';
-                            document.getElementById('chat-grid').appendChild(newMessage);
-                            newMessage.focus();
-                        }
-                        }" />
-                    <button>Send</button>
+            <div id="chat-container">
+                <div id="chat-area"></div>
+                <div class="options">
+                    <input id="chat-input" type="text" placeholder="Enter a message…" />
+                    <button id="send-button">Send</button>
                 </div>
             </div>
             <div id="chess-board"></div>
