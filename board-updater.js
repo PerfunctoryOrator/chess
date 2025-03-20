@@ -69,6 +69,7 @@ const Notation = {
             fullmoveNumber = parseInt(readValueFromFen());
             if (!fullmoveNumber == true) return false;
             if (piecePositions.filter(x => x === "K").length !== 1 || piecePositions.filter(x => x === "k").length !== 1) return false;
+            if (isKingInCheck(piecePositions, "w") || isKingInCheck(piecePositions, "b")) return false;
             return [
                 piecePositions,
                 activeColor,
@@ -501,6 +502,7 @@ function getCandidateMoves(pieceSquare, board) {
                 pieceRank + forward === parseInt(enPassantSquare[1])) {
                 candidateMoves.push(enPassantSquare);
             }
+            break;
     }
     return candidateMoves;
 }
@@ -864,18 +866,10 @@ function mouseLeavesPiece(square) {
 function checkFenValidity(fen) {
     const parsedFen = Notation.read.fen(fen.trim());
     if (parsedFen) {
-        document.getElementById("fen-validity-indicator").innerHTML = `
-            <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--color)" opacity="0.6">
-                <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-            </svg>`;
+        positionInputBox.style.border = "";
         return parsedFen;
     }
-    document.getElementById("fen-validity-indicator").innerHTML = `
-        <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--danger-color)">
-            <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-        </svg>`;
+    positionInputBox.style.border = "2px solid var(--danger-color)";
     return false;
 }
 function flipBoard() {
@@ -921,7 +915,7 @@ let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock =
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let lastMoveSquares = [], selectedSquare = "";
-const fenInputBox = document.getElementById("fen-input");
+const positionInputBox = document.getElementById("position-input");
 let fenOnBoard = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const parameters = location.search.replace(/%20/g, " ").split("?");
 if (parameters != "") {
@@ -937,18 +931,19 @@ if (parameters != "") {
             break;
         case "flip":
             isBoardFlipped = true;
+            break;
     }
 }
 const parsedFen = checkFenValidity(fenOnBoard);
 if (parsedFen) {
     Notation.assign.parsedFen(parsedFen);
-    fenInputBox.value = fenOnBoard;
+    positionInputBox.value = fenOnBoard;
 } else {
     alert("The FEN specified by the URL is not valid.\nEnter a valid FEN.");
-    fenOnBoard = fenInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    fenOnBoard = positionInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     Notation.assign.parsedFen(Notation.read.fen(fenOnBoard));
     document.getElementById("fen-validity-indicator").innerHTML = `
-        <!-- Icon sourced from Google Fonts (Material Icons) — Apache licence 2.0 -->
+        <!-- Icon sourced from Google Fonts (Material Icons) — Apache license 2.0 -->
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--color)" opacity="0.6">
             <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
         </svg>`;

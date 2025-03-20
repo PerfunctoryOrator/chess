@@ -24,7 +24,6 @@
     grid-column: 1 / 2;
     float: left;
     width: 32px;
-    height: calc(2 * (4*var(--board-square-width) - var(--padding)));
     padding: var(--padding) 0;
     border: var(--border);
     border-radius: var(--box-radius);
@@ -52,7 +51,7 @@
     overflow: hidden;
     position: relative;
     width: max-content;
-    margin: 0 var(--padding);
+    margin: 0 var(--padding) 0 0;
     border: var(--border);
     border-radius: var(--box-radius);
 }
