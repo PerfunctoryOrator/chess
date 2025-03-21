@@ -451,22 +451,30 @@ input[type="text"], input[type="email"], textarea {
     max-width: 75%;
     border-radius: var(--box-radius);
 }
-#chat-area > div > .user-id {
+.message-user-id {
     font-size: 12px;
     font-style: italic;
     color: darkgray;
 }
-#chat-area > .sent {
+.message-time {
+    font-size: 12px;
+    font-style: italic;
+    color: darkgray;
+}
+.sent > .message-time {
+    color: var(--color);
+}
+.sent {
     background-color: var(--sent-message-color);
     align-self: flex-end;
     animation: send 0.3s var(--emphasis-animation);
 }
-#chat-area > .received {
+.received {
     background-color: var(--active-background-color);
     align-self: flex-start;
     animation: receive 0.3s var(--emphasis-animation);
 }
-#chat-area > .system {
+.system {
     font-style: italic;
     color: darkgray;
     animation: receive 0.3s var(--emphasis-animation);

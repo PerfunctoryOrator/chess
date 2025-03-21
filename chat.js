@@ -61,9 +61,14 @@ onChildAdded(messagesRef, (snapshot) => {
         }
     }
 
+    // Format timestamp to a readable date and time
+    const messageTime = new Date(messageData.timestamp);
+    const formattedTime = messageTime.toLocaleString(); // Uses local date/time format
+
     messageDiv.innerHTML = `
-        <div class="user-id">${userName()}</div>
+        <div class="message-user-id">${userName()}</div>
         ${messageData.text}
+        <div class="message-time">${formattedTime}</div>
         `;
     const chatArea = document.getElementById("chat-area");
     chatArea.appendChild(messageDiv);
