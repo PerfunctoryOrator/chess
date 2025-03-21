@@ -4,7 +4,7 @@
     <head>
         <meta name="google-site-verification" content="SgHsyBjRk9hujHsLjvXAa6a-775GwMKcGfRNNdM3Jpc" />
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" />
         <title>Play Chess!</title>
         <link rel="canonical" href="" />
@@ -17,16 +17,8 @@
           import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
           import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
           import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-          // Firebase configuration
-          const firebaseConfig = {
-            apiKey: "AIzaSyDnghgqxt0zCbgzogKWhliJuDlGQSyJy0o",
-            authDomain: "chess-57.firebaseapp.com",
-            databaseURL: "https://chess-57-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "chess-57",
-            storageBucket: "chess-57.firebasestorage.app",
-            messagingSenderId: "452702142334",
-            appId: "1:452702142334:web:0aa60a6d5b214ef925fd2f",
-          };
+          import { firebaseConfig } from "./config/firebaseConfig.js";
+
           // Initialize Firebase
           const app = initializeApp(firebaseConfig);
           const db = getDatabase(app);
