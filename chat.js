@@ -52,10 +52,10 @@ onChildAdded(messagesRef, (snapshot) => {
                 return "Yashdeep (Chrome — Local)";
             case "":
                 return "Yashdeep (Phone — Local)";
-            case "":
-                return "Yashdeep (Chrome — Web)";
-            case "":
+            case "TLGBwVIy0YcD9vOLVWqSRAThYpr1":
                 return "Yashdeep (Safari — Web)";
+            case "OSc62uBOzTPEwqofEUJuKyL5wPd2":
+                return "Yashdeep (Chrome — Web)";
             case "":
                 return "Yashdeep (Phone — Web)";
             default:
