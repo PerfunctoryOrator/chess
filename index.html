@@ -118,7 +118,7 @@
             </div>
             <div id="chess-board"></div>
         </div>
-        <div class="full-screen-box-container" id="settings-container" style="display: block;">
+        <div class="full-screen-box-container" id="settings-container">
             <h2 style="padding: var(--margin); margin: 0; background-color: var(--contrast-background-color);">Settings</h2>
             <hr style="background-color: var(--border-color); height: 2px; border: none; margin: 0;" />
             <div class="options" style="justify-content: center; border-top: none; border-bottom: var(--border);">
@@ -220,12 +220,12 @@
             <div class="options">
                 <button onclick="{
                     hideFullScreenBox('board-position-input-container');
-                    fenInputBox.value = fenOnBoard;
+                    positionInputBox.value = fenOnBoard;
                     }">Cancel</button>
                 <button onclick="{
-                    const parsedFen = checkFenValidity(fenInputBox.value);
+                    const parsedFen = checkFenValidity(positionInputBox.value);
                     if (parsedFen) {
-                        fenOnBoard = fenInputBox.value;
+                        fenOnBoard = positionInputBox.value;
                         Notation.assign.parsedFen(parsedFen);
                         if (activeColor === 'b') {
                             document.getElementById('to-move').innerHTML = `<div style='background-color: black;'></div><b>Black</b>&nbsp;to move`;

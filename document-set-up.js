@@ -1,4 +1,4 @@
-function toggleDropDownMenu(id) {
+const toggleDropDownMenu = (id) => {
     const arrow = document.getElementById(id).children[1].style;
     const menu = document.getElementById(id).children[2];
     const menuOptions = menu.children;
@@ -30,7 +30,7 @@ function toggleDropDownMenu(id) {
         );
     }
 }
-function setDropDownValue(dropDownId, newValue) {
+const setDropDownValue = (dropDownId, newValue) => {
     const menu = document.getElementById(dropDownId);
     const menuDisplay = menu.children[0];
     menuDisplay.setAttribute("value", newValue);
@@ -40,7 +40,7 @@ function setDropDownValue(dropDownId, newValue) {
     }
 }
 
-function showFullScreenBox(id) {
+const showFullScreenBox = (id) => {
     const box = document.getElementById(id);
     const boxContent = box.querySelector("div");
     box.style.display = "block";
@@ -53,7 +53,7 @@ function showFullScreenBox(id) {
         { duration: 300, easing: "ease" },
     );
 }
-function hideFullScreenBox(id) {
+const hideFullScreenBox = (id) => {
     const box = document.getElementById(id);
     const boxContent = box.querySelector("div");
     boxContent.animate(
@@ -67,7 +67,7 @@ function hideFullScreenBox(id) {
     setTimeout(() => box.style.display = "", 200);
 }
 
-function toggleOverflowContainer(callerId) {
+const toggleOverflowContainer = (callerId) => {
     const overflowButton = document.getElementById(callerId);
     const overflowMenu = document.querySelector(`#${callerId} + .overflow-container`);
     const menuOptions = overflowMenu.children;
@@ -99,7 +99,7 @@ function toggleOverflowContainer(callerId) {
         );
     }
 }
-function setStarRating(id, rating) {
+const setStarRating = (id, rating) => {
     const ratings = document.getElementById(id).children;
     for (let i = 0; i < ratings.length; i++) {
         if (i > 9 - rating) {
