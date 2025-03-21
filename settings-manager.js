@@ -123,7 +123,7 @@ const Settings = {
             console.error("Could not save settings to local storage:", error);
         }
     },
-    get: function() {
+    get: function () {
         try {
             const stored = localStorage.getItem("userSettings");
             if (stored) {

@@ -139,7 +139,7 @@ const PieceMoveMethods = {
                 activePiece = null;
             }
         },
-        remove: function() {
+        remove: function () {
             document.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.removeEventListener("click", this.piece);
             });
@@ -148,7 +148,7 @@ const PieceMoveMethods = {
             });
             document.removeEventListener("click", this.document);
         },
-        add: function() {
+        add: function () {
             this.remove();
             document.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.addEventListener("click", this.piece);
@@ -309,7 +309,7 @@ const PieceMoveMethods = {
                 }
             }
         },
-        remove: function() {
+        remove: function () {
             document.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.draggable = false;
                 piece.removeEventListener("dragstart", this.piece.dragstart);
@@ -328,7 +328,7 @@ const PieceMoveMethods = {
             document.removeEventListener("dragover", this.document.dragover);
             document.removeEventListener("drop", this.document.drop);
         },
-        add: function() {
+        add: function () {
             this.remove();
             document.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.draggable = true;
@@ -648,7 +648,7 @@ function showPromotionDialog(targetSquare) {
         `;
         document.getElementById("piece-area").appendChild(promotionBox);
         promotionBox.querySelectorAll("button").forEach(button => {
-            button.addEventListener("click", function() {
+            button.addEventListener("click", function () {
                 const selectedPiece = this.value;
                 promotionBox.remove();
                 resolve([pieceToPromote, selectedPiece]);

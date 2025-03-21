@@ -12,25 +12,10 @@
         <link rel="stylesheet" href="board-styles.css" />
         <link rel="stylesheet" href="board-pieces.css" />
         <link rel="stylesheet" href="general-styles.css" />
-        <script type="module">
-          // Import the functions you need from the SDKs you need
-          import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-          import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-          import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-          import { firebaseConfig } from "./config/firebaseConfig.js";
-
-          // Initialize Firebase
-          const app = initializeApp(firebaseConfig);
-          const db = getDatabase(app);
-          const auth = getAuth();
-          // Sign in user anonymously
-          signInAnonymously(auth)
-            .then(() => console.log("Signed in anonymously"))
-            .catch((error) => console.error("Auth error:", error));
-        </script>
         <script src="document-set-up.js" defer></script>
         <script src="settings-manager.js" defer></script>
         <script src="board-updater.js" defer></script>
+        <script src="sign-in.js" type="module" defer></script>
         <script src="chat.js" type="module" defer></script>
     </head>
     <body>
@@ -133,7 +118,7 @@
             </div>
             <div id="chess-board"></div>
         </div>
-        <div class="full-screen-box-container" id="settings-container">
+        <div class="full-screen-box-container" id="settings-container" style="display: block;">
             <h2 style="padding: var(--margin); margin: 0; background-color: var(--contrast-background-color);">Settings</h2>
             <hr style="background-color: var(--border-color); height: 2px; border: none; margin: 0;" />
             <div class="options" style="justify-content: center; border-top: none; border-bottom: var(--border);">

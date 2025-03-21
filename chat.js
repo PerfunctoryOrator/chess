@@ -1,9 +1,9 @@
 import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-const db = getDatabase();
+const database = getDatabase();
 const auth = getAuth();
-const messagesRef = ref(db, "messages");
+const messagesRef = ref(database, "messages");
 
 document.getElementById("send-button").addEventListener("click", sendMessage);
 document.getElementById("chat-input").addEventListener("keydown", (event) => {
