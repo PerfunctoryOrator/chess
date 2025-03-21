@@ -50,14 +50,20 @@ onChildAdded(messagesRef, (snapshot) => {
                 return "Yashdeep (Safari — Local)";
             case "9jwzB1ujoaMHGhPFisqqCboPS3k1":
                 return "Yashdeep (Chrome — Local)";
-            case "":
+            case "ehxsP6gzotY1ehblVnGBudGjZEx2":
                 return "Yashdeep (Phone — Local)";
             case "TLGBwVIy0YcD9vOLVWqSRAThYpr1":
                 return "Yashdeep (Safari — Web)";
             case "OSc62uBOzTPEwqofEUJuKyL5wPd2":
                 return "Yashdeep (Chrome — Web)";
-            case "":
+            case "8x6W3RbTuMMt9fBZF9wrKTiQ8lt1":
                 return "Yashdeep (Phone — Web)";
+            case "ta0DLloUE0Z4ZmuOaELFrDNqKtB3":
+                return "Yashdeep (Safari — Web #2)";
+            case "HS785uYkvnaOALwiKGQuqNP9e7y2":
+                return "Yashdeep (Chrome — Web #2)";
+            case "Mc3vzB1AXGOvtyKlXqyQkjEAgYw1":
+                return "Yashdeep (Phone — Web #2)";
             default:
                 return "Unknown (" + messageData.uid + ")";
         }

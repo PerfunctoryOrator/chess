@@ -5,5 +5,5 @@ export const firebaseConfig = {
     projectId: "perforator-chess",
     storageBucket: "perforator-chess.firebasestorage.app",
     messagingSenderId: "1032974911551",
-    appId: "1:1032974911551:web:8539eccd9043a11b2e108a"
+    appId: "1:1032974911551:web:8539eccd9043a11b2e108a",
 };
