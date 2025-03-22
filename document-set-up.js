@@ -8,12 +8,14 @@ const toggleDropDownMenu = (id) => {
         }
         arrow.transition = "transform 0.3s ease-in-out";
         arrow.transform = "";
-        setTimeout(() => arrow.transition = "", 300);
+        setTimeout(() => {
+            arrow.transition = "";
+            menu.style.display = "";
+        }, 300);
         menu.animate(
             [{ opacity: "1", transform: "translateY(0)" }, { opacity: "0", transform: "translateY(-32px)" }],
             { duration: 300, easing: emphasisAnimation },
         );
-        setTimeout(() => menu.style.display = "", 200);
     } else {
         arrow.transition = "transform 0.3s ease-in-out";
         arrow.transform = "translateY(-50%) rotate(0)";

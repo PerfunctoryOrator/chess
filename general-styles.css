@@ -228,6 +228,7 @@ input[type="text"], input[type="email"], textarea {
 #board-info {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     position: relative;
     grid-row: 2 / 3;
     grid-column: 4 / 5;
@@ -250,12 +251,15 @@ input[type="text"], input[type="email"], textarea {
 #move-grid > div > div {
     padding: var(--padding);
     overflow-x: hidden;
-}
-#move-grid > div > div:nth-child(1) {
-    width: 10%;
-}
-#move-grid > div > div:nth-child(2), #move-grid > div > div:nth-child(3) {
-    width: 45%;
+    &:nth-child(1):not(.info) {
+        width: 10%;
+    }
+    &:nth-child(2), &:nth-child(3) {
+        width: 45%;
+    }
+    &.info {
+        width: 100%;
+    }
 }
 
 /* Turn indicator */
@@ -380,10 +384,10 @@ input[type="text"], input[type="email"], textarea {
     position: absolute;
     top: 40%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);
-    background-color: var(--background-color);
+    transform: translate(-50%, -50%);
 }
 .input-grid {
     display: grid;
@@ -527,16 +531,29 @@ input[type="text"], input[type="email"], textarea {
         transition: none;
     }
 }
-@media (max-width: 1254px) {
-    #board-info-options {
+@media (max-width: 1680px) {
+    #game-area {
+        grid-template: repeat(4, max-content) / repeat(3, max-content);
+    }
+    #board-info {
         grid-row: 4 / 5;
         grid-column: 2 / 3;
+        width: calc(8 * var(--board-square-width));
         min-width: 0;
-        margin: 0 var(--padding);
+    }
+}
+@media (max-width: 1280px) {
+    #game-area {
+        grid-template: repeat(5, max-content) / repeat(2, max-content);
+    }
+    #chat-container {
+        grid-row: 5 / 6;
+        grid-column: 2 / 3;
+        min-width: 0;
         width: calc(8 * var(--board-square-width));
     }
 }
-@media (max-width: 550px) {
+@media (max-width: 800px) {
     button > svg {
         margin-right: 0;
     }
@@ -548,6 +565,66 @@ input[type="text"], input[type="email"], textarea {
     }
     :root {
         --options-display: flex;
+    }
+    body {
+        margin: 0;
+    }
+    #game-area {
+        grid-template: repeat(6, max-content) / repeat(1, max-content);
+    }
+    #eval-bar {
+        grid-row: 1 / 2;
+        grid-column: 1 / 2;
+        width: auto;
+        border: none;
+        border-bottom: var(--border);
+        border-radius: 0;
+    }
+    #white-player {
+        grid-row: 2 / 3;
+        grid-column: 1 / 2;
+        margin-right: 0;
+    }
+    .avatar {
+        width: 32px;
+        height: 32px;
+        border: none;
+    }
+    :root {
+        --board-square-width: min(
+        calc((100vh - 16px - 2*2px) / 8),
+        calc((100vw - 16px) / 8));
+    }
+    #chess-board {
+        grid-row: 3 / 4;
+        grid-column: 1 / 2;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        margin: 0;
+    }
+    #black-player {
+        grid-row: 4 / 5;
+        grid-column: 1 / 2;
+        margin-right: 0;
+    }
+    #board-info {
+        grid-row: 5 / 6;
+        grid-column: 1 / 2;
+        width: calc(8 * var(--board-square-width));
+        margin: 0;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+    #chat-container {
+        grid-row: 6 / 7;
+        grid-column: 1 / 2;
+        width: calc(8 * var(--board-square-width));
+        margin: 0;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
     }
 }
 

@@ -80,6 +80,7 @@
     width: var(--board-square-width);
     height: var(--board-square-width);
     outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
+    cursor: pointer;
 }
 .chess-piece:hover {
     outline: calc(var(--board-square-width) / 25) solid white;
@@ -127,7 +128,7 @@
 }
 
 /* Highlighted square */
-.highlight-square {
+.square-highlight {
     width: 100%;
     height: 100%;
     background-color: rgba(255, 255, 0, 0.5);

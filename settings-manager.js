@@ -75,7 +75,8 @@ function setFont(font) {
                 document.getElementById("font-input-text").style.display = "";
             }
             if (customFontInputBox.value === "") root.setProperty("--font-family", "");
-                else root.setProperty("--font-family", `${customFontInputBox.value}, var(--system-font-stack)`);
+            else root.setProperty("--font-family", `${customFontInputBox.value}, var(--system-font-stack)`);
+            document.querySelector("#font-selector button[value='custom']").style.fontFamily = customFontInputBox.value;
             currentSettings.customFont = customFontInputBox.value;
     }
     currentSettings.font = font;
