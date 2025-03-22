@@ -434,7 +434,7 @@ input[type="text"], input[type="email"], textarea {
     position: relative;
     grid-row: 2 / 3;
     grid-column: 3 / 4;
-    min-width: 25em;
+    width: 25em;
     height: calc(8 * var(--board-square-width));
     border: var(--border);
     border-radius: var(--box-radius);
@@ -445,7 +445,6 @@ input[type="text"], input[type="email"], textarea {
     flex: 1;
     flex-direction: column;
     overflow: hidden auto;
-    width: 25em;
 }
 #chat-area > div {
     padding: var(--padding);
