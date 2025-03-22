@@ -137,21 +137,19 @@ document.querySelectorAll(".rating-area").forEach(area => {
 });
 
 document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
-    radioDiv.setAttribute("tabindex", "0");
-    radioDiv.addEventListener("keydown", (event) => {
+    radioDiv.tabIndex = "0";
+    radioDiv.setAttribute("onkeydown", `{
         if (event.key === " " || event.key === "Enter") {
-        event.preventDefault();
-        click();
+            event.preventDefault();
+            click();
         }
-    });
+    }`);
 });
 document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => {
     let defaultValue = "", defaultValueText = "";
     menuContainer.querySelectorAll("button").forEach(option => {
         option.classList.add("drop-down-options");
-        option.addEventListener("click", function () {
-            setDropDownValue(menuContainer.id, this.value);
-        });
+        option.setAttribute("onclick", `setDropDownValue("${menuContainer.id}", value);`);
         if (option.getAttribute("selected") === "") {
             defaultValue = option.value;
             defaultValueText = option.innerText;
