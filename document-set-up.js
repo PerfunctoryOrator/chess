@@ -29,7 +29,7 @@ const toggleDropDownMenu = (id) => {
             { duration: 300, easing: emphasisAnimation },
         );
     }
-}
+};
 const setDropDownValue = (dropDownId, newValue) => {
     const menu = document.getElementById(dropDownId);
     const menuDisplay = menu.children[0];
@@ -38,7 +38,7 @@ const setDropDownValue = (dropDownId, newValue) => {
     if (dropDownId === "font-selector") {
         setFont(newValue);
     }
-}
+};
 
 const showFullScreenBox = (id) => {
     const box = document.getElementById(id);
@@ -52,7 +52,7 @@ const showFullScreenBox = (id) => {
         [{ transform: "translate(-50%, -60%)" }, { transform: "translate(-50%, -50%)" }],
         { duration: 300, easing: "ease" },
     );
-}
+};
 const hideFullScreenBox = (id) => {
     const box = document.getElementById(id);
     const boxContent = box.querySelector("div");
@@ -65,7 +65,7 @@ const hideFullScreenBox = (id) => {
         { duration: 300, easing: emphasisAnimation },
     )
     setTimeout(() => box.style.display = "", 200);
-}
+};
 
 const toggleOverflowContainer = (callerId) => {
     const overflowButton = document.getElementById(callerId);
@@ -98,7 +98,7 @@ const toggleOverflowContainer = (callerId) => {
             { duration: 300, easing: emphasisAnimation },
         );
     }
-}
+};
 const setStarRating = (id, rating) => {
     const ratings = document.getElementById(id).children;
     for (let i = 0; i < ratings.length; i++) {
@@ -108,7 +108,7 @@ const setStarRating = (id, rating) => {
         }
         ratings[i].querySelector("div").style.backgroundColor = "";
     }
-}
+};
 
 const emphasisAnimation = "linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%)";
 document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.querySelector(":root")).getPropertyValue("--board-color");
