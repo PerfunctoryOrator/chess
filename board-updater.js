@@ -539,7 +539,7 @@ function showPromotionDialog(targetSquare) {
             });
         });
     });
-};
+}
 async function movePiece(targetSquare, dropped = false) {
     // Basic variables
     const toFile = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
