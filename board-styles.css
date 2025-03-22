@@ -70,10 +70,19 @@
 .light-board-square {
     background-color: var(--light-square-color);
 }
+.piece-dragged-over {
+    outline: calc(var(--board-square-width) / 25) solid white;
+    z-index: 2;
+    box-shadow: 0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6);
+}
 .chess-piece {
     position: absolute;
     width: var(--board-square-width);
     height: var(--board-square-width);
+    outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
+}
+.chess-piece:hover {
+    outline: calc(var(--board-square-width) / 25) solid white;
 }
 
 /* File and rank indicators */

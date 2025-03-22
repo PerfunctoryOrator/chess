@@ -121,10 +121,11 @@ const Notation = {
         },
     },
 };
+let draggedPieceId = "";
 const PieceMoveMethods = {
     click: {
         piece: (event) => {
-            highlightLegalMoves(event.currentTarget);
+            highlightLegalMoves(event.target);
         },
         square: (event) => {
             if (activePiece && legalMoves.includes(event.target.id)) movePiece(event.target.id);
@@ -160,198 +161,79 @@ const PieceMoveMethods = {
         },
     },
     dragDrop: {
-        piece: {
-            dragstart: (event) => {
-                draggedPieceId = event.target.id;
-                if (document.querySelector(`#${event.target.id}.highlight-square`)) {
-                    document.querySelector(`#${event.target.id}.highlight-square`).style.outline = "none";
-                }
-                document.querySelector(`#${event.target.id}.board-square`).style.outline = "none";
-                if (document.querySelector(`#${event.target.id}.file-name`)) {
-                    document.querySelector(`#${event.target.id}.file-name`).style.opacity = "0";
-                }
-                if (document.querySelector(`#${event.target.id}.rank-name`)) {
-                    document.querySelector(`#${event.target.id}.rank-name`).style.opacity = "0";
-                }
-                activePiece = null;
-                highlightSelectedSquare();
-                highlightLegalMoves(event.target, true);
-                event.dataTransfer.effectAllowed = "move";
-                event.target.style.transition = "";
-                event.target.style.transform = "scale(1.2)";
-                setTimeout(() => {
-                    event.target.style.opacity = "0.5";
-                    event.target.style.transform = "";
-                    if (document.querySelector(`#${draggedPieceId}.file-name`)) {
-                        document.querySelector(`#${draggedPieceId}.file-name`).style.opacity = "";
-                    }
-                    if (document.querySelector(`#${draggedPieceId}.rank-name`)) {
-                        document.querySelector(`#${draggedPieceId}.rank-name`).style.opacity = "";
-                    }
-                }, 0);
-            },
-            dragend: (event) => {
-                if (draggedPieceId !== event.target.id) {
-                    const ripple = document.createElement("div");
-                    ripple.className = "ripple";
-                    document.querySelector(`#${event.target.id}.board-square`).appendChild(ripple);
-                    setTimeout(() => ripple.remove(), 500);
-                }
-                highlightSelectedSquare(event.target.id);
-                document.querySelectorAll(".move-indicator").forEach(indicator => {
-                    indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-                    setTimeout(() => indicator.remove(), 200);
-                });
-                draggedPieceId = "";
-                activePiece = null;
-                legalMoves = [];
-                event.target.style.opacity = "";
-                event.target.style.transition = "opacity 0.3s ease-out";
-            },
-            dragover: (event) => {
-                event.preventDefault();
-            },
-            dragenter: (event) => {
-                const square = document.querySelector(`#${event.target.id}.board-square`);
-                if (document.querySelector(`#${square.id}.highlight-square`)) {
-                    document.querySelector(`#${square.id}.highlight-square`).style.outline = "calc(var(--board-square-width) / 25) solid white";
-                } else {
-                    square.style.outline = "calc(var(--board-square-width) / 25) solid white";
-                }
-                square.style.zIndex = "2";
-                square.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
-                if (document.querySelector(`#${square.id}.capture-indicator`)) {
-                    const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
-                    moveIndicator.width = moveIndicator.height = "70%";
-                    moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
-                }
-            },
-            dragleave: (event) => {
-                const square = document.querySelector(`#${event.target.id}.board-square`);
-                if (document.querySelector(`#${square.id}.highlight-square`)) {
-                    document.querySelector(`#${square.id}.highlight-square`).style.outline = "";
-                }
-                square.style.outline = "";
-                square.style.zIndex = "";
-                square.style.boxShadow = "";
-                if (document.querySelector(`#${square.id}.capture-indicator`)) {
-                    const moveIndicator = document.querySelector(`#${square.id}.capture-indicator`).style;
-                    moveIndicator.width = moveIndicator.height = "";
-                    moveIndicator.boxShadow = "";
-                }
-            },
-            drop: (event) => {
-                event.preventDefault();
-                const square = document.querySelector(`#${event.target.id}.board-square`);
-                if (document.querySelector(`#${square.id}.highlight-square`)) {
-                    document.querySelector(`#${square.id}.highlight-square`).style.outline = "";
-                }
-                square.style.outline = "";
-                square.style.zIndex = "";
-                square.style.boxShadow = "";
-                if (legalMoves.includes(square.id)) {
-                    event.target.style.opacity = "0";
-                    setTimeout(() => event.target.remove(), 300);
-                    movePiece(square.id, true);
-                    halfmoveClock = 0;
-                }
-            },
+        mousedown: (event) => {
+            activePiece = null;
+            highlightLegalMoves(event.target, true);
+            if (activePiece === null) return;
+            draggedPieceId = activePiece.id;
+            activePiece.style.position = "fixed";
+            activePiece.style.transform = "translate(-50%, -50%) scale(1.3)";
+            activePiece.style.top = event.clientY + "px";
+            activePiece.style.left = event.clientX + "px";
+            activePiece.style.outline = "none";
         },
-        square: {
-            dragover: (event) => {
-                event.preventDefault();
-            },
-            dragenter: (event) => {
-                event.target.style.outline = "calc(var(--board-square-width) / 25) solid white";
-                event.target.style.zIndex = "2";
-                event.target.style.boxShadow = "0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6)";
-                if (document.querySelector(`#${event.target.id}.empty-move-indicator`)) {
-                    const moveIndicator = document.querySelector(`#${event.target.id}.empty-move-indicator`).style;
-                    moveIndicator.width = moveIndicator.height = "50%";
-                } else if (document.querySelector(`#${event.target.id}.capture-indicator`)) {
-                    const moveIndicator = document.querySelector(`#${event.target.id}.capture-indicator`).style;
-                    moveIndicator.width = moveIndicator.height = "70%";
-                    moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
-                }
-            },
-            dragleave: (event) => {
-                event.target.style.outline = "";
-                event.target.style.zIndex = "";
-                event.target.style.boxShadow = "";
-                if (document.querySelector(`#${event.target.id}.empty-move-indicator`)) {
-                    const moveIndicator = document.querySelector(`#${event.target.id}.empty-move-indicator`).style;
-                    moveIndicator.width = moveIndicator.height = "";
-                } else if (document.querySelector(`#${event.target.id}.capture-indicator`)) {
-                    const moveIndicator = document.querySelector(`#${event.target.id}.capture-indicator`).style;
-                    moveIndicator.width = moveIndicator.height = "";
-                    moveIndicator.boxShadow = "";
-                }
-            },
-            drop: (event) => {
-                event.preventDefault();
-                event.target.style.outline = "";
-                event.target.style.zIndex = "";
-                event.target.style.boxShadow = "";
-                if (legalMoves.includes(event.target.id)) movePiece(event.target.id, true);
-            },
-        },
-        document: {
-            dragover: (event) => {
-                event.preventDefault();
-            },
-            drop: (event) => {
-                event.preventDefault();
-                if (!event.target.classList.contains("board-square")) {
-                    document.querySelectorAll(".move-indicator").forEach(indicator => {
-                        indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-                        setTimeout(() => indicator.remove(), 200);
-                    });
-                }
+        mouseup: (event) => {
+            if (!draggedPieceId) return;
+            const draggedOverSquare = document.querySelector(".piece-dragged-over");
+            if (draggedOverSquare) draggedOverSquare.classList.remove("piece-dragged-over");
+            document.querySelectorAll(".move-indicator").forEach(indicator => {
+                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
+                setTimeout(() => indicator.remove(), 200);
+            });
+            activePiece.style.position = "";
+            activePiece.style.transform = "";
+            activePiece.style.pointerEvents = "none";
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (legalMoves.includes(dropTarget.id)) {
+                if (dropTarget.classList.contains("chess-piece")) dropTarget.remove();
+                movePiece(dropTarget.id, true);
+            } else {
+                const file = draggedPieceId[0].charCodeAt(0) - "a".charCodeAt(0);
+                const rank = parseInt(draggedPieceId[1]);
+                activePiece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
+                activePiece.style.left = `calc(${file} * var(--board-square-width))`;
             }
+            activePiece.style.pointerEvents = "";
+            activePiece.style.outline = "";
+            activePiece = null;
+            legalMoves = [];
+            draggedPieceId = "";
+        },
+        mousemove: (event) => {
+            if (!draggedPieceId) return;
+            const draggedOverSquare = document.querySelector(".piece-dragged-over");
+            if (draggedOverSquare) draggedOverSquare.classList.remove("piece-dragged-over");
+            activePiece.style.top = event.clientY + "px";
+            activePiece.style.left = event.clientX + "px";
+            activePiece.style.pointerEvents = "none";
+            let dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (dropTarget.classList.contains("board-square")) {
+                if (dropTarget.classList.contains("chess-piece")) {
+                    dropTarget = document.querySelector(`#${dropTarget.id}.board-square`);
+                }
+                dropTarget.classList.add("piece-dragged-over");
+            }
+            activePiece.style.pointerEvents = "";
         },
         remove: function () {
             document.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.draggable = false;
-                piece.removeEventListener("dragstart", this.piece.dragstart);
-                piece.removeEventListener("dragend", this.piece.dragend);
-                piece.removeEventListener("dragover", this.piece.dragover);
-                piece.removeEventListener("dragenter", this.piece.dragenter);
-                piece.removeEventListener("dragleave", this.piece.dragleave);
-                piece.removeEventListener("drop", this.piece.drop);
+                piece.removeEventListener("mousedown", this.mousedown);
+                piece.removeEventListener("mouseup", this.mouseup);
             });
-            document.querySelectorAll(".board-square").forEach(square => {
-                square.removeEventListener("dragover", this.square.dragover);
-                square.removeEventListener("dragenter", this.square.dragenter);
-                square.removeEventListener("dragleave", this.square.dragleave);
-                square.removeEventListener("drop", this.square.drop);
-            });
-            document.removeEventListener("dragover", this.document.dragover);
-            document.removeEventListener("drop", this.document.drop);
+            document.removeEventListener("mousemove", this.mousemove);
         },
         add: function () {
             this.remove();
             document.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.draggable = true;
-                piece.addEventListener("dragstart", this.piece.dragstart);
-                piece.addEventListener("dragend", this.piece.dragend);
-                piece.addEventListener("dragover", this.piece.dragover);
-                piece.addEventListener("dragenter", this.piece.dragenter);
-                piece.addEventListener("dragleave", this.piece.dragleave);
-                piece.addEventListener("drop", this.piece.drop);
+                piece.addEventListener("mousedown", this.mousedown);
+                piece.addEventListener("mouseup", this.mouseup);
             });
-            document.querySelectorAll(".board-square").forEach(square => {
-                square.addEventListener("dragover", this.square.dragover);
-                square.addEventListener("dragenter", this.square.dragenter);
-                square.addEventListener("dragleave", this.square.dragleave);
-                square.addEventListener("drop", this.square.drop);
-            });
-            document.addEventListener("dragover", this.document.dragover);
-            document.addEventListener("drop", this.document.drop);
+            document.addEventListener("mousemove", this.mousemove);
         },
     },
 };
 const convertSquareToIndex = (square) => 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
-function setUpEmptyBoard() {
+const setUpEmptyBoard = () => {
     const chessBoard = document.createElement("div");
     let isLightSquare;
     for (let rank = 8; rank > 0; rank--) {
@@ -398,7 +280,7 @@ function setUpEmptyBoard() {
     chessBoard.id = "chess-board";
     document.getElementById("game-area").appendChild(chessBoard);
 }
-function setUpPieces() {
+const setUpPieces = () => {
     const chessBoard = document.getElementById("chess-board");
     const pieceArea = document.createElement("div");
     let squareNumber = 0;
@@ -425,7 +307,7 @@ function setUpPieces() {
     PieceMoveMethods.click.add();
     PieceMoveMethods.dragDrop.add();
 }
-function getCandidateMoves(pieceSquare, board) {
+const getCandidateMoves = (pieceSquare, board) => {
     let candidateMoves = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
     const pieceFile = pieceSquare[0];
@@ -506,7 +388,7 @@ function getCandidateMoves(pieceSquare, board) {
     }
     return candidateMoves;
 }
-function isSquareAttacked(board, square, attackerColor) {
+const isSquareAttacked = (board, square, attackerColor) => {
     for (let i = 0; i < board.length; i++) {
         const attacker = board[i];
         if (!attacker) continue;
@@ -524,7 +406,7 @@ function isSquareAttacked(board, square, attackerColor) {
     }
     return false;
 }
-function isKingInCheck(board, kingColor) {
+const isKingInCheck = (board, kingColor) => {
     const kingPiece = kingColor === "w" ? "K" : "k";
     let kingSquare = "";
     for (let i = 0; i < board.length; i++) {
@@ -538,7 +420,7 @@ function isKingInCheck(board, kingColor) {
     if (kingSquare === "") return false;
     return isSquareAttacked(board, kingSquare, kingColor === "w" ? "b" : "w");
 }
-function getLegalMoves(pieceSquare, board = piecePositions) {
+const getLegalMoves = (pieceSquare, board = piecePositions) => {
     const candidateMoves = getCandidateMoves(pieceSquare, board);
     let legalMovesForPiece = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
@@ -553,7 +435,7 @@ function getLegalMoves(pieceSquare, board = piecePositions) {
     });
     return legalMovesForPiece;
 }
-function isCheckmate(activeColor, board = piecePositions) {
+const isCheckmate = (activeColor, board = piecePositions) => {
     if (!isKingInCheck(board, activeColor)) return false;
     for (let i = 0; i < board.length; i++) {
         const piece = board[i];
@@ -569,7 +451,7 @@ function isCheckmate(activeColor, board = piecePositions) {
     }
     return true;
 }
-function isStalemate(activeColor, board = piecePositions) {
+const isStalemate = (activeColor, board = piecePositions) => {
     if (isKingInCheck(board, activeColor)) return false;
     for (let i = 0; i < board.length; i++) {
         const piece = board[i];
@@ -586,7 +468,7 @@ function isStalemate(activeColor, board = piecePositions) {
     }
     return true;
 }
-function highlightLegalMoves(chessPiece, dragged = false) {
+const highlightLegalMoves = (chessPiece, dragged = false) => {
     if (!dragged) {
         const ripple = document.createElement("div");
         ripple.className = "ripple";
@@ -767,7 +649,7 @@ async function movePiece(targetSquare, dropped = false) {
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++; // If a capture takes place, then `highlightLegalMoves()` takes care of it.
 }
-function highlightSelectedSquare(square = "") {
+const highlightSelectedSquare = (square = "") => {
     if (square && !lastMoveSquares.includes(square)) {
         if (selectedSquare !== "") {
             const highlightSquare = document.querySelector(`#${selectedSquare}.highlight-square`);
@@ -810,7 +692,7 @@ function highlightSelectedSquare(square = "") {
         selectedSquare = "";
     }
 }
-function highlightMoveSquares(fromSquare, toSquare) {
+const highlightMoveSquares = (fromSquare, toSquare) => {
     highlightSelectedSquare();
     lastMoveSquares.forEach(square => {
         const highlightSquare = document.querySelector(`#${square}.highlight-square`);
@@ -838,32 +720,21 @@ function highlightMoveSquares(fromSquare, toSquare) {
         document.querySelector(`#${square}.board-square`).appendChild(highlightSquare);
     });
 }
-function mouseEntersPiece(square) {
-    const boardSquare = document.querySelector(`#${square}.board-square`);
-    if (document.querySelector(`#${square}.highlight-square`)) {
-        document.querySelector(`#${square}.highlight-square`).style.outline = "round(down, calc(var(--board-square-width) / 25), 1px) solid white";
-    } else {
-        boardSquare.style.outline = "round(down, calc(var(--board-square-width) / 25), 1px) solid white";
-    }
+const mouseEntersPiece = (square) => {
     if (document.querySelector(`#${square}.capture-indicator`)) {
         const moveIndicator = document.querySelector(`#${square}.capture-indicator`).style;
         moveIndicator.width = moveIndicator.height = "70%";
         moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
     }
 }
-function mouseLeavesPiece(square) {
-    const boardSquare = document.querySelector(`#${square}.board-square`);
-    if (document.querySelector(`#${square}.highlight-square`)) {
-        document.querySelector(`#${square}.highlight-square`).style.outline = "";
-    }
-    boardSquare.style.outline = "";
+const mouseLeavesPiece = (square) => {
     if (document.querySelector(`#${square}.capture-indicator`)) {
         const moveIndicator = document.querySelector(`#${square}.capture-indicator`).style;
         moveIndicator.width = moveIndicator.height = "";
         moveIndicator.boxShadow = "";
     }
 }
-function checkFenValidity(fen) {
+const checkFenValidity = (fen) => {
     const parsedFen = Notation.read.fen(fen.trim());
     if (parsedFen) {
         positionInputBox.style.border = "";
@@ -872,7 +743,7 @@ function checkFenValidity(fen) {
     positionInputBox.style.border = "2px solid var(--danger-color)";
     return false;
 }
-function flipBoard() {
+const flipBoard = () => {
     isBoardFlipped = !isBoardFlipped;
     document.getElementById("flipSvg").style.transform = `rotate(${isBoardFlipped ? "" : "-"}90deg)`;
     document.getElementById("white-player").style.gridRow = isBoardFlipped ? "1 / 2" : "";
