@@ -592,8 +592,8 @@ input[type="text"], input[type="email"], textarea {
     }
     :root {
         --board-square-width: min(
-        calc((100vh - 16px - 2*2px) / 8),
-        calc((100vw - 16px) / 8));
+        calc((100vh - 2*2px) / 8),
+        calc((100vw) / 8));
     }
     #chess-board {
         grid-row: 3 / 4;
