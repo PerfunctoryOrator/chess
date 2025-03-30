@@ -63,12 +63,11 @@ body {
 
 /* Anchors */
 a {
-    text-decoration-color: skyblue;
     color: var(--active-color);
     border-radius: var(--button-radius);
     outline-offset: 2px;
     &:hover, &:focus-visible {
-        text-decoration-color: var(--active-color);
+        text-decoration: none;
     }
     &:focus-visible {
         outline: var(--focus-outline);
@@ -88,7 +87,6 @@ button {
     fill: var(--color);
     color: var(--color);
     background-color: transparent;
-    cursor: pointer;
     &:hover, &:focus-visible {
         fill: var(--active-color);
         color: var(--active-color);
@@ -144,7 +142,6 @@ input[type="text"], input[type="email"], textarea {
     display: flex;
     flex-direction: column;
     align-items: center;
-    cursor: pointer;
 }
 .radio-input > input {
     display: none;
@@ -342,7 +339,6 @@ input[type="text"], input[type="email"], textarea {
     background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);
-    cursor: pointer;
 }
 .drop-down-menu-selection:focus {
     border: var(--focus-outline);
@@ -671,7 +667,6 @@ input[type="text"], input[type="email"], textarea {
 }
 .slider {
     position: absolute;
-    cursor: pointer;
     top: 0;
     left: 0;
     right: 0;

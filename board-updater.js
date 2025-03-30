@@ -84,7 +84,7 @@ const Notation = {
         },
     },
     write: {
-        san: (fromSquare, toSquare, promotedTo, board = piecePositions) => {
+        san: (fromSquare, toSquare, promotedTo, enPassantSquare, board = piecePositions) => {
             const pieceType = board[convertSquareToIndex(fromSquare)];
             const pieceIsPawn = pieceType.toLowerCase() === "p";
             let moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
@@ -119,21 +119,19 @@ const Notation = {
         },
     },
 };
+let hideLegal = true;
 let draggedPieceId = "";
 const PieceMoveMethods = {
     click: {
         piece: (event) => {
-            highlightLegalMoves(event.target);
+            selectPiece(event.target);
         },
         square: (event) => {
             if (activePiece && legalMoves.includes(event.target.id)) movePiece(event.target.id);
         },
         document: (event) => {
             if (!event.target.classList.contains("chess-piece")) {
-                document.querySelectorAll(".move-indicator").forEach(indicator => {
-                    indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-                    setTimeout(() => indicator.remove(), 200);
-                });
+                removeLegalMoveIndicators();
                 removeSquareHighlight();
                 activePiece = null;
             }
@@ -143,7 +141,6 @@ const PieceMoveMethods = {
                 piece.removeEventListener("click", this.piece);
             });
             document.querySelectorAll(".board-square").forEach(square => {
-                square.style.cursor = "";
                 square.removeEventListener("click", this.square);
             });
             document.removeEventListener("click", this.document);
@@ -154,7 +151,6 @@ const PieceMoveMethods = {
                 piece.addEventListener("click", this.piece);
             });
             document.querySelectorAll(".board-square").forEach(square => {
-                square.style.cursor = "pointer";
                 square.addEventListener("click", this.square);
             });
             document.addEventListener("click", this.document);
@@ -163,7 +159,7 @@ const PieceMoveMethods = {
     dragDrop: {
         mousedown: (event) => {
             activePiece = null;
-            highlightLegalMoves(event.target, true);
+            selectPiece(event.target, true);
             if (activePiece === null) return;
             draggedPieceId = activePiece.id;
             activePiece.style.position = "fixed";
@@ -174,15 +170,21 @@ const PieceMoveMethods = {
             activePiece.style.zIndex = "10";
             activePiece.style.filter = "drop-shadow(6px 6px 2px var(--shadow-color)";
             activePiece.style.cursor = "grabbing";
+            activePiece.style.pointerEvents = "none";
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
+                if (dropTarget.classList.contains("chess-piece")) {
+                    document.querySelector(`#${dropTarget.id}.board-square`).classList.add("under-dragged-piece");
+                } else {
+                    dropTarget.classList.add("under-dragged-piece");
+                }
+            }
+            activePiece.style.pointerEvents = "";
         },
         mouseup: (event) => {
             if (!draggedPieceId) return;
-            const draggedOverSquare = document.querySelector(".piece-dragged-over");
-            if (draggedOverSquare) draggedOverSquare.classList.remove("piece-dragged-over");
-            document.querySelectorAll(".move-indicator").forEach(indicator => {
-                indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-                setTimeout(() => indicator.remove(), 200);
-            });
+            const draggedOverSquare = document.querySelector(".under-dragged-piece");
+            if (draggedOverSquare) draggedOverSquare.classList.remove("under-dragged-piece", "touch-drag");
             activePiece.style.position = "";
             activePiece.style.transform = "";
             activePiece.style.pointerEvents = "none";
@@ -203,40 +205,241 @@ const PieceMoveMethods = {
             activePiece.style.cursor = "grab";
             activePiece = null;
             legalMoves = [];
+            removeLegalMoveIndicators();
             draggedPieceId = "";
         },
         mousemove: (event) => {
             if (!draggedPieceId) return;
-            const draggedOverSquare = document.querySelector(".piece-dragged-over");
-            if (draggedOverSquare) draggedOverSquare.classList.remove("piece-dragged-over");
             activePiece.style.top = event.clientY + "px";
             activePiece.style.left = event.clientX + "px";
             activePiece.style.pointerEvents = "none";
+            const previousDropTarget = document.querySelector(".under-dragged-piece");
             let dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
-                if (dropTarget.classList.contains("chess-piece")) {
-                    dropTarget = document.querySelector(`#${dropTarget.id}.board-square`);
+            if (previousDropTarget !== dropTarget) {
+                if (previousDropTarget) {
+                    previousDropTarget.classList.remove("under-dragged-piece", "touch-drag");
+                    mouseLeavesSquare(previousDropTarget);
                 }
-                dropTarget.classList.add("piece-dragged-over");
+                if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
+                    if (dropTarget.classList.contains("chess-piece")) {
+                        dropTarget = document.querySelector(`#${dropTarget.id}.board-square`);
+                    }
+                    dropTarget.classList.add("under-dragged-piece");
+                    mouseEntersSquare(dropTarget);
+                }
             }
             activePiece.style.pointerEvents = "";
+        },
+        touchstart: (event) => {
+            event.preventDefault();
+            const touch = event.touches[0];
+            const touchEvent = {
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.dragDrop.mousedown(touchEvent);
+            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
+        },
+        touchend: (event) => {
+            event.preventDefault();
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.dragDrop.mouseup(touchEvent);
+        },
+        touchmove: (event) => {
+            event.preventDefault();
+            const touch = event.touches[0];
+            const touchEvent = {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.dragDrop.mousemove(touchEvent);
+            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
         },
         remove: function () {
             document.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "";
                 piece.removeEventListener("mousedown", this.mousedown);
-                piece.removeEventListener("mouseup", this.mouseup);
+                piece.removeEventListener("touchstart", this.touchstart);
             });
+            document.removeEventListener("mouseup", this.mouseup);
             document.removeEventListener("mousemove", this.mousemove);
+            document.removeEventListener("touchend", this.touchend);
+            document.removeEventListener("touchmove", this.touchmove);
         },
         add: function () {
             this.remove();
             document.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "grab";
                 piece.addEventListener("mousedown", this.mousedown);
-                piece.addEventListener("mouseup", this.mouseup);
+                piece.addEventListener("touchstart", this.touchstart, { passive: false });
             });
+            document.addEventListener("mouseup", this.mouseup);
             document.addEventListener("mousemove", this.mousemove);
+            document.addEventListener("touchend", this.touchend, { passive: false });
+            document.addEventListener("touchmove", this.touchmove, { passive: false });
+        },
+    },
+    clickDragDrop: {
+        mousedown: (event) => {
+            if (activePiece !== event.target) {
+                hideLegal = true;
+                selectPiece(event.target, true);
+            }
+            if (!activePiece) return;
+            draggedPieceId = activePiece.id;
+            activePiece.style.position = "fixed";
+            activePiece.style.transform = "translate(-50%, -50%) scale(1.3)";
+            activePiece.style.top = event.clientY + "px";
+            activePiece.style.left = event.clientX + "px";
+            activePiece.style.outline = "none";
+            activePiece.style.zIndex = "10";
+            activePiece.style.filter = "drop-shadow(6px 6px 2px var(--shadow-color)";
+            activePiece.style.cursor = "grabbing";
+            activePiece.style.pointerEvents = "none";
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
+                if (dropTarget.classList.contains("chess-piece")) {
+                    document.querySelector(`#${dropTarget.id}.board-square`).classList.add("under-dragged-piece");;
+                } else {
+                    dropTarget.classList.add("under-dragged-piece");
+                }
+            }
+            activePiece.style.pointerEvents = "";
+        },
+        mouseup: (event) => {
+            if (!draggedPieceId) return;
+            const draggedOverSquare = document.querySelector(".under-dragged-piece");
+            if (draggedOverSquare) draggedOverSquare.classList.remove("under-dragged-piece", "touch-drag");
+            activePiece.style.position = "";
+            activePiece.style.transform = "";
+            activePiece.style.pointerEvents = "none";
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (legalMoves.includes(dropTarget.id)) {
+                if (dropTarget.classList.contains("chess-piece")) dropTarget.remove();
+                movePiece(dropTarget.id, true);
+                removeLegalMoveIndicators();
+                hideLegal = false;
+            } else {
+                const file = draggedPieceId[0].charCodeAt(0) - "a".charCodeAt(0);
+                const rank = parseInt(draggedPieceId[1]);
+                activePiece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
+                activePiece.style.left = `calc(${file} * var(--board-square-width))`;
+            }
+            activePiece.style.pointerEvents = "";
+            activePiece.style.zIndex = "";
+            activePiece.style.outline = "";
+            activePiece.style.filter = "";
+            activePiece.style.cursor = "grab";
+            hideLegal = !hideLegal;
+            if (hideLegal) {
+                activePiece = null;
+                legalMoves = [];
+                removeLegalMoveIndicators();
+            }
+            draggedPieceId = "";
+        },
+        mousemove: (event) => {
+            if (!draggedPieceId) return;
+            activePiece.style.top = event.clientY + "px";
+            activePiece.style.left = event.clientX + "px";
+            activePiece.style.pointerEvents = "none";
+            const previousDropTarget = document.querySelector(".under-dragged-piece");
+            let dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (previousDropTarget !== dropTarget) {
+                if (previousDropTarget) {
+                    previousDropTarget.classList.remove("under-dragged-piece", "touch-drag");
+                    mouseLeavesSquare(previousDropTarget);
+                }
+                if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
+                    if (dropTarget.classList.contains("chess-piece")) {
+                        dropTarget = document.querySelector(`#${dropTarget.id}.board-square`);
+                    }
+                    dropTarget.classList.add("under-dragged-piece");
+                    mouseEntersSquare(dropTarget);
+                }
+            }
+            activePiece.style.pointerEvents = "";
+        },
+        touchstart: (event) => {
+            event.preventDefault();
+            const touch = event.touches[0];
+            const touchEvent = {
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.clickDragDrop.mousedown(touchEvent);
+            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
+        },
+        touchend: (event) => {
+            event.preventDefault();
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
+        },
+        touchmove: (event) => {
+            event.preventDefault();
+            const touch = event.touches[0];
+            const touchEvent = {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.clickDragDrop.mousemove(touchEvent);
+            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
+        },
+        square: (event) => {
+            if (activePiece && legalMoves.includes(event.target.id)) movePiece(event.target.id);
+        },
+        document: (event) => {
+            if (!event.target.classList.contains("chess-piece")) {
+                removeLegalMoveIndicators();
+                removeSquareHighlight();
+                activePiece = null;
+                hideLegal = true;
+            }
+        },
+        remove: function () {
+            document.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "";
+                piece.removeEventListener("mousedown", this.mousedown);
+                piece.removeEventListener("touchstart", this.touchstart);
+            });
+            document.removeEventListener("mouseup", this.mouseup);
+            document.removeEventListener("mousemove", this.mousemove);
+            document.removeEventListener("touchend", this.touchend);
+            document.removeEventListener("touchmove", this.touchmove);
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.removeEventListener("click", this.square);
+            });
+            document.removeEventListener("click", this.document);
+        },
+        add: function () {
+            this.remove();
+            document.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "grab";
+                piece.addEventListener("mousedown", this.mousedown);
+                piece.addEventListener("touchstart", this.touchstart, { passive: false });
+            });
+            document.addEventListener("mouseup", this.mouseup);
+            document.addEventListener("mousemove", this.mousemove);
+            document.addEventListener("touchend", this.touchend, { passive: false });
+            document.addEventListener("touchmove", this.touchmove, { passive: false });
+            document.querySelectorAll(".board-square").forEach(square => {
+                square.addEventListener("click", this.square);
+            });
+            document.addEventListener("click", this.document);
         },
     },
 };
@@ -254,6 +457,8 @@ const setUpEmptyBoard = () => {
             square.id = `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
             square.style.gridRow = `${9 - rank} / ${10 - rank}`;
             square.style.gridColumn = `${file + 1} / ${file + 2}`;
+            square.addEventListener("mouseenter", () => mouseEntersSquare(square));
+            square.addEventListener("mouseleave", () => mouseLeavesSquare(square));
             chessBoard.appendChild(square);
         }
     }
@@ -263,7 +468,6 @@ const setUpEmptyBoard = () => {
     for (let file = 0; file < 8; file++) {
         isLightSquare = !isLightSquare;
         const fileName = document.createElement("div");
-        fileName.className = "file-name";
         fileName.innerText = String.fromCharCode("a".charCodeAt(0) + file);
         fileName.id = fileName.innerText + "1";
         fileName.style.textAlign = "right";
@@ -277,7 +481,6 @@ const setUpEmptyBoard = () => {
     for (let rank = 1; rank < 9; rank++) {
         isLightSquare = !isLightSquare;
         const rankName = document.createElement("div");
-        rankName.className = "rank-name";
         rankName.innerText = 9 - rank;
         rankName.id = "a" + rankName.innerText;
         if (isLightSquare) rankName.classList.add("light-text-color");
@@ -312,8 +515,7 @@ const setUpPieces = () => {
     if (document.getElementById("piece-area")) document.getElementById("piece-area").remove();
     pieceArea.id = "piece-area";
     chessBoard.appendChild(pieceArea);
-    PieceMoveMethods.click.add();
-    PieceMoveMethods.dragDrop.add();
+    PieceMoveMethods.clickDragDrop.add();
 };
 const getCandidateMoves = (pieceSquare, board) => {
     let candidateMoves = [];
@@ -430,6 +632,7 @@ const getLegalMoves = (pieceSquare, board = piecePositions) => {
     let legalMovesForPiece = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
     const movingColor = piece === piece.toUpperCase() ? "w" : "b";
+    if (movingColor !== activeColor) return [];
     candidateMoves.forEach(move => {
         let newBoard = board.slice();
         newBoard[convertSquareToIndex(move)] = newBoard[convertSquareToIndex(pieceSquare)];
@@ -473,47 +676,58 @@ const isStalemate = (activeColor, board = piecePositions) => {
     }
     return true;
 };
-const highlightLegalMoves = (chessPiece, dragged = false) => {
+const removeLegalMoveIndicators = () => {
+    document.querySelectorAll(".move-indicator").forEach(indicator => {
+        indicator.style.animation = "fade-out 0.25s var(--emphasis-animation)";
+        setTimeout(() => indicator.remove(), 200);
+    });
+};
+const selectPiece = (piece, dragged = false) => {
+    // Create ripple effect if the piece is not being dragged
     if (!dragged) {
         const ripple = document.createElement("div");
         ripple.className = "ripple";
-        document.querySelector(`#${chessPiece.id}.board-square`).appendChild(ripple);
+        document.querySelector(`#${piece.id}.board-square`).appendChild(ripple);
         setTimeout(() => ripple.remove(), 500);
     }
-    highlightSquare(chessPiece.id);
-    document.querySelectorAll(".move-indicator").forEach(indicator => {
-        indicator.style.animation = "fade-out 0.2s var(--emphasis-animation)";
-        setTimeout(() => indicator.remove(), 200);
-    });
-    if (activePiece && legalMoves.includes(chessPiece.id)) {
-        chessPiece.style.opacity = "0";
-        setTimeout(() => chessPiece.remove(), 300);
-        movePiece(chessPiece.id);
+
+    // Highlight the selected square
+    highlightSquare(piece.id);
+
+    // Remove all previous legal move indicators
+    removeLegalMoveIndicators();
+
+    // Handle piece captures
+    if (activePiece && legalMoves.includes(piece.id)) {
+        piece.style.opacity = "0";
+        setTimeout(() => piece.remove(), 300);
+        movePiece(piece.id);
         halfmoveClock = 0;
         activePiece = null;
         return;
     }
-    const pieceType = piecePositions[convertSquareToIndex(chessPiece.id)];
-    if (chessPiece === activePiece || (activeColor === "w" ? pieceType.toLowerCase() === pieceType : pieceType.toUpperCase() === pieceType)) {
+
+    // If the piece to be selected is already selected, deselect it
+    if (piece === activePiece) {
         activePiece = null;
         return;
     }
-    activePiece = chessPiece;
-    legalMoves = getLegalMoves(chessPiece.id);
+
+    // Select the piece and highlight legal moves
+    activePiece = piece;
+    legalMoves = getLegalMoves(piece.id);
     legalMoves.forEach(square => {
-        const boardSquare = document.querySelector(`#${square}.board-square`);
         const moveIndicator = document.createElement("div");
         moveIndicator.className = "move-indicator";
-        moveIndicator.id = square;
-        if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(activePiece.id)].toLowerCase() === "p")) {
+        if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(piece.id)].toLowerCase() === "p")) {
             moveIndicator.classList.add("capture-indicator");
         } else {
             moveIndicator.classList.add("empty-move-indicator");
         }
-        boardSquare.appendChild(moveIndicator);
+        document.querySelector(`#${square}.board-square`).appendChild(moveIndicator);
     });
 };
-function showPromotionDialog(targetSquare) {
+const showPromotionDialog = (targetSquare) => {
     return new Promise(resolve => {
         const pieceToPromote = activePiece;
         const promotionBox = document.createElement("div");
@@ -578,9 +792,6 @@ async function movePiece(targetSquare, dropped = false) {
     // Set active color
     activeColor = activeColor === "w" ? "b" : "w";
 
-    // Get move notation
-    const moveNotation = Notation.write.san(activePiece.id, targetSquare, promotedTo);
-
     // Handle en passant
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + toFile)}${previousRank}`;
@@ -591,9 +802,13 @@ async function movePiece(targetSquare, dropped = false) {
     }
 
     // Set new en passant square
+    let prevEnPassantSquare = enPassantSquare;
     if (pieceType.toLowerCase() === "p" && Math.abs(toRank - previousRank) === 2) {
         enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + toFile)}3` : `${String.fromCharCode("a".charCodeAt(0) + toFile)}6`;
     } else enPassantSquare = "";
+
+    // Get move notation
+    const moveNotation = Notation.write.san(activePiece.id, targetSquare, promotedTo, prevEnPassantSquare);
 
     // Update `piecePositions` and highlight move squares
     piecePositions[convertSquareToIndex(activePiece.id)] = "";
@@ -614,7 +829,7 @@ async function movePiece(targetSquare, dropped = false) {
             <div>&nbsp;</div>
             `;
         document.getElementById("move-grid").appendChild(newMoveRow);
-        if (moveNotation.includes("#")) {
+        if (moveNotation[moveNotation.length - 1] === "#") {
             document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;wins by checkmate!`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">1–0</div>`;
@@ -645,7 +860,7 @@ async function movePiece(targetSquare, dropped = false) {
             moveGrid.appendChild(newMoveRow);
         }
         fullmoveNumber++;
-        if (moveNotation.includes("#")) {
+        if (moveNotation[moveNotation.length - 1] === "#") {
             document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;wins by checkmate!`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">0–1</div>`;
@@ -666,7 +881,7 @@ async function movePiece(targetSquare, dropped = false) {
 
     // Handle halfmove clock
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
-    else halfmoveClock++; // If a capture takes place, then `highlightLegalMoves()` takes care of it.
+    else halfmoveClock++; // If a capture takes place, then the `selectPiece` function takes care of it.
 }
 const removeSquareHighlight = (permanent = false, square = "") => {
     if (square === "") {
@@ -687,19 +902,21 @@ const highlightSquare = (square = "", permanent = false, color = "yellow") => {
     if (permanent === true) highlight.classList.add("permanent");
     document.querySelector(`#${square}.board-square`).appendChild(highlight);
 };
+const mouseEntersSquare = (squareElement) => {
+    const moveIndicator = squareElement.querySelector(".move-indicator");
+    if (moveIndicator) moveIndicator.classList.add("hovered");
+};
+const mouseLeavesSquare = (squareElement) => {
+    const moveIndicator = squareElement.querySelector(".move-indicator");
+    if (moveIndicator) moveIndicator.classList.remove("hovered");
+};
 const mouseEntersPiece = (square) => {
-    if (document.querySelector(`#${square}.capture-indicator`)) {
-        const moveIndicator = document.querySelector(`#${square}.capture-indicator`).style;
-        moveIndicator.width = moveIndicator.height = "70%";
-        moveIndicator.boxShadow = "inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color)";
-    }
+    const captureIndicator = document.querySelector(`#${square}.board-square`).querySelector(".capture-indicator");
+    if (captureIndicator) captureIndicator.classList.add("hovered");
 };
 const mouseLeavesPiece = (square) => {
-    if (document.querySelector(`#${square}.capture-indicator`)) {
-        const moveIndicator = document.querySelector(`#${square}.capture-indicator`).style;
-        moveIndicator.width = moveIndicator.height = "";
-        moveIndicator.boxShadow = "";
-    }
+    const captureIndicator = document.querySelector(`#${square}.board-square`).querySelector(".capture-indicator");
+    if (captureIndicator) captureIndicator.classList.remove("hovered");
 };
 const checkFenValidity = (fen) => {
     const parsedFen = Notation.read.fen(fen.trim());
@@ -722,7 +939,7 @@ const flipBoard = () => {
         square.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
     });
     document.getElementById("file-indicator").style.flexDirection = isBoardFlipped ? "row-reverse" : "";
-    document.querySelectorAll(".file-name").forEach(fileIndicator => {
+    document.querySelectorAll("#file-indicator > div").forEach(fileIndicator => {
         fileIndicator.id = fileIndicator.id[0] + (isBoardFlipped ? "8" : "1");
         if (fileIndicator.classList.contains("light-text-color")) {
             fileIndicator.classList.remove("light-text-color");
@@ -731,7 +948,7 @@ const flipBoard = () => {
         }
     });
     document.getElementById("rank-indicator").style.flexDirection = isBoardFlipped ? "column-reverse" : "";
-    document.querySelectorAll(".rank-name").forEach(rankIndicator => {
+    document.querySelectorAll("#rank-indicator > div").forEach(rankIndicator => {
         rankIndicator.id = (isBoardFlipped ? "h" : "a") + rankIndicator.id[1];
         if (rankIndicator.classList.contains("light-text-color")) {
             rankIndicator.classList.remove("light-text-color");

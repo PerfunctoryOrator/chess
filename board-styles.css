@@ -6,6 +6,9 @@
     --brown-board-color: rgb(174, 138, 104);
     --brown-light-square-color: rgb(236, 218, 185);
 
+    --blue-board-color: rgb(100, 148, 235);
+    --blue-light-square-color: rgb(243, 246, 250);
+
     --board-color: var(--brown-board-color);
     --light-square-color: var(--brown-light-square-color);
 
@@ -70,17 +73,32 @@
 .light-board-square {
     background-color: var(--light-square-color);
 }
-.piece-dragged-over {
+.under-dragged-piece {
     outline: calc(var(--board-square-width) / 25) solid white;
     z-index: 1;
     box-shadow: 0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6);
+    overflow: visible;
+    &.touch-drag {
+        outline: none;
+        box-shadow: none;
+    }
+    &.touch-drag::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 200%;
+        height: 200%;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 var(--board-square-width) var(--move-indicator-color);
+        transform: translate(-50%, -50%);
+    }
 }
 .chess-piece {
     position: absolute;
     width: var(--board-square-width);
     height: var(--board-square-width);
     outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
-    cursor: pointer;
 }
 .chess-piece:hover {
     outline: calc(var(--board-square-width) / 25) solid white;
@@ -101,18 +119,18 @@
     flex-direction: column;
     top: calc(var(--board-square-width) / 20);
 }
-.file-name, .rank-name {
+#file-indicator > div, #rank-indicator > div {
     font-size: calc(var(--board-square-width) / 5);
     color: var(--board-color);
+    &.light-text-color {
+        color: var(--light-square-color);
+    }
 }
-.file-name {
+#file-indicator > div {
     width: var(--board-square-width);
 }
-.rank-name {
+#rank-indicator > div {
     height: var(--board-square-width);
-}
-.light-text-color {
-    color: var(--light-square-color);
 }
 
 /* Ripple when any square is clicked */
@@ -136,6 +154,9 @@
     z-index: 3;
     pointer-events: none;
 }
+.square-highlight.permanent {
+    z-index: 2;
+}
 
 /* Legal move indicators */
 .move-indicator {
@@ -153,6 +174,10 @@
 }
 .empty-move-indicator {
     background-color: var(--move-indicator-color);
+    &.hovered {
+        width: 50%;
+        height: 50%;
+    }
 }
 .capture-indicator {
     width: 80%;
@@ -161,14 +186,10 @@
     background-color: transparent;
     box-shadow: inset 0 0 var(--move-indicator-color);
     transition: box-shadow 0.2s var(--emphasis-animation);
-}
-.board-square:hover {
-    & > .empty-move-indicator {
-        width: 50%;
-        height: 50%;
-    }
-    & > .capture-indicator {
-        box-shadow: inset 0 0 0 calc(var(--board-square-width) / 2) var(--move-indicator-color);
+    &.hovered {
+        width: 70%;
+        height: 70%;
+        box-shadow: inset 0 0 0 calc(var(--board-square-width) / 4) var(--move-indicator-color);
     }
 }
 

@@ -20,7 +20,9 @@
     </head>
     <body>
         <div id="game-area">
-            <div id="eval-bar">0</div>
+            <div id="eval-bar">
+                <div></div>
+            </div>
             <div id="black-player">
                 <img id="black-avatar" class="avatar" src="media-support/white-pawn.ico" alt="" loading="lazy" />
                 <div>
@@ -33,6 +35,13 @@
                 <div>
                     <span>You</span>
                     <span id="white-rating" class="player-rating">1500</span>
+                </div>
+            </div>
+            <div id="chat-container">
+                <div id="chat-area"></div>
+                <div class="options">
+                    <input id="chat-input" type="text" placeholder="Enter a message…" />
+                    <button id="send-button">Send</button>
                 </div>
             </div>
             <div id="board-info">
@@ -107,13 +116,6 @@
                             <span class="button-desc">Credits</span>
                         </button>
                     </div>
-                </div>
-            </div>
-            <div id="chat-container">
-                <div id="chat-area"></div>
-                <div class="options">
-                    <input id="chat-input" type="text" placeholder="Enter a message…" />
-                    <button id="send-button">Send</button>
                 </div>
             </div>
             <div id="chess-board"></div>
