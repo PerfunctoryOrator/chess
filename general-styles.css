@@ -581,7 +581,7 @@ input[type="text"], input[type="email"], textarea {
         border-bottom: var(--border);
         border-radius: 0;
     }
-    #white-player {
+    .white-player {
         grid-row: 2 / 3;
         grid-column: 1 / 2;
         margin-right: 0;
@@ -596,7 +596,7 @@ input[type="text"], input[type="email"], textarea {
         calc((100vh - 2*2px) / 8),
         calc((100vw) / 8));
     }
-    #chess-board {
+    .board-container {
         grid-row: 3 / 4;
         grid-column: 1 / 2;
         border-left: none;
@@ -604,7 +604,7 @@ input[type="text"], input[type="email"], textarea {
         border-radius: 0;
         margin: 0;
     }
-    #black-player {
+    .black-player {
         grid-row: 4 / 5;
         grid-column: 1 / 2;
         margin-right: 0;
