@@ -8,29 +8,29 @@
         <meta name="theme-color" />
         <title>Play Chess!</title>
         <link rel="canonical" href="" />
-        <link rel="icon" type="image/x-icon" href="media-support/white-pawn.ico" />
-        <link rel="stylesheet" href="board-styles.css" />
-        <link rel="stylesheet" href="board-pieces.css" />
-        <link rel="stylesheet" href="general-styles.css" />
+        <link rel="icon" type="image/x-icon" href="media-support/white-pawn.ico?modified=31032025" />
+        <link rel="stylesheet" href="board-styles.css?modified=31032025" />
+        <link rel="stylesheet" href="board-pieces.css?modified=31032025" />
+        <link rel="stylesheet" href="general-styles.css?modified=31032025" />
         <script src="document-set-up.js" defer></script>
         <script src="settings-manager.js" defer></script>
-        <script src="board-updater.js" defer></script>
-        <script src="sign-in.js" type="module" defer></script>
-        <script src="chat.js" type="module" defer></script>
+        <script src="board-manager.js" defer></script>
+        <!-- <script src="sign-in.js" type="module" defer></script>
+        <script src="chat.js" type="module" defer></script> -->
     </head>
     <body>
         <div id="game-area">
             <div id="eval-bar">
                 <div></div>
             </div>
-            <div id="black-player">
+            <div class="black-player">
                 <img id="black-avatar" class="avatar" src="media-support/white-pawn.ico" alt="" loading="lazy" />
                 <div>
                     <span>Opponent</span>
                     <span id="black-rating" class="player-rating">1500</span>
                 </div>
             </div>
-            <div id="white-player">
+            <div class="white-player">
                 <img id="white-avatar" class="avatar" src="media-support/white-pawn.ico" alt="" loading="lazy" />
                 <div>
                     <span>You</span>
@@ -78,7 +78,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                                 <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
                             </svg>
-                            <span class="button-desc">Load from FEN / PGN</span>
+                            <span class="button-desc">Import game</span>
                         </button>
                         <button onclick="showFullScreenBox('settings-container');">
                             <!-- Icon sourced from Google Fonts (Material Icons) — Apache license 2.0 -->
@@ -97,9 +97,9 @@
                         <button onclick="showFullScreenBox('features-box-container');">
                             <!-- Icon sourced from Google Fonts (Material Icons) — Apache license 2.0 -->
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
-                                <path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z" />
+                                <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
                             </svg>
-                            <span class="button-desc">Features</span>
+                            <span class="button-desc">About</span>
                         </button>
                         <button onclick="showFullScreenBox('contribute-box-container');">
                             <!-- Icon sourced from Google Fonts (Material Icons) — Apache license 2.0 -->
@@ -108,21 +108,13 @@
                             </svg>
                             <span class="button-desc">Contribute</span>
                         </button>
-                        <button onclick="showFullScreenBox('credits-box-container');">
-                            <!-- Icon sourced from Google Fonts (Material Icons) — Apache license 2.0 -->
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
-                                <path d="M400-320h160q17 0 28.5-11.5T600-360v-80h-80v40h-80v-160h80v40h80v-80q0-17-11.5-28.5T560-640H400q-17 0-28.5 11.5T360-600v240q0 17 11.5 28.5T400-320Zm80 240q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
-                            </svg>
-                            <span class="button-desc">Credits</span>
-                        </button>
                     </div>
                 </div>
             </div>
-            <div id="chess-board"></div>
+            <div class="board-container one"></div>
         </div>
         <div class="full-screen-box-container" id="settings-container">
-            <h2 style="padding: var(--margin); margin: 0; background-color: var(--contrast-background-color);">Settings</h2>
-            <hr style="background-color: var(--border-color); height: 2px; border: none; margin: 0;" />
+            <h2>Settings</h2>
             <div class="options" style="justify-content: center; border-top: none; border-bottom: var(--border);">
                 <button>
                     <span class="button-desc">General</span>
@@ -215,8 +207,9 @@
             </div>
         </div>
         <div class="full-screen-box-container" id="board-position-input-container">
+            <h2>Import Game</h2>
             <div class="input-grid">
-                <span>Enter a valid PGN or FEN:</span>
+                <span>Enter a valid FEN or PGN:</span>
                 <textarea id="position-input" rows="5" spellcheck="false" oninput="checkFenValidity(value);"></textarea>
             </div>
             <div class="options">
@@ -235,13 +228,23 @@
                             document.getElementById('to-move').innerHTML = `<div style='background-color: white;'></div><b>White</b>&nbsp;to move`;
                         }
                         document.getElementById('move-grid').innerHTML = '';
+                        const startingPositionRow = document.createElement('div');
+                        if (fenOnBoard === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
+                            startingPositionRow.innerHTML = `<div class='info'>Starting position</div>`;
+                        } else {
+                            startingPositionRow.innerHTML = `<div class='info'>Custom position</div>`;
+                        }
+                        document.getElementById('move-grid').appendChild(startingPositionRow);
+                        pieceArea.remove();
                         setUpPieces();
+                        removeSquareHighlight(true);
                         hideFullScreenBox('board-position-input-container');
                     } else alert('The entered FEN is not valid.');
                     }">Load</button>
             </div>
         </div>
         <div class="full-screen-box-container" id="feedback-form-container">
+            <h2>Give Feedback</h2>
             <div class="input-grid" id="feedback-form">
                 <!-- <input type="hidden" name="entry.55380540" value="">
                 <input type="hidden" name="entry.595895963" value="">
@@ -270,6 +273,18 @@
                 <div class="radio-input-area rating-area" id="website-rating-area" data-name="website-rating" data-start-rating="1" data-end-rating="10"></div>
             </div>
             <div class="options">
+                <button class="dangerous-button" onclick="{
+                    if (confirm('Are you sure you want to clear the feedback form?')) {
+                        const form = document.getElementById('feedback-form');
+                        form.querySelector('input[type=\'email\']').value = '';
+                        const issueType = form.querySelector('#issue-selector > .drop-down-menu-selection');
+                        issueType.value = '';
+                        issueType.innerHTML = '<span style=\'font-style: italic; color: darkgray;\'>Choose…</span>';
+                        form.querySelector('textarea').value = '';
+                        form.querySelector('.rating-area input:checked').checked = false;
+                        setStarRating('website-rating-area', 0, 10);
+                    }
+                    }">Clear form</button>
                 <button onclick="hideFullScreenBox('feedback-form-container');">Done</button>
             </div>
         </div>
@@ -299,7 +314,7 @@
                 <li>Google Fonts for button glyphs.</li>
                 <li>The web page is designed by Yashdeep Singh Fauzdar.</li>
                 <li>Thanks to Colin M.L. Burnett for the chess pieces and current board colour.</li>
-                <li>Source Code is available here: <a href="https://github.com/PerfunctoryOrator/chess/tree/main" tabindex="0">https://github.com/PerfunctoryOrator/chess/tree/main</a>.</li>
+                <li>Source Code is available here: <a href="https://github.com/PerfunctoryOrator/chess/tree/main">https://github.com/PerfunctoryOrator/chess/tree/main</a>.</li>
                 <li>For my schoolmates: you can give me some recommendations on WhatsApp or Chess.com.</li>
             </ul>
             <ul style="display: block; float: left;">Removed features:

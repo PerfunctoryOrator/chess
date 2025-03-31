@@ -127,7 +127,7 @@ const PieceMoveMethods = {
             selectPiece(event.target);
         },
         square: (event) => {
-            if (activePiece && legalMoves.includes(event.target.id)) movePiece(event.target.id);
+            if (activePiece && legalMoves.includes(event.target.getAttribute("data-square"))) movePiece(event.target.getAttribute("data-square"));
         },
         document: (event) => {
             if (!event.target.classList.contains("chess-piece")) {
@@ -137,20 +137,20 @@ const PieceMoveMethods = {
             }
         },
         remove: function () {
-            document.querySelectorAll(".chess-piece").forEach(piece => {
+            pieceArea.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.removeEventListener("click", this.piece);
             });
-            document.querySelectorAll(".board-square").forEach(square => {
+            chessBoard.querySelectorAll(".board-square").forEach(square => {
                 square.removeEventListener("click", this.square);
             });
             document.removeEventListener("click", this.document);
         },
         add: function () {
             this.remove();
-            document.querySelectorAll(".chess-piece").forEach(piece => {
+            pieceArea.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.addEventListener("click", this.piece);
             });
-            document.querySelectorAll(".board-square").forEach(square => {
+            chessBoard.querySelectorAll(".board-square").forEach(square => {
                 square.addEventListener("click", this.square);
             });
             document.addEventListener("click", this.document);
@@ -161,7 +161,7 @@ const PieceMoveMethods = {
             activePiece = null;
             selectPiece(event.target, true);
             if (activePiece === null) return;
-            draggedPieceId = activePiece.id;
+            draggedPieceId = activePiece.getAttribute("data-square");
             activePiece.style.position = "fixed";
             activePiece.style.transform = "translate(-50%, -50%) scale(1.3)";
             activePiece.style.top = event.clientY + "px";
@@ -174,29 +174,53 @@ const PieceMoveMethods = {
             const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
             if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
                 if (dropTarget.classList.contains("chess-piece")) {
-                    document.querySelector(`#${dropTarget.id}.board-square`).classList.add("under-dragged-piece");
+                    chessBoard.querySelector(`.board-square[data-square="${dropTarget.getAttribute("data-square")}"]`).classList.add("under-dragged-piece");
                 } else {
                     dropTarget.classList.add("under-dragged-piece");
                 }
             }
             activePiece.style.pointerEvents = "";
+            document.addEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
+            activePiece.addEventListener("mouseup", PieceMoveMethods.dragDrop.mouseup);
+        },
+        mousemove: (event) => {
+            activePiece.style.top = event.clientY + "px";
+            activePiece.style.left = event.clientX + "px";
+            activePiece.style.pointerEvents = "none";
+            const previousDropTarget = chessBoard.querySelector(".under-dragged-piece");
+            let dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (previousDropTarget !== dropTarget) {
+                if (previousDropTarget) {
+                    previousDropTarget.classList.remove("under-dragged-piece", "touch-drag");
+                    mouseLeavesSquare(previousDropTarget);
+                }
+                if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
+                    if (dropTarget.classList.contains("chess-piece")) {
+                        dropTarget = chessBoard.querySelector(`.board-square[data-square="${dropTarget.getAttribute("data-square")}"]`);
+                    }
+                    dropTarget.classList.add("under-dragged-piece");
+                    mouseEntersSquare(dropTarget);
+                }
+            }
+            activePiece.style.pointerEvents = "";
         },
         mouseup: (event) => {
-            if (!draggedPieceId) return;
-            const draggedOverSquare = document.querySelector(".under-dragged-piece");
+            document.removeEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
+            activePiece.removeEventListener("mouseup", PieceMoveMethods.dragDrop.mouseup);
+            const draggedOverSquare = chessBoard.querySelector(".under-dragged-piece");
             if (draggedOverSquare) draggedOverSquare.classList.remove("under-dragged-piece", "touch-drag");
             activePiece.style.position = "";
             activePiece.style.transform = "";
             activePiece.style.pointerEvents = "none";
             const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            if (legalMoves.includes(dropTarget.id)) {
+            if (legalMoves.includes(dropTarget.getAttribute("data-square"))) {
                 if (dropTarget.classList.contains("chess-piece")) dropTarget.remove();
-                movePiece(dropTarget.id, true);
+                movePiece(dropTarget.getAttribute("data-square"), true);
             } else {
                 const file = draggedPieceId[0].charCodeAt(0) - "a".charCodeAt(0);
                 const rank = parseInt(draggedPieceId[1]);
-                activePiece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
-                activePiece.style.left = `calc(${file} * var(--board-square-width))`;
+                activePiece.style.top = isBoardFlipped ? `calc(${rank - 1} * var(--board-square-width))` : `calc(${8 - rank} * var(--board-square-width))`;
+                activePiece.style.left = isBoardFlipped ? `calc(${7 - file} * var(--board-square-width))` : `calc(${file} * var(--board-square-width))`;
             }
             activePiece.style.pointerEvents = "";
             activePiece.style.zIndex = "";
@@ -208,28 +232,6 @@ const PieceMoveMethods = {
             removeLegalMoveIndicators();
             draggedPieceId = "";
         },
-        mousemove: (event) => {
-            if (!draggedPieceId) return;
-            activePiece.style.top = event.clientY + "px";
-            activePiece.style.left = event.clientX + "px";
-            activePiece.style.pointerEvents = "none";
-            const previousDropTarget = document.querySelector(".under-dragged-piece");
-            let dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            if (previousDropTarget !== dropTarget) {
-                if (previousDropTarget) {
-                    previousDropTarget.classList.remove("under-dragged-piece", "touch-drag");
-                    mouseLeavesSquare(previousDropTarget);
-                }
-                if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
-                    if (dropTarget.classList.contains("chess-piece")) {
-                        dropTarget = document.querySelector(`#${dropTarget.id}.board-square`);
-                    }
-                    dropTarget.classList.add("under-dragged-piece");
-                    mouseEntersSquare(dropTarget);
-                }
-            }
-            activePiece.style.pointerEvents = "";
-        },
         touchstart: (event) => {
             event.preventDefault();
             const touch = event.touches[0];
@@ -239,17 +241,10 @@ const PieceMoveMethods = {
                 clientY: touch.clientY,
             };
             PieceMoveMethods.dragDrop.mousedown(touchEvent);
-            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
             if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
-        },
-        touchend: (event) => {
-            event.preventDefault();
-            const touch = event.changedTouches[0];
-            const touchEvent = {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.dragDrop.mouseup(touchEvent);
+            document.addEventListener("touchmove", PieceMoveMethods.dragDrop.touchmove, { passive: false });
+            activePiece.addEventListener("touchend", PieceMoveMethods.dragDrop.touchend, { passive: false });
         },
         touchmove: (event) => {
             event.preventDefault();
@@ -259,31 +254,34 @@ const PieceMoveMethods = {
                 clientY: touch.clientY,
             };
             PieceMoveMethods.dragDrop.mousemove(touchEvent);
-            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
             if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
         },
+        touchend: (event) => {
+            event.preventDefault();
+            document.removeEventListener("touchmove", PieceMoveMethods.dragDrop.touchmove);
+            activePiece.removeEventListener("touchend", PieceMoveMethods.dragDrop.touchend);
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.dragDrop.mouseup(touchEvent);
+        },
         remove: function () {
-            document.querySelectorAll(".chess-piece").forEach(piece => {
+            pieceArea.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "";
                 piece.removeEventListener("mousedown", this.mousedown);
                 piece.removeEventListener("touchstart", this.touchstart);
             });
-            document.removeEventListener("mouseup", this.mouseup);
-            document.removeEventListener("mousemove", this.mousemove);
-            document.removeEventListener("touchend", this.touchend);
-            document.removeEventListener("touchmove", this.touchmove);
         },
         add: function () {
             this.remove();
-            document.querySelectorAll(".chess-piece").forEach(piece => {
+            pieceArea.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "grab";
                 piece.addEventListener("mousedown", this.mousedown);
                 piece.addEventListener("touchstart", this.touchstart, { passive: false });
             });
-            document.addEventListener("mouseup", this.mouseup);
-            document.addEventListener("mousemove", this.mousemove);
-            document.addEventListener("touchend", this.touchend, { passive: false });
-            document.addEventListener("touchmove", this.touchmove, { passive: false });
         },
     },
     clickDragDrop: {
@@ -293,7 +291,7 @@ const PieceMoveMethods = {
                 selectPiece(event.target, true);
             }
             if (!activePiece) return;
-            draggedPieceId = activePiece.id;
+            draggedPieceId = activePiece.getAttribute("data-square");
             activePiece.style.position = "fixed";
             activePiece.style.transform = "translate(-50%, -50%) scale(1.3)";
             activePiece.style.top = event.clientY + "px";
@@ -306,31 +304,55 @@ const PieceMoveMethods = {
             const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
             if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
                 if (dropTarget.classList.contains("chess-piece")) {
-                    document.querySelector(`#${dropTarget.id}.board-square`).classList.add("under-dragged-piece");;
+                    chessBoard.querySelector(`.board-square[data-square="${dropTarget.getAttribute("data-square")}"]`).classList.add("under-dragged-piece");;
                 } else {
                     dropTarget.classList.add("under-dragged-piece");
                 }
             }
             activePiece.style.pointerEvents = "";
+            document.addEventListener("mousemove", PieceMoveMethods.clickDragDrop.mousemove);
+            activePiece.addEventListener("mouseup", PieceMoveMethods.clickDragDrop.mouseup);
+        },
+        mousemove: (event) => {
+            activePiece.style.top = event.clientY + "px";
+            activePiece.style.left = event.clientX + "px";
+            activePiece.style.pointerEvents = "none";
+            const previousDropTarget = chessBoard.querySelector(".under-dragged-piece");
+            let dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            if (previousDropTarget !== dropTarget) {
+                if (previousDropTarget) {
+                    previousDropTarget.classList.remove("under-dragged-piece", "touch-drag");
+                    mouseLeavesSquare(previousDropTarget);
+                }
+                if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
+                    if (dropTarget.classList.contains("chess-piece")) {
+                        dropTarget = chessBoard.querySelector(`.board-square[data-square="${dropTarget.getAttribute("data-square")}"]`);
+                    }
+                    dropTarget.classList.add("under-dragged-piece");
+                    mouseEntersSquare(dropTarget);
+                }
+            }
+            activePiece.style.pointerEvents = "";
         },
         mouseup: (event) => {
-            if (!draggedPieceId) return;
-            const draggedOverSquare = document.querySelector(".under-dragged-piece");
+            document.removeEventListener("mousemove", PieceMoveMethods.clickDragDrop.mousemove);
+            activePiece.removeEventListener("mouseup", PieceMoveMethods.clickDragDrop.mouseup);
+            const draggedOverSquare = chessBoard.querySelector(".under-dragged-piece");
             if (draggedOverSquare) draggedOverSquare.classList.remove("under-dragged-piece", "touch-drag");
             activePiece.style.position = "";
             activePiece.style.transform = "";
             activePiece.style.pointerEvents = "none";
             const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            if (legalMoves.includes(dropTarget.id)) {
+            if (legalMoves.includes(dropTarget.getAttribute("data-square"))) {
                 if (dropTarget.classList.contains("chess-piece")) dropTarget.remove();
-                movePiece(dropTarget.id, true);
+                movePiece(dropTarget.getAttribute("data-square"), true);
                 removeLegalMoveIndicators();
                 hideLegal = false;
             } else {
                 const file = draggedPieceId[0].charCodeAt(0) - "a".charCodeAt(0);
                 const rank = parseInt(draggedPieceId[1]);
-                activePiece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
-                activePiece.style.left = `calc(${file} * var(--board-square-width))`;
+                activePiece.style.top = isBoardFlipped ? `calc(${rank - 1} * var(--board-square-width))` : `calc(${8 - rank} * var(--board-square-width))`;
+                activePiece.style.left = isBoardFlipped ? `calc(${7 - file} * var(--board-square-width))` : `calc(${file} * var(--board-square-width))`;
             }
             activePiece.style.pointerEvents = "";
             activePiece.style.zIndex = "";
@@ -345,28 +367,6 @@ const PieceMoveMethods = {
             }
             draggedPieceId = "";
         },
-        mousemove: (event) => {
-            if (!draggedPieceId) return;
-            activePiece.style.top = event.clientY + "px";
-            activePiece.style.left = event.clientX + "px";
-            activePiece.style.pointerEvents = "none";
-            const previousDropTarget = document.querySelector(".under-dragged-piece");
-            let dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            if (previousDropTarget !== dropTarget) {
-                if (previousDropTarget) {
-                    previousDropTarget.classList.remove("under-dragged-piece", "touch-drag");
-                    mouseLeavesSquare(previousDropTarget);
-                }
-                if (dropTarget.classList.contains("board-square") || dropTarget.classList.contains("chess-piece")) {
-                    if (dropTarget.classList.contains("chess-piece")) {
-                        dropTarget = document.querySelector(`#${dropTarget.id}.board-square`);
-                    }
-                    dropTarget.classList.add("under-dragged-piece");
-                    mouseEntersSquare(dropTarget);
-                }
-            }
-            activePiece.style.pointerEvents = "";
-        },
         touchstart: (event) => {
             event.preventDefault();
             const touch = event.touches[0];
@@ -376,17 +376,10 @@ const PieceMoveMethods = {
                 clientY: touch.clientY,
             };
             PieceMoveMethods.clickDragDrop.mousedown(touchEvent);
-            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
             if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
-        },
-        touchend: (event) => {
-            event.preventDefault();
-            const touch = event.changedTouches[0];
-            const touchEvent = {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
+            document.addEventListener("touchmove", PieceMoveMethods.clickDragDrop.touchmove, { passive: false });
+            activePiece.addEventListener("touchend", PieceMoveMethods.clickDragDrop.touchend, { passive: false });
         },
         touchmove: (event) => {
             event.preventDefault();
@@ -396,11 +389,22 @@ const PieceMoveMethods = {
                 clientY: touch.clientY,
             };
             PieceMoveMethods.clickDragDrop.mousemove(touchEvent);
-            const squareUnderPiece = document.querySelector(".under-dragged-piece");
+            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
             if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
         },
+        touchend: (event) => {
+            event.preventDefault();
+            document.removeEventListener("touchmove", PieceMoveMethods.clickDragDrop.touchmove);
+            activePiece.removeEventListener("touchend", PieceMoveMethods.clickDragDrop.touchend);
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+            };
+            PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
+        },
         square: (event) => {
-            if (activePiece && legalMoves.includes(event.target.id)) movePiece(event.target.id);
+            if (activePiece && legalMoves.includes(event.target.getAttribute("data-square"))) movePiece(event.target.getAttribute("data-square"));
         },
         document: (event) => {
             if (!event.target.classList.contains("chess-piece")) {
@@ -411,32 +415,24 @@ const PieceMoveMethods = {
             }
         },
         remove: function () {
-            document.querySelectorAll(".chess-piece").forEach(piece => {
+            pieceArea.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "";
                 piece.removeEventListener("mousedown", this.mousedown);
                 piece.removeEventListener("touchstart", this.touchstart);
             });
-            document.removeEventListener("mouseup", this.mouseup);
-            document.removeEventListener("mousemove", this.mousemove);
-            document.removeEventListener("touchend", this.touchend);
-            document.removeEventListener("touchmove", this.touchmove);
-            document.querySelectorAll(".board-square").forEach(square => {
+            chessBoard.querySelectorAll(".board-square").forEach(square => {
                 square.removeEventListener("click", this.square);
             });
             document.removeEventListener("click", this.document);
         },
         add: function () {
             this.remove();
-            document.querySelectorAll(".chess-piece").forEach(piece => {
+            pieceArea.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "grab";
                 piece.addEventListener("mousedown", this.mousedown);
                 piece.addEventListener("touchstart", this.touchstart, { passive: false });
             });
-            document.addEventListener("mouseup", this.mouseup);
-            document.addEventListener("mousemove", this.mousemove);
-            document.addEventListener("touchend", this.touchend, { passive: false });
-            document.addEventListener("touchmove", this.touchmove, { passive: false });
-            document.querySelectorAll(".board-square").forEach(square => {
+            chessBoard.querySelectorAll(".board-square").forEach(square => {
                 square.addEventListener("click", this.square);
             });
             document.addEventListener("click", this.document);
@@ -445,7 +441,7 @@ const PieceMoveMethods = {
 };
 const convertSquareToIndex = (square) => 8 * (8 - square[1]) + square.charCodeAt(0) - "a".charCodeAt(0);
 const setUpEmptyBoard = () => {
-    const chessBoard = document.createElement("div");
+    const newChessBoard = document.createElement("div");
     let isLightSquare;
     for (let rank = 8; rank > 0; rank--) {
         isLightSquare = rank % 2 > 0;
@@ -454,46 +450,43 @@ const setUpEmptyBoard = () => {
             const square = document.createElement("div");
             square.className = "board-square";
             if (isLightSquare) square.classList.add("light-board-square");
-            square.id = `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
+            square.setAttribute("data-square", `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`);
             square.style.gridRow = `${9 - rank} / ${10 - rank}`;
             square.style.gridColumn = `${file + 1} / ${file + 2}`;
             square.addEventListener("mouseenter", () => mouseEntersSquare(square));
             square.addEventListener("mouseleave", () => mouseLeavesSquare(square));
-            chessBoard.appendChild(square);
+            newChessBoard.appendChild(square);
         }
     }
     const fileList = document.createElement("div");
-    fileList.id = "file-indicator";
+    fileList.className = "file-indicator";
     fileList.style.right = "calc(var(--board-square-width) / 20)";
     for (let file = 0; file < 8; file++) {
         isLightSquare = !isLightSquare;
         const fileName = document.createElement("div");
         fileName.innerText = String.fromCharCode("a".charCodeAt(0) + file);
-        fileName.id = fileName.innerText + "1";
         fileName.style.textAlign = "right";
         if (!isLightSquare) fileName.classList.add("light-text-color");
         fileList.appendChild(fileName);
     }
-    chessBoard.appendChild(fileList);
+    newChessBoard.appendChild(fileList);
     const rankList = document.createElement("div");
-    rankList.id = "rank-indicator";
+    rankList.className = "rank-indicator";
     rankList.style.left = "2px";
     for (let rank = 1; rank < 9; rank++) {
         isLightSquare = !isLightSquare;
         const rankName = document.createElement("div");
         rankName.innerText = 9 - rank;
-        rankName.id = "a" + rankName.innerText;
         if (isLightSquare) rankName.classList.add("light-text-color");
         rankList.appendChild(rankName);
     }
-    chessBoard.appendChild(rankList);
-    document.getElementById("chess-board").remove();
-    chessBoard.id = "chess-board";
-    document.getElementById("game-area").appendChild(chessBoard);
+    newChessBoard.appendChild(rankList);
+    newChessBoard.className = "chess-board";
+    boardContainer.appendChild(newChessBoard);
+    chessBoard = boardContainer.querySelector(".chess-board");
 };
 const setUpPieces = () => {
-    const chessBoard = document.getElementById("chess-board");
-    const pieceArea = document.createElement("div");
+    const newPieceArea = document.createElement("div");
     let squareNumber = 0;
     for (let rank = 8; rank > 0; rank--) {
         for (let file = 0; file < 8; file++) {
@@ -501,20 +494,20 @@ const setUpPieces = () => {
             if (pieceAtSquare) {
                 const piece = document.createElement("div");
                 piece.className = `chess-piece ${pieceAtSquare}`;
-                piece.id = `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`;
+                piece.setAttribute("data-square", `${String.fromCharCode("a".charCodeAt(0) + file)}${rank}`);
                 piece.style.top = `calc(${8 - rank} * var(--board-square-width))`;
                 piece.style.left = `calc(${file} * var(--board-square-width))`;
                 piece.style.transition = "opacity 0.3s ease-out";
-                piece.addEventListener("mouseenter", () => mouseEntersPiece(piece.id));
-                piece.addEventListener("mouseleave", () => mouseLeavesPiece(piece.id));
-                pieceArea.appendChild(piece);
+                piece.addEventListener("mouseenter", () => mouseEntersPiece(piece.getAttribute("data-square")));
+                piece.addEventListener("mouseleave", () => mouseLeavesPiece(piece.getAttribute("data-square")));
+                newPieceArea.appendChild(piece);
             }
             squareNumber++;
         }
     }
-    if (document.getElementById("piece-area")) document.getElementById("piece-area").remove();
-    pieceArea.id = "piece-area";
-    chessBoard.appendChild(pieceArea);
+    newPieceArea.className = "piece-area";
+    chessBoard.appendChild(newPieceArea);
+    pieceArea = chessBoard.querySelector(".piece-area");
     PieceMoveMethods.clickDragDrop.add();
 };
 const getCandidateMoves = (pieceSquare, board) => {
@@ -527,7 +520,7 @@ const getCandidateMoves = (pieceSquare, board) => {
     let friendlyPieces = ["R", "N", "B", "Q", "K", "P"];
     if (!friendlyPieces.includes(piece)) friendlyPieces = ["r", "n", "b", "q", "k", "p"];
 
-    function isValidMove(file, rank) {
+    const isValidMove = (file, rank) => {
         if (boardFiles.includes(file) && boardRanks.includes(rank)) {
             const targetSquare = `${file}${rank}`;
             const targetPiece = board[convertSquareToIndex(targetSquare)];
@@ -535,7 +528,7 @@ const getCandidateMoves = (pieceSquare, board) => {
         }
         return false;
     }
-    function addDirectionalMoves(directions) {
+    const addDirectionalMoves = (directions) => {
         directions.forEach(([fileStep, rankStep]) => {
             let f = pieceFile, r = pieceRank;
             while (true) {
@@ -677,7 +670,7 @@ const isStalemate = (activeColor, board = piecePositions) => {
     return true;
 };
 const removeLegalMoveIndicators = () => {
-    document.querySelectorAll(".move-indicator").forEach(indicator => {
+    chessBoard.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.style.animation = "fade-out 0.25s var(--emphasis-animation)";
         setTimeout(() => indicator.remove(), 200);
     });
@@ -687,21 +680,21 @@ const selectPiece = (piece, dragged = false) => {
     if (!dragged) {
         const ripple = document.createElement("div");
         ripple.className = "ripple";
-        document.querySelector(`#${piece.id}.board-square`).appendChild(ripple);
+        chessBoard.querySelector(`.board-square[data-square="${piece.getAttribute("data-square")}"]`).appendChild(ripple);
         setTimeout(() => ripple.remove(), 500);
     }
 
     // Highlight the selected square
-    highlightSquare(piece.id);
+    highlightSquare(piece.getAttribute("data-square"));
 
     // Remove all previous legal move indicators
     removeLegalMoveIndicators();
 
     // Handle piece captures
-    if (activePiece && legalMoves.includes(piece.id)) {
+    if (activePiece && legalMoves.includes(piece.getAttribute("data-square"))) {
         piece.style.opacity = "0";
         setTimeout(() => piece.remove(), 300);
-        movePiece(piece.id);
+        movePiece(piece.getAttribute("data-square"));
         halfmoveClock = 0;
         activePiece = null;
         return;
@@ -715,16 +708,16 @@ const selectPiece = (piece, dragged = false) => {
 
     // Select the piece and highlight legal moves
     activePiece = piece;
-    legalMoves = getLegalMoves(piece.id);
+    legalMoves = getLegalMoves(piece.getAttribute("data-square"));
     legalMoves.forEach(square => {
         const moveIndicator = document.createElement("div");
         moveIndicator.className = "move-indicator";
-        if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(piece.id)].toLowerCase() === "p")) {
+        if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(piece.getAttribute("data-square"))].toLowerCase() === "p")) {
             moveIndicator.classList.add("capture-indicator");
         } else {
             moveIndicator.classList.add("empty-move-indicator");
         }
-        document.querySelector(`#${square}.board-square`).appendChild(moveIndicator);
+        chessBoard.querySelector(`.board-square[data-square="${square}"]`).appendChild(moveIndicator);
     });
 };
 const showPromotionDialog = (targetSquare) => {
@@ -747,7 +740,7 @@ const showPromotionDialog = (targetSquare) => {
             <button class="chess-piece ${promotionChoices[2]}" value="${promotionChoices[2]}" style="top: calc(2 * var(--board-square-width));"></button>
             <button class="chess-piece ${promotionChoices[3]}" value="${promotionChoices[3]}" style="top: calc(3 * var(--board-square-width));"></button>
         `;
-        document.getElementById("piece-area").appendChild(promotionBox);
+        chessBoard.querySelector(".piece-area").appendChild(promotionBox);
         promotionBox.querySelectorAll("button").forEach(button => {
             button.addEventListener("click", function () {
                 const selectedPiece = this.value;
@@ -761,8 +754,8 @@ async function movePiece(targetSquare, dropped = false) {
     // Basic variables
     const toFile = targetSquare[0].charCodeAt(0) - "a".charCodeAt(0);
     const toRank = parseInt(targetSquare[1]);
-    const pieceType = piecePositions[convertSquareToIndex(activePiece.id)];
-    const previousRank = parseInt(activePiece.id[1]);
+    const pieceType = piecePositions[convertSquareToIndex(activePiece.getAttribute("data-square"))];
+    const previousRank = parseInt(activePiece.getAttribute("data-square")[1]);
 
     // Change the position of piece
     const activePieceStyle = activePiece.style;
@@ -795,7 +788,7 @@ async function movePiece(targetSquare, dropped = false) {
     // Handle en passant
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${String.fromCharCode("a".charCodeAt(0) + toFile)}${previousRank}`;
-        const enemyPawn = document.querySelector(`#${enemyPawnSquare}.chess-piece`);
+        const enemyPawn = pieceArea.querySelector(`.chess-piece[data-square="${enemyPawnSquare}"]`);
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = "";
         enemyPawn.style.opacity = "0";
         setTimeout(() => enemyPawn.remove(), 300);
@@ -808,15 +801,14 @@ async function movePiece(targetSquare, dropped = false) {
     } else enPassantSquare = "";
 
     // Get move notation
-    const moveNotation = Notation.write.san(activePiece.id, targetSquare, promotedTo, prevEnPassantSquare);
+    const moveNotation = Notation.write.san(activePiece.getAttribute("data-square"), targetSquare, promotedTo, prevEnPassantSquare);
 
     // Update `piecePositions` and highlight move squares
-    piecePositions[convertSquareToIndex(activePiece.id)] = "";
-    document.querySelector(`#${activePiece.id}.board-square`).style.outline = "";
+    piecePositions[convertSquareToIndex(activePiece.getAttribute("data-square"))] = "";
     removeSquareHighlight(true);
-    highlightSquare(activePiece.id, true);
+    highlightSquare(activePiece.getAttribute("data-square"), true);
     highlightSquare(targetSquare, true);
-    activePiece.id = targetSquare;
+    activePiece.setAttribute("data-square", targetSquare);
     if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
     else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
 
@@ -885,10 +877,10 @@ async function movePiece(targetSquare, dropped = false) {
 }
 const removeSquareHighlight = (permanent = false, square = "") => {
     if (square === "") {
-        document.querySelectorAll(`.square-highlight${permanent ? "" : ":not(.permanent)"}`).forEach(highlight => highlight.remove());
+        chessBoard.querySelectorAll(`.square-highlight${permanent ? "" : ":not(.permanent)"}`).forEach(highlight => highlight.remove());
         return;
     }
-    const highlight = document.querySelector(`#${square}.board-square`).querySelector(".square-highlight:not(.permanent)");
+    const highlight = chessBoard.querySelector(`.board-square[data-square="${square}"]`).querySelector(".square-highlight:not(.permanent)");
     if (highlight) highlight.remove();
 };
 const highlightSquare = (square = "", permanent = false, color = "yellow") => {
@@ -900,7 +892,7 @@ const highlightSquare = (square = "", permanent = false, color = "yellow") => {
         highlight.classList.add(color);
     }
     if (permanent === true) highlight.classList.add("permanent");
-    document.querySelector(`#${square}.board-square`).appendChild(highlight);
+    chessBoard.querySelector(`.board-square[data-square="${square}"]`).appendChild(highlight);
 };
 const mouseEntersSquare = (squareElement) => {
     const moveIndicator = squareElement.querySelector(".move-indicator");
@@ -911,11 +903,11 @@ const mouseLeavesSquare = (squareElement) => {
     if (moveIndicator) moveIndicator.classList.remove("hovered");
 };
 const mouseEntersPiece = (square) => {
-    const captureIndicator = document.querySelector(`#${square}.board-square`).querySelector(".capture-indicator");
+    const captureIndicator = chessBoard.querySelector(`.board-square[data-square="${square}"]`).querySelector(".capture-indicator");
     if (captureIndicator) captureIndicator.classList.add("hovered");
 };
 const mouseLeavesPiece = (square) => {
-    const captureIndicator = document.querySelector(`#${square}.board-square`).querySelector(".capture-indicator");
+    const captureIndicator = chessBoard.querySelector(`.board-square[data-square="${square}"]`).querySelector(".capture-indicator");
     if (captureIndicator) captureIndicator.classList.remove("hovered");
 };
 const checkFenValidity = (fen) => {
@@ -930,35 +922,35 @@ const checkFenValidity = (fen) => {
 const flipBoard = () => {
     isBoardFlipped = !isBoardFlipped;
     document.getElementById("flipSvg").style.transform = `rotate(${isBoardFlipped ? "" : "-"}90deg)`;
-    document.getElementById("white-player").style.gridRow = isBoardFlipped ? "1 / 2" : "";
-    document.getElementById("black-player").style.gridRow = isBoardFlipped ? "3 / 4" : "";
-    document.querySelectorAll(".board-square").forEach(square => {
-        const file = square.id[0].charCodeAt(0) - "a".charCodeAt(0);
-        const rank = parseInt(square.id[1]);
+    document.getElementById("game-area").querySelector(".white-player").style.gridRow = isBoardFlipped ? "1 / 2" : "";
+    document.getElementById("game-area").querySelector(".black-player").style.gridRow = isBoardFlipped ? "3 / 4" : "";
+    chessBoard.querySelectorAll(".board-square").forEach(square => {
+        const file = square.getAttribute("data-square")[0].charCodeAt(0) - "a".charCodeAt(0);
+        const rank = parseInt(square.getAttribute("data-square")[1]);
         square.style.gridRow = isBoardFlipped ? `${rank} / ${rank + 1}` : `${9 - rank} / ${10 - rank}`;
         square.style.gridColumn = isBoardFlipped ? `${8 - file} / ${9 - file}` : `${file + 1} / ${file + 2}`;
     });
-    document.getElementById("file-indicator").style.flexDirection = isBoardFlipped ? "row-reverse" : "";
-    document.querySelectorAll("#file-indicator > div").forEach(fileIndicator => {
-        fileIndicator.id = fileIndicator.id[0] + (isBoardFlipped ? "8" : "1");
+    const fileIndicator = chessBoard.querySelector(".file-indicator");
+    fileIndicator.style.flexDirection = isBoardFlipped ? "row-reverse" : "";
+    fileIndicator.querySelectorAll("div").forEach(fileIndicator => {
         if (fileIndicator.classList.contains("light-text-color")) {
             fileIndicator.classList.remove("light-text-color");
         } else {
             fileIndicator.classList.add("light-text-color");
         }
     });
-    document.getElementById("rank-indicator").style.flexDirection = isBoardFlipped ? "column-reverse" : "";
-    document.querySelectorAll("#rank-indicator > div").forEach(rankIndicator => {
-        rankIndicator.id = (isBoardFlipped ? "h" : "a") + rankIndicator.id[1];
+    const rankIndicator = chessBoard.querySelector(".rank-indicator");
+    rankIndicator.style.flexDirection = isBoardFlipped ? "column-reverse" : "";
+    rankIndicator.querySelectorAll("div").forEach(rankIndicator => {
         if (rankIndicator.classList.contains("light-text-color")) {
             rankIndicator.classList.remove("light-text-color");
         } else {
             rankIndicator.classList.add("light-text-color");
         }
     });
-    document.querySelectorAll(".chess-piece").forEach(piece => {
-        const file = piece.id[0].charCodeAt(0) - "a".charCodeAt(0);
-        const rank = parseInt(piece.id[1]);
+    pieceArea.querySelectorAll(".chess-piece").forEach(piece => {
+        const file = piece.getAttribute("data-square")[0].charCodeAt(0) - "a".charCodeAt(0);
+        const rank = parseInt(piece.getAttribute("data-square")[1]);
         piece.style.top = isBoardFlipped ? `calc(${rank - 1} * var(--board-square-width))` : `calc(${8 - rank} * var(--board-square-width))`;
         piece.style.left = isBoardFlipped ? `calc(${7 - file} * var(--board-square-width))` : `calc(${file} * var(--board-square-width))`;
     });
@@ -969,6 +961,8 @@ let piecePositions = [];
 let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock = "", fullmoveNumber = "";
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
+let boardContainer = document.querySelector(".board-container.one");
+let chessBoard, pieceArea;
 const positionInputBox = document.getElementById("position-input");
 let fenOnBoard = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const parameters = location.search.replace(/%20/g, " ").split("?");

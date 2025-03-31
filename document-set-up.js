@@ -101,10 +101,10 @@ const toggleOverflowContainer = (callerId) => {
         );
     }
 };
-const setStarRating = (id, rating) => {
+const setStarRating = (id, rating, maxRating) => {
     const ratings = document.getElementById(id).children;
     for (let i = 0; i < ratings.length; i++) {
-        if (i > 9 - rating) {
+        if (i > maxRating - (1 + rating)) {
             ratings[i].querySelector("div").style.backgroundColor = "var(--star-color)";
             continue;
         }
@@ -129,13 +129,17 @@ document.querySelectorAll(".rating-area").forEach(area => {
     let ratings = "";
     for (let i = ratingEnd; i >= ratingStart; i--) {
         ratings += `<label class="radio-input">
-            <input type="radio" name="${name}" value="${i}" onchange="setStarRating('${id}', value);" />
+            <input type="radio" name="${name}" value="${i}" onchange="setStarRating('${id}', parseInt(value), parseInt(${ratingEnd}));" />
             <div></div>
             <span>${i}</span>
         </label>
         `;
     }
     area.innerHTML = ratings;
+});
+
+document.querySelectorAll("a").forEach(element => {
+    element.tabIndex = "0";
 });
 
 document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
@@ -168,7 +172,7 @@ document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => 
     optionsContainer.className = "drop-down-menu";
     optionsContainer.innerHTML = menuContainer.innerHTML;
     menuContainer.innerHTML = `
-        <div class="drop-down-menu-selection" value="${defaultValue}" onclick="toggleDropDownMenu('${menuContainer.id}');" tabindex="0" onkeydown="{
+        <div class="drop-down-menu-selection" value="${defaultValue}" data-default-value="${defaultValue}" data-default-text="${defaultValueText}" onclick="toggleDropDownMenu('${menuContainer.id}');" tabindex="0" onkeydown="{
         if (event.key === ' ' || event.key === 'Enter') {
             event.preventDefault();
             click();
