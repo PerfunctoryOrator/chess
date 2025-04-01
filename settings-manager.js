@@ -140,7 +140,7 @@ const Settings = {
     },
 };
 
-const root = document.querySelector(":root").style;
+const root = document.documentElement.style;
 let currentSettings = Settings.get();
 if (!currentSettings) {
     Settings.save(Settings.default);

@@ -340,6 +340,7 @@ input[type="text"], input[type="email"], textarea {
     background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);
+    cursor: default;
 }
 .drop-down-menu-selection:focus {
     border: var(--focus-outline);

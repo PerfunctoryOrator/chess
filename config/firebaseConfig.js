@@ -1,5 +1,5 @@
 export const firebaseConfig = {
-    apiKey: "AIzaSyCuoOWv2X80AsTTCtj-yg1ItjZJQNDA8ag",
+    apiKey: "AIzaSyC5iMt3ubaVRGEKYZNOk4A9BmbAoe0FYDE",
     authDomain: "perforator-chess.firebaseapp.com",
     databaseURL: "https://perforator-chess-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "perforator-chess",
