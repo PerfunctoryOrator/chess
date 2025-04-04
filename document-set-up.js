@@ -113,7 +113,6 @@ const setStarRating = (id, rating, maxRating) => {
 };
 
 const emphasisAnimation = "linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%)";
-document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.documentElement).getPropertyValue("--board-color");
 
 document.querySelectorAll(".loading-indicator-container").forEach(indicatorContainer => {
     indicatorContainer.innerHTML = `
@@ -142,20 +141,33 @@ document.querySelectorAll("a").forEach(element => {
     element.tabIndex = "0";
 });
 
+
+
+document.querySelectorAll(".full-screen-box-container").forEach(box => {
+    box.innerHTML = `
+        <div>
+            ${box.innerHTML}
+        </div>`;
+});
+
+document.querySelectorAll(".more-button").forEach(button => {
+    button.addEventListener("click", () => toggleOverflowContainer(button.id));
+});
+
 document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
     radioDiv.tabIndex = "0";
-    radioDiv.setAttribute("onkeydown", `{
+    radioDiv.addEventListener("keydown", (event) => {
         if (event.key === " " || event.key === "Enter") {
             event.preventDefault();
             click();
         }
-    }`);
+    });
 });
 document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => {
     let defaultValue = "", defaultValueText = "";
     menuContainer.querySelectorAll("button").forEach(option => {
         option.classList.add("drop-down-options");
-        option.setAttribute("onclick", `setDropDownValue("${menuContainer.id}", value);`);
+        option.addEventListener("click", () => { setDropDownValue(menuContainer.id, value); });
         if (option.getAttribute("selected") === "") {
             defaultValue = option.value;
             defaultValueText = option.innerText;
@@ -184,16 +196,29 @@ document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => 
         </svg>`;
     menuContainer.appendChild(optionsContainer);
 });
-
-document.querySelectorAll(".full-screen-box-container").forEach(box => {
-    box.innerHTML = `
-        <div>
-            ${box.innerHTML}
-        </div>`;
-});
-
-document.querySelectorAll(".more-button").forEach(button => {
-    button.addEventListener("click", () => toggleOverflowContainer(button.id));
+document.getElementById("fileInput").addEventListener("change", (event) => {
+    const files = event.target.files;
+    const box = document.getElementById("place");
+    box.innerText = "";
+    if (files.length > 5) {
+        alert("You can upload up to 5 files only.");
+        event.target.value = "";
+        box.innerText = "No files selected";
+        return;
+    }
+    for (let i = 0; i < files.length; i++) {
+        if (files[i].size > 10 * 1000 * 1000) {
+            alert(`File ${files[i].name} exceeds the 10MB limit.`);
+            event.target.value = "";
+            box.innerText = "No files selected";
+            return;
+        }
+        if (i > 2) continue;
+        box.innerText += (i === 0 ? "" : ", ") + files[i].name;
+        if (i === 2) {
+            box.innerText += `, and ${files.length - i} other${i + 1 < files.length ? "s" : ""}`;
+        }
+    }
 });
 
 document.addEventListener("click", (event) => {

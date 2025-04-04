@@ -96,6 +96,50 @@ button {
         outline: var(--focus-outline);
     }
 }
+input[type="file"] {
+    display: none;
+}
+#d {
+    padding: var(--padding);
+    & > div {
+        display: flex;
+        align-items: center;
+        & > span {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        & > button {
+            margin: 0;
+        }
+        & > button > svg {
+            margin: 0;
+        }
+    }
+    & > div:not(:nth-last-child(1)) {
+        border-bottom: var(--border);
+        padding-bottom: var(--padding);
+    }
+}
+#e > label {
+    display: flex;
+    align-items: center;
+    padding: var(--padding);
+    border-radius: var(--button-radius);
+    fill: var(--color);
+    & > svg {
+        margin-right: var(--padding);
+    }
+    &:hover, &:focus-visible {
+        fill: var(--active-color);
+        color: var(--active-color);
+        background-color: var(--active-background-color);
+    }
+    &:focus-visible {
+        outline: var(--focus-outline);
+    }
+}
 .dangerous-button {
     margin-right: auto;
     &:hover, &:focus-visible {
@@ -145,24 +189,24 @@ input[type="text"], input[type="email"], textarea {
 }
 .radio-input > input {
     display: none;
-}
-.radio-input > input + div {
-    overflow: hidden;
-    position: relative;
-    width: calc(sqrt(3) * 40px);
-    height: 40px;
-    margin: 2px;
-    margin-bottom: 4px;
-    background-color: var(--background-color);
-    border-radius: var(--button-radius);
-    outline: var(--border);
-    outline-offset: 2px;
-}
-.radio-input > input:checked + div {
-    outline-color: var(--active-color);
-}
-.radio-input > input:checked ~ span {
-    font-weight: bold;
+    & + div {
+        overflow: hidden;
+        position: relative;
+        width: calc(sqrt(3) * 40px);
+        height: 40px;
+        margin: 2px;
+        margin-bottom: 4px;
+        background-color: var(--background-color);
+        border-radius: var(--button-radius);
+        outline: var(--border);
+        outline-offset: 2px;
+    }
+    &:checked + div {
+        outline-color: var(--active-color);
+    }
+    &:checked ~ span {
+        font-weight: bold;
+    }
 }
 .radio-input > div:focus-visible {
     outline: var(--focus-outline);
@@ -288,9 +332,12 @@ input[type="text"], input[type="email"], textarea {
 /* Button-containers */
 .options {
     display: flex;
+    position: sticky;
+    bottom: 0;
     justify-content: flex-end;
-    border-top: var(--border);
     padding: 0;
+    border-top: var(--border);
+    background-color: var(--background-color);
 }
 
 /* Overflow menus */
@@ -379,9 +426,11 @@ input[type="text"], input[type="email"], textarea {
     z-index: 12;
 }
 .full-screen-box-container > div {
+    overflow-y: auto;
     position: absolute;
-    top: 40%;
+    top: 50%;
     left: 50%;
+    max-height: 90%;
     background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);

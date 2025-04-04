@@ -9,16 +9,22 @@
         <title>Play Chess!</title>
         <link rel="canonical" href="" />
         <link rel="icon" type="image/x-icon" href="media-support/white-pawn.ico?modified=31032025" />
-        <link rel="stylesheet" href="board-styles.css?modified=01-04-25-1" />
         <link rel="stylesheet" href="board-pieces.css?modified=01-04-25-1" />
+        <link rel="stylesheet" href="board-styles.css?modified=01-04-25-1" />
+        <link rel="stylesheet" href="square-positions.css?modified=04-04-25-1" />
         <link rel="stylesheet" href="general-styles.css?modified=01-04-25-1" />
         <script src="document-set-up.js?modified=01-04-25-1" defer></script>
         <script src="settings-manager.js?modified=01-04-25-1" defer></script>
         <script src="board-manager.js?modified=01-04-25-1" defer></script>
-        <script src="sign-in.js?modified=01-04-25-1" type="module" defer></script>
-        <script src="chat.js?modified=01-04-25-1" type="module" defer></script>
+        <script>
+            document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.documentElement).getPropertyValue("--board-color");
+        </script>
+        <!-- <script src="sign-in.js?modified=01-04-25-1" type="module" defer></script>
+        <script src="chat.js?modified=01-04-25-1" type="module" defer></script> -->
+
     </head>
     <body>
+
         <div id="game-area">
             <div id="eval-bar">
                 <div></div>
@@ -50,7 +56,7 @@
                 <div class="options" style="position: relative;">
                     <button onclick="flipBoard();">
                         <!-- Icon sourced from Google Fonts (Material Icons) — Apache license 2.0 -->
-                        <svg xmlns="http://www.w3.org/2000/svg" id="flipSvg" height="24px" viewBox="0 -960 960 960" width="24px" style="transform: rotate(-90deg);">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="flip-svg" height="24px" viewBox="0 -960 960 960" width="24px" style="transform: rotate(-90deg);">
                             <path d="M400-200 120-480l280-280v560Zm160 0v-560l280 280-280 280Zm60-145 135-135-135-135v270Z" />
                         </svg>
                         <span class="button-desc">Flip board</span>
@@ -73,7 +79,7 @@
                         <button onclick="{
                             checkFenValidity(positionInputBox.value);
                             showFullScreenBox('board-position-input-container');
-                            }">
+                        }">
                             <!-- Icon sourced from Google Fonts (Material Icons) — Apache license 2.0 -->
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
                                 <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
@@ -111,7 +117,11 @@
                     </div>
                 </div>
             </div>
-            <div class="board-container one"></div>
+            <div class="board-container one">
+            <div class="chess-board">
+                <canvas></canvas>
+            </div>
+            </div>
         </div>
         <div class="full-screen-box-container" id="settings-container">
             <h2>Settings</h2>
@@ -199,11 +209,11 @@
                     currentSettings = {...Settings.default};
                     applyCurrentSettings();
                     }
-                    }">Reset</button>
+                }">Reset</button>
                 <button onclick="{
                     Settings.save(currentSettings);
                     hideFullScreenBox('settings-container');
-                    }">Save</button>
+                }">Save</button>
             </div>
         </div>
         <div class="full-screen-box-container" id="board-position-input-container">
@@ -216,7 +226,7 @@
                 <button onclick="{
                     hideFullScreenBox('board-position-input-container');
                     positionInputBox.value = fenOnBoard;
-                    }">Cancel</button>
+                }">Cancel</button>
                 <button onclick="{
                     const parsedFen = checkFenValidity(positionInputBox.value);
                     if (parsedFen) {
@@ -240,7 +250,7 @@
                         removeSquareHighlight(true);
                         hideFullScreenBox('board-position-input-container');
                     } else alert('The entered FEN is not valid.');
-                    }">Load</button>
+                }">Load</button>
             </div>
         </div>
         <div class="full-screen-box-container" id="feedback-form-container">
@@ -271,6 +281,58 @@
                 <textarea rows="5" placeholder="Please describe the issue thoroughly…"></textarea>
                 <span>On a scale of 1 to 10, how would you rate your experience on this website so far?</span>
                 <div class="radio-input-area rating-area" id="website-rating-area" data-name="website-rating" data-start-rating="1" data-end-rating="10"></div>
+                <div id="e" style="display: flex; align-items: center;">
+                    <span style="flex: 1;">Attachments</span>
+                    <label>
+                        <input type="file" id="fileInput" accept="image/*,video/*" />
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+                            <path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                        </svg>
+                        Add attachment
+                    </label>
+                </div>
+                <div id="d" style="overflow: hidden; display: flex; flex-direction: column; gap: var(--padding); border: var(--border); background-color: var(--background-color); border-radius: var(--box-radius);">
+                    <div>
+                        <span style="">My browser’s specifications.txt</span>
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div>
+                        <span>When the bug appeared for the first time.jpeg</span>
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div>
+                        <span>When the bug appeared for the second time.jpeg</span>
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div>
+                        <span>When I repeated the steps but no bug appeared.jpeg</span>
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div>
+                        <span>The video showing the bug.mp4</span>
+                        <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="options">
                 <button class="dangerous-button" onclick="{
@@ -281,10 +343,11 @@
                         issueType.value = '';
                         issueType.innerHTML = '<span style=\'font-style: italic; color: darkgray;\'>Choose…</span>';
                         form.querySelector('textarea').value = '';
-                        form.querySelector('.rating-area input:checked').checked = false;
+                        const rating = form.querySelector('.rating-area input:checked');
+                        if(rating) rating.checked = false;
                         setStarRating('website-rating-area', 0, 10);
                     }
-                    }">Clear form</button>
+                }">Clear form</button>
                 <button onclick="hideFullScreenBox('feedback-form-container');">Done</button>
             </div>
         </div>
