@@ -15,11 +15,6 @@
     --move-indicator-color: rgba(0, 0, 0, 0.2);
 }
 
-/* canvas {
-    width: calc(8 * var(--board-square-width));
-    height: calc(8 * var(--board-square-width));
-} */
-
 /* Evaluation bar */
 #eval-bar {
     font-weight: bold;
@@ -50,14 +45,16 @@
     user-select: none;
 }
 .chess-board {
-    display: grid;
-    grid-template: repeat(8, var(--board-square-width)) / repeat(8, var(--board-square-width));
     overflow: hidden;
     position: relative;
-    width: max-content;
+    width: calc(8 * var(--board-square-width));
+    aspect-ratio: 1;
     margin: 0 var(--padding) 0 0;
     border: var(--border);
     border-radius: var(--box-radius);
+}
+.chess-board > canvas {
+    position: absolute;
 }
 .piece-area {
     display: block;
@@ -98,11 +95,12 @@
 .chess-piece {
     position: absolute;
     width: var(--board-square-width);
-    height: var(--board-square-width);
+    aspect-ratio: 1;
     outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
     z-index: 7;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
     &:hover {
-        outline: calc(var(--board-square-width) / 25) solid white;
+        outline: round(down, calc(var(--board-square-width) / 25), 1px) solid white;
     }
     &.dragged {
         position: fixed;
@@ -127,32 +125,52 @@
 }
 
 /* File and rank indicators */
-.file-indicator, .rank-indicator {
+.files-container, .ranks-container {
     font-weight: bold;
     display: flex;
     position: absolute;
     z-index: 5;
     pointer-events: none;
-}
-.file-indicator {
-    bottom: 2px;
-}
-.rank-indicator {
-    flex-direction: column;
-    top: calc(var(--board-square-width) / 20);
-}
-.file-indicator > div, .rank-indicator > div {
-    font-size: calc(var(--board-square-width) / 5);
-    color: var(--board-color);
-    &.light-text-color {
+    & > div {
+        font-size: calc(var(--board-square-width) / 5);
+        line-height: calc(var(--board-square-width) / 5);
+        text-align: right;
         color: var(--light-square-color);
+        &:nth-child(2n) {
+            color: var(--board-color);
+        }
     }
 }
-.file-indicator > div {
-    width: var(--board-square-width);
+.files-container {
+    bottom: calc(var(--board-square-width) / 24);
+    right: calc(var(--board-square-width) / 24);
+    & > div {
+        width: var(--board-square-width);
+    }
 }
-.rank-indicator > div {
-    height: var(--board-square-width);
+.ranks-container {
+    flex-direction: column-reverse;
+    top: calc(var(--board-square-width) / 24);
+    left: calc(var(--board-square-width) / 24);
+    & > div {
+        height: var(--board-square-width);
+    }
+}
+.flipped {
+    & .files-container, & .ranks-container {
+        & > div {
+            color: var(--board-color);
+            &:nth-child(2n) {
+                color: var(--light-square-color);
+            }
+        }
+    }
+    & .files-container {
+        flex-direction: row-reverse;
+    }
+    & .ranks-container {
+        flex-direction: column;
+    }
 }
 
 /* Ripple when any square is clicked */
@@ -162,14 +180,14 @@
     top: 0;
     left: 0;
     width: var(--board-square-width);
-    height: var(--board-square-width);
+    aspect-ratio: 1;
     &::after {
         content: "";
         position: absolute;
         top: 50%;
         left: 50%;
         width: 100%;
-        height: 100%;
+        aspect-ratio: 1;
         background-color: rgba(0, 0, 0, 0.4);
         border-radius: 50%;
         transform: translate(-50%, -50%);
@@ -177,18 +195,18 @@
     }
 }
 
-/* Highlighted square */
+/* Highlighted squares */
 .square-highlight {
     position: absolute;
     top: 0;
     left: 0;
     width: var(--board-square-width);
-    height: var(--board-square-width);
+    aspect-ratio: 1;
     background-color: rgba(255, 255, 0, 0.5);
-    outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
     z-index: 3;
     pointer-events: none;
     animation: appear 0.25s ease;
+    transition: opacity 0.25s ease;
     &.yellow {
         background-color: rgba(255, 170, 0, 0.8);
     }
@@ -215,9 +233,8 @@
     top: 0;
     left: 0;
     width: var(--board-square-width);
-    height: var(--board-square-width);
+    aspect-ratio: 1;
     z-index: 6;
-    pointer-events: none;
     &::after {
         content: "";
         position: absolute;
@@ -225,32 +242,38 @@
         left: 50%;
         border-radius: 50%;
         transform: translate(-50%, -50%);
-        animation: fade-in 0.2s var(--emphasis-animation);
-        transition: width 0.2s var(--emphasis-animation), height 0.2s var(--emphasis-animation);
+        animation: fade-in 0.25s var(--emphasis-animation);
+        transition: width 0.25s var(--emphasis-animation), height 0.25s var(--emphasis-animation), opacity 0.25s var(--emphasis-animation);
+    }
+    &.fade-out::after {
+        width: 25%;
+        opacity: 0;
     }
 }
 .empty-move-indicator {
     &::after {
         width: 30%;
-        height: 30%;
+        aspect-ratio: 1;
         background-color: var(--move-indicator-color);
     }
-    &.hovered::after {
+    &.hovered::after, &:hover::after {
         width: 50%;
-        height: 50%;
     }
 }
 .capture-indicator {
     &::after {
         width: 80%;
-        height: 80%;
+        aspect-ratio: 1;
         border: calc(var(--board-square-width) / 10) solid var(--move-indicator-color);
         box-shadow: inset 0 0 var(--move-indicator-color);
         transition: box-shadow 0.2s var(--emphasis-animation);
     }
     &.hovered::after {
         width: 70%;
-        height: 70%;
+        box-shadow: inset 0 0 0 calc(var(--board-square-width) / 4) var(--move-indicator-color);
+    }
+    &:hover::after {
+        width: 70%;
         box-shadow: inset 0 0 0 calc(var(--board-square-width) / 4) var(--move-indicator-color);
     }
 }
@@ -286,20 +309,6 @@
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.5);
     }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-@keyframes fade-out {
-    from {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
-    }
 }
 @keyframes ripple-effect {
     from {
@@ -314,8 +323,5 @@
 @keyframes appear {
     from {
         opacity: 0;
-    }
-    to {
-        opacity: 1;
     }
 }

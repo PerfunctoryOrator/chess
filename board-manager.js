@@ -64,6 +64,7 @@ const Notation = {
             enPassantSquare = readValueFromFen();
             if (!enPassantSquare == true || enPassantSquare.length > 2 || (enPassantSquare !== "-" && (enPassantSquare[1] !== "3" && enPassantSquare[1] !== "6"))) return false;
             if (enPassantSquare === "-") enPassantSquare = "";
+            else enPassantSquare = (enPassantSquare[0].charCodeAt(0) - "a".charCodeAt(0) + 1) + enPassantSquare[1];
             halfmoveClock = parseInt(readValueFromFen());
             if (!halfmoveClock == true && halfmoveClock !== 0) return false;
             fullmoveNumber = parseInt(readValueFromFen());
@@ -88,12 +89,11 @@ const Notation = {
             const pieceType = board[convertSquareToIndex(fromSquare)];
             const pieceIsPawn = pieceType.toLowerCase() === "p";
             let moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
-            moveNotation += "";
             if (board[convertSquareToIndex(toSquare)] !== "" || toSquare === enPassantSquare && pieceIsPawn) {
-                if (pieceIsPawn) moveNotation += fromSquare[0];
+                if (pieceIsPawn) moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1);
                 moveNotation += "x";
             }
-            moveNotation += toSquare;
+            moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(toSquare[0]) - 1) + toSquare[1];
             if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo.toUpperCase();
             const newBoard = board.slice();
             newBoard[convertSquareToIndex(fromSquare)] = "";
@@ -139,28 +139,25 @@ const highlightSquareUnderPoint = (x, y, previousTarget = null) => {
 };
 const PieceMoveMethods = {
     click: {
-        piece: (event) => {
-            selectPiece(event.target);
-        },
         document: (event) => {
-            if (!event.target.classList.contains("chess-piece")) {
+            const target = event.target;
+            if (target.classList.contains("move-indicator")) {
+                movePiece(getSquareFromClassList(target));
+            }
+            if (target.classList.contains("chess-piece")) {
+                selectPiece(target);
+            } else {
                 removeLegalMoveIndicators();
                 removeSquareHighlight();
                 activePiece = null;
             }
         },
         remove: function () {
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.removeEventListener("click", this.piece);
-            });
-            document.removeEventListener("click", this.document);
+            chessBoard.removeEventListener("click", this.document);
         },
         add: function () {
             this.remove();
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.addEventListener("click", this.piece);
-            });
-            document.addEventListener("click", this.document);
+            chessBoard.addEventListener("click", this.document);
         },
     },
     dragDrop: {
@@ -373,8 +370,12 @@ const PieceMoveMethods = {
 };
 const convertSquareToIndex = (square) => 8 * (8 - square[1]) + (square[0] - 1);
 const convertIndexToSquare = (index) => `${1 + (index % 8)}${8 - Math.floor(index / 8)}`;
+const getSquareFromClassList = (element) => {
+    const squareClass = Array.from(element.classList).find(className => className.startsWith("square-"));
+    if (squareClass) return squareClass.substring(7);
+};
 
-const drawBoard = (canvas, context, flipped = isBoardFlipped) => {
+const drawBoard = (canvas, context) => {
     // Get the current values of CSS variables
     const squareWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--board-square-width"));
     const darkColor = getComputedStyle(document.documentElement).getPropertyValue("--board-color");
@@ -382,39 +383,52 @@ const drawBoard = (canvas, context, flipped = isBoardFlipped) => {
 
     // Set canvas size based on square width
     const boardSize = squareWidth * 8;
-    canvas.width = boardSize;
-    canvas.height = boardSize;
-
-    // Store flip status as 0 or 1
-    const flip = Number(flipped);
+    canvas.width = canvas.height = boardSize;
 
     // Draw the squares
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             // Determine square color
-            const isLightSquare = (row + col) % 2 === flip;
+            const isLightSquare = (row + col) % 2 === 0;
             context.fillStyle = isLightSquare ? lightColor : darkColor;
 
             // Draw the square
             context.fillRect(col * squareWidth, row * squareWidth, squareWidth, squareWidth);
         }
     }
-}
-const updateBoard = () => {
+};
+const updateAllBoards = () => {
     // Update `--board-square-width`
     const squareWidth = Math.floor(Math.min(
-        window.innerHeight - 2*8 - 2*48 - 6*2 - 2*16,
-        window.innerWidth - 2*8 - 32 - 4*2 - 2*16
+        window.innerHeight - 2 * 8 - 2 * 48 - 6 * 2 - 2 * 16,
+        window.innerWidth - 2 * 8 - 32 - 4 * 2 - 2 * 16
     ) / 8);
     document.documentElement.style.setProperty("--board-square-width", `${squareWidth}px`);
 
-    document.querySelectorAll(".chess-board").forEach(board => {
-        const canvas = board.querySelector("canvas");
+    document.querySelectorAll(".board-container").forEach(container => {
+        const canvas = container.querySelector("canvas");
         const context = canvas.getContext("2d");
         drawBoard(canvas, context);
     });
-}
-
+};
+const addFileRankIndicators = () => {
+    const filesContainer = document.createElement("div");
+    filesContainer.className = "files-container";
+    for (let i = 0; i < 8; i++) {
+        const fileIndicator = document.createElement("div");
+        fileIndicator.innerText = String.fromCharCode("a".charCodeAt(0) + i);
+        filesContainer.appendChild(fileIndicator);
+    }
+    chessBoard.appendChild(filesContainer);
+    const ranksContainer = document.createElement("div");
+    ranksContainer.className = "ranks-container";
+    for (let i = 1; i < 9; i++) {
+        const rankIndicator = document.createElement("div");
+        rankIndicator.innerText = i;
+        ranksContainer.appendChild(rankIndicator);
+    }
+    chessBoard.appendChild(ranksContainer);
+};
 const setUpPieces = () => {
     let squareNumber = 0;
     for (let rank = 8; rank > 0; rank--) {
@@ -424,8 +438,8 @@ const setUpPieces = () => {
                 const piece = document.createElement("div");
                 const square = `${(file + 1)}${rank}`;
                 piece.className = `chess-piece ${pieceAtSquare} square-${square}`;
-                piece.addEventListener("mouseenter", () => mouseEntersPiece(square));
-                piece.addEventListener("mouseleave", () => mouseLeavesPiece(square));
+                piece.addEventListener("mouseenter", mouseEntersPiece);
+                piece.addEventListener("mouseleave", mouseLeavesPiece);
                 chessBoard.appendChild(piece);
             }
             squareNumber++;
@@ -582,33 +596,29 @@ const isStalemate = (activeColor, board = piecePositions) => {
 };
 const removeLegalMoveIndicators = () => {
     chessBoard.querySelectorAll(".move-indicator").forEach(indicator => {
-        // indicator.style.animation = "fade-out 0.25s var(--emphasis-animation)";
-        // setTimeout(() => indicator.remove(), 200);
-        indicator.remove();
+        indicator.classList.add("fade-out");
+        setTimeout(() => indicator.remove(), 200);
     });
 };
 const selectPiece = (piece, dragged = false) => {
     // Get square
-    const pieceSquare = Array.from(piece.classList).find(className => className.startsWith("square-")).substring(7);
+    const pieceSquare = getSquareFromClassList(piece);
 
     // Create ripple effect if the piece is not being dragged
     if (!dragged) {
         const ripple = document.createElement("div");
         ripple.className = `ripple square-${pieceSquare}`;
         chessBoard.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 500);
+        setTimeout(() => ripple.remove(), 450);
     }
-
-    // Highlight the selected square
-    highlightSquare(pieceSquare);
 
     // Remove all previous legal move indicators
     removeLegalMoveIndicators();
 
-    // Handle piece captures
+    // Handle piece capture
     if (activePiece && legalMoves.includes(pieceSquare)) {
         piece.style.opacity = "0";
-        setTimeout(() => piece.remove(), 300);
+        setTimeout(() => piece.remove(), 250);
         movePiece(pieceSquare);
         halfmoveClock = 0;
         activePiece = null;
@@ -618,8 +628,12 @@ const selectPiece = (piece, dragged = false) => {
     // If the piece to be selected is already selected, deselect it
     if (piece === activePiece) {
         activePiece = null;
+        removeSquareHighlight();
         return;
     }
+
+    // Highlight the selected square
+    highlightSquare(pieceSquare);
 
     // Select the piece and highlight legal moves
     activePiece = piece;
@@ -655,7 +669,6 @@ const showPromotionDialog = (targetSquare) => {
             <button class="chess-piece ${promotionChoices[2]}" value="${promotionChoices[2]}" style="top: calc(2 * var(--board-square-width));"></button>
             <button class="chess-piece ${promotionChoices[3]}" value="${promotionChoices[3]}" style="top: calc(3 * var(--board-square-width));"></button>
         `;
-        chessBoard.querySelector(".piece-area").appendChild(promotionBox);
         promotionBox.querySelectorAll("button").forEach(button => {
             button.addEventListener("click", function () {
                 const selectedPiece = this.value;
@@ -663,11 +676,12 @@ const showPromotionDialog = (targetSquare) => {
                 resolve([pieceToPromote, selectedPiece]);
             });
         });
+        chessBoard.appendChild(promotionBox);
     });
 }
 async function movePiece(targetSquare, dropped = false) {
     // Basic variables
-    const pieceSquare = activePiece.classList.find(className => className.startsWith("square-")).substring(7);
+    const pieceSquare = getSquareFromClassList(activePiece);
     const toFile = parseInt(targetSquare[0]);
     const toRank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(pieceSquare)];
@@ -675,16 +689,10 @@ async function movePiece(targetSquare, dropped = false) {
 
     // Change the position of piece
     const activePieceStyle = activePiece.style;
-    if (!dropped) {
-        activePieceStyle.outline = "none";
-        activePieceStyle.transition = `top 0.3s ${pieceMoveAnimation}, left 0.3s ${pieceMoveAnimation}, opacity 0.3s ease-out`;
-    }
+    if (!dropped) activePieceStyle.outline = "none";
     activePiece.classList.remove(`square-${pieceSquare}`);
     activePiece.classList.add(`square-${targetSquare}`);
-    if (!dropped) setTimeout(() => {
-        activePieceStyle.outline = "";
-        activePieceStyle.transition = "opacity 0.3s ease-out";
-    }, 300);
+    if (!dropped) setTimeout(() => activePieceStyle.outline = "", 300);
 
     // Handle pawn promotion
     let promotedTo = "";
@@ -707,13 +715,13 @@ async function movePiece(targetSquare, dropped = false) {
         const enemyPawn = chessBoard.querySelector(`.chess-piece.square-${enemyPawnSquare}`);
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = "";
         enemyPawn.style.opacity = "0";
-        setTimeout(() => enemyPawn.remove(), 300);
+        setTimeout(() => enemyPawn.remove(), 250);
     }
 
     // Set new en passant square
     let prevEnPassantSquare = enPassantSquare;
     if (pieceType.toLowerCase() === "p" && Math.abs(toRank - previousRank) === 2) {
-        enPassantSquare = pieceType === "P" ? `${String.fromCharCode("a".charCodeAt(0) + toFile)}3` : `${String.fromCharCode("a".charCodeAt(0) + toFile)}6`;
+        enPassantSquare = pieceType === "P" ? `${toFile}3` : `${toFile}6`;
     } else enPassantSquare = "";
 
     // Get move notation
@@ -793,7 +801,8 @@ async function movePiece(targetSquare, dropped = false) {
 const removeSquareHighlight = (permanent = false, square = "") => {
     if (square === "") {
         chessBoard.querySelectorAll(`.square-highlight${permanent ? "" : ":not(.permanent)"}`).forEach(highlight => {
-            setTimeout(() => highlight.remove(), 250);
+            highlight.style.opacity = "0";
+            setTimeout(() => highlight.remove(), 200);
         });
         return;
     }
@@ -811,11 +820,13 @@ const highlightSquare = (square, permanent = false, color = "") => {
     if (permanent === true) highlight.classList.add("permanent");
     chessBoard.appendChild(highlight);
 };
-const mouseEntersPiece = (square) => {
+const mouseEntersPiece = (event) => {
+    const square = getSquareFromClassList(event.target);
     const captureIndicator = chessBoard.querySelector(`.capture-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.add("hovered");
 };
-const mouseLeavesPiece = (square) => {
+const mouseLeavesPiece = (event) => {
+    const square = getSquareFromClassList(event.target);
     const captureIndicator = chessBoard.querySelector(`.capture-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.remove("hovered");
 };
@@ -841,7 +852,14 @@ let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock =
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let boardContainer = document.querySelector(".board-container.one");
-let chessBoard = document.querySelector(".chess-board");
+let chessBoard = boardContainer.querySelector(".chess-board");
+if (!chessBoard) {
+    const newBoard = document.createElement("div");
+    newBoard.className = "chess-board";
+    newBoard.innerHTML = "<canvas></canvas>";
+    boardContainer.appendChild(newBoard);
+    chessBoard = boardContainer.querySelector(".chess-board");
+}
 const positionInputBox = document.getElementById("position-input");
 let fenOnBoard = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const parameters = location.search.replace(/%20/g, " ").split("?");
@@ -882,7 +900,8 @@ if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
     startingPositionRow.innerHTML = `<div class="info">Custom position</div>`;
 }
 document.getElementById("move-grid").appendChild(startingPositionRow);
-updateBoard();
+updateAllBoards();
+addFileRankIndicators();
 setUpPieces();
 PieceMoveMethods.click.add();
 if (isBoardFlipped) {
@@ -895,5 +914,4 @@ if (activeColor === "b") {
     document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
 }
 
-
-addEventListener("resize", updateBoard);
+addEventListener("resize", updateAllBoards);
