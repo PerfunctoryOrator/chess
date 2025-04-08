@@ -6,10 +6,8 @@ const auth = getAuth();
 const messagesRef = ref(database, "messages");
 
 document.getElementById("send-button").addEventListener("click", sendMessage);
-document.getElementById("chat-input").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-        sendMessage();
-    }
+document.getElementById("chat-input").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") sendMessage();
 });
 
 function sendMessage() {

@@ -375,43 +375,12 @@ const getSquareFromClassList = (element) => {
     if (squareClass) return squareClass.substring(7);
 };
 
-const drawBoard = (canvas, context) => {
-    // Get the current values of CSS variables
-    const squareWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--board-square-width"));
-    const darkColor = getComputedStyle(document.documentElement).getPropertyValue("--board-color");
-    const lightColor = getComputedStyle(document.documentElement).getPropertyValue("--light-square-color");
-
-    // Set canvas size based on square width
-    const boardSize = squareWidth * 8;
-    canvas.width = canvas.height = boardSize;
-
-    // Draw the squares
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            // Determine square color
-            const isLightSquare = (row + col) % 2 === 0;
-            context.fillStyle = isLightSquare ? lightColor : darkColor;
-
-            // Draw the square
-            context.fillRect(col * squareWidth, row * squareWidth, squareWidth, squareWidth);
-        }
+const setUpEmptyBoard = () => {
+    const background = chessBoard.querySelector(".background");
+    for (let i = 0; i < 32; i++) {
+        const lightSquare = document.createElement("div");
+        background.appendChild(lightSquare);
     }
-};
-const updateAllBoards = () => {
-    // Update `--board-square-width`
-    const squareWidth = Math.floor(Math.min(
-        window.innerHeight - 2 * 8 - 2 * 48 - 6 * 2 - 2 * 16,
-        window.innerWidth - 2 * 8 - 32 - 4 * 2 - 2 * 16
-    ) / 8);
-    document.documentElement.style.setProperty("--board-square-width", `${squareWidth}px`);
-
-    document.querySelectorAll(".board-container").forEach(container => {
-        const canvas = container.querySelector("canvas");
-        const context = canvas.getContext("2d");
-        drawBoard(canvas, context);
-    });
-};
-const addFileRankIndicators = () => {
     const filesContainer = document.createElement("div");
     filesContainer.className = "files-container";
     for (let i = 0; i < 8; i++) {
@@ -649,33 +618,22 @@ const selectPiece = (piece, dragged = false) => {
         chessBoard.appendChild(moveIndicator);
     });
 };
-const showPromotionDialog = (targetSquare) => {
+const showPromotionBox = (targetSquare) => {
     return new Promise(resolve => {
         const pieceToPromote = activePiece;
         const promotionBox = document.createElement("div");
         const promotionChoices = activeColor === "w" ? ["Q", "N", "R", "B"] : ["q", "n", "r", "b"];
-        if (activeColor === "w" === isBoardFlipped) promotionChoices.reverse();
-        promotionBox.className = "promotion-box";
-        if (isBoardFlipped) {
-            promotionBox.style.top = `calc(${parseInt(targetSquare[1]) - (activeColor === "w" ? 4 : 1)}*var(--board-square-width) - 2px)`;
-            promotionBox.style.left = `calc(${"h".charCodeAt(0) - targetSquare[0].charCodeAt(0)}*var(--board-square-width) - 2px)`;
-        } else {
-            promotionBox.style.top = `calc(${(activeColor === "w" ? 8 : 5) - parseInt(targetSquare[1])}*var(--board-square-width) - 2px)`;
-            promotionBox.style.left = `calc(${targetSquare[0].charCodeAt(0) - "a".charCodeAt(0)}*var(--board-square-width) - 2px)`;
-        }
-        promotionBox.innerHTML = `
-            <button class="chess-piece ${promotionChoices[0]}" value="${promotionChoices[0]}"></button>
-            <button class="chess-piece ${promotionChoices[1]}" value="${promotionChoices[1]}" style="top: var(--board-square-width);"></button>
-            <button class="chess-piece ${promotionChoices[2]}" value="${promotionChoices[2]}" style="top: calc(2 * var(--board-square-width));"></button>
-            <button class="chess-piece ${promotionChoices[3]}" value="${promotionChoices[3]}" style="top: calc(3 * var(--board-square-width));"></button>
-        `;
-        promotionBox.querySelectorAll("button").forEach(button => {
-            button.addEventListener("click", function () {
-                const selectedPiece = this.value;
+
+        promotionBox.className = `promotion-box square-${targetSquare} ${activeColor === "w" ? "" : "black"}`;
+        for (let i = 0; i < 4; i++) {
+            const pieceButton = document.createElement("button");
+            pieceButton.value = pieceButton.className = promotionChoices[i];
+            pieceButton.addEventListener("click", function () {
                 promotionBox.remove();
-                resolve([pieceToPromote, selectedPiece]);
+                resolve([pieceToPromote, this.value]);
             });
-        });
+            promotionBox.appendChild(pieceButton);
+        }
         chessBoard.appendChild(promotionBox);
     });
 }
@@ -698,7 +656,7 @@ async function movePiece(targetSquare, dropped = false) {
     let promotedTo = "";
     if (pieceType.toLowerCase() === "p") {
         if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-            promotedTo = await showPromotionDialog(targetSquare);
+            promotedTo = await showPromotionBox(targetSquare);
             activePiece = promotedTo[0];
             promotedTo = promotedTo[1];
             activePiece.classList.remove("P", "p");
@@ -856,7 +814,7 @@ let chessBoard = boardContainer.querySelector(".chess-board");
 if (!chessBoard) {
     const newBoard = document.createElement("div");
     newBoard.className = "chess-board";
-    newBoard.innerHTML = "<canvas></canvas>";
+    newBoard.innerHTML = "<div class='background'></div>";
     boardContainer.appendChild(newBoard);
     chessBoard = boardContainer.querySelector(".chess-board");
 }
@@ -900,8 +858,7 @@ if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
     startingPositionRow.innerHTML = `<div class="info">Custom position</div>`;
 }
 document.getElementById("move-grid").appendChild(startingPositionRow);
-updateAllBoards();
-addFileRankIndicators();
+setUpEmptyBoard();
 setUpPieces();
 PieceMoveMethods.click.add();
 if (isBoardFlipped) {
@@ -913,5 +870,3 @@ if (activeColor === "b") {
 } else {
     document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
 }
-
-addEventListener("resize", updateAllBoards);

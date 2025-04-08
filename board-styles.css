@@ -13,6 +13,10 @@
     --light-square-color: var(--brown-light-square-color);
 
     --move-indicator-color: rgba(0, 0, 0, 0.2);
+
+    --board-square-width: round(down, min(
+        calc((100vh - 2*var(--padding) - 2*48px - 6*2px - 2*var(--margin)) / 8),
+        calc((100vw - 2*var(--padding) - 32px - 4*2px - 2*var(--margin)) / 8)), 1px);
 }
 
 /* Evaluation bar */
@@ -52,17 +56,25 @@
     margin: 0 var(--padding) 0 0;
     border: var(--border);
     border-radius: var(--box-radius);
+    background-color: var(--board-color);
+    cursor: default;
 }
-.chess-board > canvas {
+.chess-board > .background {
+    display: flex;
+    flex-wrap: wrap;
     position: absolute;
 }
-.piece-area {
-    display: block;
-    position: absolute;
-    width: max-content;
-    z-index: 7;
+.chess-board > .background > div {
+    width: var(--board-square-width);
+    aspect-ratio: 1;
+    background-color: var(--light-square-color);
+    margin-right: var(--board-square-width);
+    &:nth-child(8n), &:nth-child(8n + 5), &:nth-child(8n + 6), &:nth-child(8n + 7) {
+        margin-left: var(--board-square-width);
+        margin-right: 0;
+    }
 }
-.board-square {
+/* .board-square {
     overflow: hidden;
     position: relative;
     background-color: var(--board-color);
@@ -91,7 +103,7 @@
             transform: translate(-50%, -50%);
         }
     }
-}
+} */
 .chess-piece {
     position: absolute;
     width: var(--board-square-width);
@@ -280,26 +292,51 @@
 
 /* Promotion box */
 .promotion-box {
-    overflow: hidden;
-    position: relative;
+    position: absolute;
     width: var(--board-square-width);
-    height: calc(4 * var(--board-square-width));
-    background-color: whitesmoke;
-    border: 2px solid gainsboro;
+    height: var(--board-square-width);
+    transform: translate(2px, 2px);
     box-shadow: 8px 16px 16px rgba(0, 0, 0, 0.2);
     animation: appear 0.3s ease-in-out;
     z-index: 9;
+    transition: transform 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
     & > button {
+        width: var(--board-square-width);
+        aspect-ratio: 1;
         padding: 0;
         margin: 0;
+        border-right: 2px solid gainsboro;
+        border-left: 2px solid gainsboro;
         border-radius: 0;
         outline-offset: -2px;
+        background-color: whitesmoke;
+        &:nth-child(1) {
+            border-top: 2px solid gainsboro;
+        }
+        &:nth-child(4) {
+            border-bottom: 2px solid gainsboro;
+        }
     }
     & > button:hover, & > button:focus-visible {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: rgb(232.75, 232.75, 232.75);
     }
     & > button:focus-visible {
         outline: 2px solid rgb(42, 100, 227);
+    }
+}
+.flipped .promotion-box:not(.black), .promotion-box.black:not(.flipped *) {
+    flex-direction: column-reverse;
+    & > button {
+        &:nth-child(1) {
+            border-top: none;
+            border-bottom: 2px solid gainsboro;
+        }
+        &:nth-child(4) {
+            border-top: 2px solid gainsboro;
+            border-bottom: none;
+        }
     }
 }
 
