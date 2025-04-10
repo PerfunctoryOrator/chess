@@ -602,7 +602,8 @@ const selectPiece = (piece, dragged = false) => {
     }
 
     // Highlight the selected square
-    highlightSquare(pieceSquare);
+    const prevHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}`);
+    if (!prevHighlight) highlightSquare(pieceSquare);
 
     // Select the piece and highlight legal moves
     activePiece = piece;
@@ -764,7 +765,7 @@ const removeSquareHighlight = (permanent = false, square = "") => {
         });
         return;
     }
-    const highlight = chessBoard.querySelector(`.board-square[data-square="${square}"]`).querySelector(".square-highlight:not(.permanent)");
+    const highlight = chessBoard.querySelector(`.square-highlight.square-${square}:not(.permanent)`);
     if (highlight) highlight.remove();
 };
 const highlightSquare = (square, permanent = false, color = "") => {
