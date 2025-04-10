@@ -156,18 +156,21 @@ document.querySelectorAll(".more-button").forEach(button => {
 
 document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
     radioDiv.tabIndex = "0";
-    radioDiv.addEventListener("keydown", (event) => {
+    radioDiv.addEventListener("keydown", function (event) {
         if (event.key === " " || event.key === "Enter") {
             event.preventDefault();
-            click();
+            this.click();
         }
     });
 });
 document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => {
     let defaultValue = "", defaultValueText = "";
-    menuContainer.querySelectorAll("button").forEach(option => {
+    const optionsContainer = document.createElement("div");
+    optionsContainer.className = "drop-down-menu";
+    optionsContainer.innerHTML = menuContainer.innerHTML;
+    optionsContainer.querySelectorAll("button").forEach(option => {
         option.classList.add("drop-down-options");
-        option.addEventListener("click", () => { setDropDownValue(menuContainer.id, value); });
+        option.addEventListener("click", function () { setDropDownValue(menuContainer.id, this.value); });
         if (option.getAttribute("selected") === "") {
             defaultValue = option.value;
             defaultValueText = option.innerText;
@@ -180,9 +183,6 @@ document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => 
             defaultValueText = "<span style='font-style: italic; color: darkgray;'>Choose…</span>";
         }
     }
-    const optionsContainer = document.createElement("div");
-    optionsContainer.className = "drop-down-menu";
-    optionsContainer.innerHTML = menuContainer.innerHTML;
     menuContainer.innerHTML = `
         <div class="drop-down-menu-selection" value="${defaultValue}" data-default-value="${defaultValue}" data-default-text="${defaultValueText}" onclick="toggleDropDownMenu('${menuContainer.id}');" tabindex="0" onkeydown="{
         if (event.key === ' ' || event.key === 'Enter') {
@@ -208,7 +208,7 @@ document.getElementById("fileInput").addEventListener("change", (event) => {
     }
     for (let i = 0; i < files.length; i++) {
         if (files[i].size > 10 * 1000 * 1000) {
-            alert(`File ${files[i].name} exceeds the 10MB limit.`);
+            alert(`File ${files[i].name} exceeds the 10 MB limit.`);
             event.target.value = "";
             box.innerText = "No files selected";
             return;
