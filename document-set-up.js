@@ -33,35 +33,57 @@ const toggleDropDownMenu = (id) => {
     }
 };
 const setDropDownValue = (dropDownId, newValue) => {
+    // Get the elements of the drop-down box
+    // `menu`: This element contains all options of the menu
+    // `menuDisplay`: This element displays the currently selected option
     const menu = document.getElementById(dropDownId);
     const menuDisplay = menu.children[0];
+
+    // Set `value` and `innerText` of `menuDisplay`
     menuDisplay.setAttribute("value", newValue);
-    menuDisplay.innerText = menu.querySelector(`button[value=${newValue}]`).innerText;
+    menuDisplay.innerText = menu.querySelector(`button[value="${newValue}"]`).innerText;
+
+    // Perform menu-specific actions
     if (dropDownId === "font-selector") {
         setFont(newValue);
     }
 };
 
+// Show and hide full-screen boxes
 const showFullScreenBox = (id) => {
+    // Get the full-screen element
+    // `box`: This element is the container for the full-screen box — the back-curtain
+    // `boxContent`: This element is the container for the main content inside of the box
     const box = document.getElementById(id);
     const boxContent = box.querySelector("div");
+
+    // Show and animate back-curtain
     box.style.display = "block";
     box.animate(
         [{ opacity: "0" }, { opacity: "1" }],
         { duration: 300, easing: emphasisAnimation },
     )
+
+    // Animate main full-screen box
     boxContent.animate(
         [{ transform: "translate(-50%, -60%)" }, { transform: "translate(-50%, -50%)" }],
         { duration: 300, easing: "ease" },
     );
 };
 const hideFullScreenBox = (id) => {
+    // Get the full-screen element
+    // `box`: This element is the container for the full-screen box — the back-curtain
+    // `boxContent`: This element is the container for the main content inside of the box
     const box = document.getElementById(id);
     const boxContent = box.querySelector("div");
+
+    // Animate main full-screen box before hiding
     boxContent.animate(
         [{ transform: "translate(-50%, -50%)" }, { transform: "translate(-50%, -60%)" }],
         { duration: 300, easing: "ease" },
     );
+
+    // Animate and then hide the back-curtain
     box.animate(
         [{ opacity: "1" }, { opacity: "0" }],
         { duration: 300, easing: emphasisAnimation },
@@ -114,34 +136,17 @@ const setStarRating = (id, rating, maxRating) => {
 
 const emphasisAnimation = "linear(0 0%, 0 1.8%, 0.01 3.6%, 0.03 6.35%, 0.07 9.1%, 0.13 11.4%, 0.19 13.4%, 0.27 15%, 0.34 16.1%, 0.54 18.35%, 0.66 20.6%, 0.72 22.4%, 0.77 24.6%, 0.81 27.3%, 0.85 30.4%, 0.88 35.1%, 0.92 40.6%, 0.94 47.2%, 0.96 55%, 0.98 64%, 0.99 74.4%, 1 86.4%, 1 100%)";
 
-document.querySelectorAll(".loading-indicator-container").forEach(indicatorContainer => {
-    indicatorContainer.innerHTML = `
-        <div class="loading-indicator"></div>
-        <div class="loading-indicator"></div>
-        <div class="loading-indicator"></div>`;
-});
-document.querySelectorAll(".rating-area").forEach(area => {
-    const name = area.getAttribute("data-name");
-    const id = area.id;
-    const ratingStart = parseInt(area.getAttribute("data-start-rating"));
-    const ratingEnd = parseInt(area.getAttribute("data-end-rating"));
-    let ratings = "";
-    for (let i = ratingEnd; i >= ratingStart; i--) {
-        ratings += `<label class="radio-input">
-            <input type="radio" name="${name}" value="${i}" onchange="setStarRating('${id}', parseInt(value), parseInt(${ratingEnd}));" />
-            <div></div>
-            <span>${i}</span>
-        </label>
-        `;
+// Format loading indicators
+document.querySelectorAll(".loading-indicator").forEach(indicatorContainer => {
+    for (let i = 0; i < 3; i++) {
+        const indicatorCircle = document.createElement("div");
+        indicatorContainer.appendChild(indicatorCircle);
     }
-    area.innerHTML = ratings;
 });
 
 document.querySelectorAll("a").forEach(element => {
     element.tabIndex = "0";
 });
-
-
 
 document.querySelectorAll(".full-screen-box-container").forEach(box => {
     box.innerHTML = `
@@ -163,6 +168,7 @@ document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
         }
     });
 });
+
 document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => {
     let defaultValue = "", defaultValueText = "";
     const optionsContainer = document.createElement("div");
@@ -196,30 +202,6 @@ document.querySelectorAll(".drop-down-menu-container").forEach(menuContainer => 
         </svg>`;
     menuContainer.appendChild(optionsContainer);
 });
-document.getElementById("fileInput").addEventListener("change", (event) => {
-    const files = event.target.files;
-    const box = document.getElementById("place");
-    box.innerText = "";
-    if (files.length > 5) {
-        alert("You can upload up to 5 files only.");
-        event.target.value = "";
-        box.innerText = "No files selected";
-        return;
-    }
-    for (let i = 0; i < files.length; i++) {
-        if (files[i].size > 10 * 1000 * 1000) {
-            alert(`File ${files[i].name} exceeds the 10 MB limit.`);
-            event.target.value = "";
-            box.innerText = "No files selected";
-            return;
-        }
-        if (i > 2) continue;
-        box.innerText += (i === 0 ? "" : ", ") + files[i].name;
-        if (i === 2) {
-            box.innerText += `, and ${files.length - i} other${i + 1 < files.length ? "s" : ""}`;
-        }
-    }
-});
 
 document.addEventListener("click", (event) => {
     const targetClass = event.target.classList;
@@ -239,3 +221,5 @@ document.addEventListener("click", (event) => {
         });
     }
 });
+
+document.querySelector("meta[name='theme-color']").content = getComputedStyle(document.documentElement).getPropertyValue("--board-color");
