@@ -144,7 +144,6 @@ input[type="text"], input[type="email"], textarea {
     border-radius: var(--box-radius);
     color: var(--color);
     background-color: var(--background-color);
-    resize: none;
     &::placeholder {
         font-style: italic;
         color: darkgray;
@@ -153,6 +152,10 @@ input[type="text"], input[type="email"], textarea {
         border-color: var(--active-color);
         outline: none;
     }
+}
+textarea {
+    min-width: 30vw;
+    resize: none;
 }
 
 /* Illustrated radio inputs */
@@ -193,7 +196,7 @@ input[type="text"], input[type="email"], textarea {
 /* Game area */
 #game-area {
     display: grid;
-    grid-template: repeat(3, max-content) / repeat(4, max-content);
+    grid-template: repeat(3, max-content) / repeat(3, max-content);
     gap: var(--padding);
 }
 
@@ -209,6 +212,14 @@ input[type="text"], input[type="email"], textarea {
 }
 .black-player {
     grid-row: 1 / 2;
+}
+.flipped {
+    & ~ .white-player {
+        grid-row: 1 / 2;
+    }
+    & ~ .black-player {
+        grid-row: 3 / 4;
+    }
 }
 .avatar {
     width: 48px;
@@ -234,7 +245,7 @@ input[type="text"], input[type="email"], textarea {
     overflow: hidden;
     position: relative;
     grid-row: 2 / 3;
-    grid-column: 4 / 5;
+    grid-column: 3 / 4;
     min-width: 25em;
     height: calc(8 * var(--board-square-width));
     border: var(--border);
@@ -293,8 +304,6 @@ input[type="text"], input[type="email"], textarea {
 /* Button-containers */
 .options {
     display: flex;
-    position: sticky;
-    bottom: 0;
     justify-content: flex-end;
     padding: 0;
     border-top: var(--border);
@@ -387,7 +396,6 @@ input[type="text"], input[type="email"], textarea {
     z-index: 12;
 }
 .full-screen-box-container > div {
-    overflow-y: auto;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -440,37 +448,27 @@ input[type="text"], input[type="email"], textarea {
 }
 
 /* Responsive web design */
-
 @media (prefers-reduced-motion: reduce) {
     .btn {
         transition: none;
     }
 }
-@media (max-width: 1680px) {
+@media (max-width: 1280px) {
     #game-area {
-        grid-template: repeat(4, max-content) / repeat(3, max-content);
+        grid-template-rows: repeat(4, max-content);
     }
     #board-info {
         grid-row: 4 / 5;
         grid-column: 2 / 3;
         width: calc(8 * var(--board-square-width));
-        min-width: 0;
-    }
-}
-@media (max-width: 1280px) {
-    #game-area {
-        grid-template: repeat(5, max-content) / repeat(2, max-content);
-    }
-    #chat-container {
-        grid-row: 5 / 6;
-        grid-column: 2 / 3;
-        min-width: 0;
-        width: calc(8 * var(--board-square-width));
+        margin: 0;
     }
 }
 @media (max-width: 800px) {
-    button > svg, .button-link > svg {
-        margin-right: 0;
+    button, .button-link {
+        & > svg {
+            margin-right: 0;
+        }
     }
     .button-desc {
         display: none;
@@ -479,38 +477,39 @@ input[type="text"], input[type="email"], textarea {
         transform: rotate(90deg);
     }
     :root {
+        --board-square-width: round(down, min(
+        calc((100vh - 2*2px) / 8),
+        calc((100vw) / 8)), 1px);
         --options-display: flex;
     }
     body {
         margin: 0;
     }
     #game-area {
-        grid-template: repeat(6, max-content) / repeat(1, max-content);
+        grid-template: repeat(5, max-content) / repeat(1, max-content);
     }
     #eval-bar {
         grid-row: 1 / 2;
         grid-column: 1 / 2;
         width: auto;
+        height: 16px;
         border: none;
         border-bottom: var(--border);
         border-radius: 0;
+        & > div {
+            transform: translateX(calc(50% * clamp(-1, 1 * var(--evaluation) / 5, 1) + 50%));
+        }
+    }
+    .flipped ~ #eval-bar {
+        border-top: none;
+        border-bottom: var(--border);
     }
     .white-player {
-        grid-row: 2 / 3;
+        grid-row: 4 / 5;
         grid-column: 1 / 2;
         margin-right: 0;
     }
-    .avatar {
-        width: 32px;
-        height: 32px;
-        border: none;
-    }
-    :root {
-        --board-square-width: min(
-        calc((100vh - 2*2px) / 8),
-        calc((100vw) / 8));
-    }
-    .board-container {
+    .chess-board {
         grid-row: 3 / 4;
         grid-column: 1 / 2;
         border-left: none;
@@ -519,24 +518,26 @@ input[type="text"], input[type="email"], textarea {
         margin: 0;
     }
     .black-player {
-        grid-row: 4 / 5;
+        grid-row: 2 / 3;
         grid-column: 1 / 2;
         margin-right: 0;
+    }
+    .flipped {
+        & ~ .white-player {
+            grid-row: 2 / 3;
+        }
+        & ~ .black-player {
+            grid-row: 4 / 5;
+        }
+    }
+    .avatar {
+        width: 32px;
+        height: 32px;
+        border: none;
     }
     #board-info {
         grid-row: 5 / 6;
         grid-column: 1 / 2;
-        width: calc(8 * var(--board-square-width));
-        margin: 0;
-        border-left: none;
-        border-right: none;
-        border-radius: 0;
-    }
-    #chat-container {
-        grid-row: 6 / 7;
-        grid-column: 1 / 2;
-        width: calc(8 * var(--board-square-width));
-        margin: 0;
         border-left: none;
         border-right: none;
         border-radius: 0;

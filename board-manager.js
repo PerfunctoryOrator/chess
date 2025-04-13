@@ -658,14 +658,13 @@ let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock =
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
 let gameStatus = "*";
-let boardContainer = document.querySelector(".board-container.one");
-let chessBoard = boardContainer.querySelector(".chess-board");
+let chessBoard = document.querySelector(".chess-board");
 if (!chessBoard) {
     const newBoard = document.createElement("div");
     newBoard.className = "chess-board";
     newBoard.innerHTML = "<div class='background'></div>";
-    boardContainer.appendChild(newBoard);
-    chessBoard = boardContainer.querySelector(".chess-board");
+    document.getElementById("game-area").appendChild(newBoard);
+    chessBoard = document.querySelector(".chess-board");
 }
 const positionInputBox = document.getElementById("position-input");
 let fenOnBoard = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
