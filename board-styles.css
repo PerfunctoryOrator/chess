@@ -78,14 +78,12 @@
     flex-wrap: wrap;
     position: absolute;
 }
-.chess-board > .background > div {
+.background > .board-square {
     width: var(--board-square-width);
     aspect-ratio: 1;
-    background-color: var(--light-square-color);
-    margin-right: var(--board-square-width);
-    &:nth-child(8n), &:nth-child(8n + 5), &:nth-child(8n + 6), &:nth-child(8n + 7) {
-        margin-left: var(--board-square-width);
-        margin-right: 0;
+    background-color: var(--board-color);
+    &.light-square {
+        background-color: var(--light-square-color);
     }
 }
 /* .board-square {
@@ -135,6 +133,9 @@
         z-index: 10;
         filter: drop-shadow(6px 6px 2px var(--shadow-color));
         cursor: grabbing !important;
+    }
+    &.removed {
+        opacity: 0;
     }
 }
 

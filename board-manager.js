@@ -139,7 +139,7 @@ const highlightSquareUnderPoint = (x, y, previousTarget = null) => {
 };
 const PieceMoveMethods = {
     click: {
-        document: (event) => {
+        leftclick: (event) => {
             const target = event.target;
             if (target.classList.contains("move-indicator")) {
                 movePiece(getSquareFromClassList(target));
@@ -152,219 +152,33 @@ const PieceMoveMethods = {
                 activePiece = null;
             }
         },
-        remove: function () {
-            chessBoard.removeEventListener("click", this.document);
-        },
-        add: function () {
-            this.remove();
-            chessBoard.addEventListener("click", this.document);
-        },
-    },
-    dragDrop: {
-        mousemove: (event) => {
+        rightclick: (event) => {
             event.preventDefault();
-            activePiece.style.top = event.clientY + "px";
-            activePiece.style.left = event.clientX + "px";
-            activePiece.style.pointerEvents = "none";
-            highlightSquareUnderPoint(event.clientX, event.clientY, document.querySelector(".under-dragged-piece"));
-            activePiece.style.pointerEvents = "";
-        },
-        mousedown: (event) => {
-            activePiece = null;
-            selectPiece(event.target, true);
-            if (!activePiece) return;
-            draggedPieceId = activePiece.getAttribute("data-square");
-            activePiece.classList.add("dragged");
-            PieceMoveMethods.dragDrop.mousemove(event);
-            document.addEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
-            activePiece.addEventListener("mouseup", PieceMoveMethods.dragDrop.mouseup);
-        },
-        mouseup: (event) => {
-            document.removeEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
-            activePiece.removeEventListener("mouseup", PieceMoveMethods.dragDrop.mouseup);
-            const draggedOverSquare = chessBoard.querySelector(".under-dragged-piece");
-            if (draggedOverSquare) draggedOverSquare.classList.remove("under-dragged-piece", "touch-drag");
-            activePiece.style.pointerEvents = "none";
-            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            if (legalMoves.includes(dropTarget.getAttribute("data-square"))) {
-                if (dropTarget.classList.contains("chess-piece")) dropTarget.remove();
-                movePiece(dropTarget.getAttribute("data-square"), true);
+            const target = event.target;
+            let square = "";
+            if (target.classList.contains("board-square")) {
+                square = target.getAttribute("data-square");
             } else {
-                const file = draggedPieceId[0].charCodeAt(0) - "a".charCodeAt(0);
-                const rank = parseInt(draggedPieceId[1]);
-                activePiece.style.top = isBoardFlipped ? `calc(${rank - 1} * var(--board-square-width))` : `calc(${8 - rank} * var(--board-square-width))`;
-                activePiece.style.left = isBoardFlipped ? `calc(${7 - file} * var(--board-square-width))` : `calc(${file} * var(--board-square-width))`;
+                square = getSquareFromClassList(target);
             }
-            activePiece.style.pointerEvents = "";
-            activePiece.style.cursor = "grab";
-            activePiece.classList.remove("dragged");
-            activePiece = null;
-            legalMoves = [];
-            removeLegalMoveIndicators();
-            draggedPieceId = "";
-        },
-        touchstart: (event) => {
-            event.preventDefault();
-            const touch = event.touches[0];
-            const touchEvent = {
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.dragDrop.mousedown(touchEvent);
-            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
-            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
-            document.addEventListener("touchmove", PieceMoveMethods.dragDrop.touchmove, { passive: false });
-            activePiece.addEventListener("touchend", PieceMoveMethods.dragDrop.touchend, { passive: false });
-        },
-        touchmove: (event) => {
-            event.preventDefault();
-            const touch = event.touches[0];
-            const touchEvent = {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.dragDrop.mousemove(touchEvent);
-            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
-            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
-        },
-        touchend: (event) => {
-            event.preventDefault();
-            document.removeEventListener("touchmove", PieceMoveMethods.dragDrop.touchmove);
-            activePiece.removeEventListener("touchend", PieceMoveMethods.dragDrop.touchend);
-            const touch = event.changedTouches[0];
-            const touchEvent = {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.dragDrop.mouseup(touchEvent);
-        },
-        remove: function () {
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "";
-                piece.removeEventListener("mousedown", this.mousedown);
-                piece.removeEventListener("touchstart", this.touchstart);
-            });
-        },
-        add: function () {
-            this.remove();
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "grab";
-                piece.addEventListener("mousedown", this.mousedown);
-                piece.addEventListener("touchstart", this.touchstart, { passive: false });
-            });
-        },
-    },
-    clickDragDrop: {
-        mousemove: (event) => {
-            event.preventDefault();
-            activePiece.style.top = event.clientY + "px";
-            activePiece.style.left = event.clientX + "px";
-            activePiece.style.pointerEvents = "none";
-            highlightSquareUnderPoint(event.clientX, event.clientY, document.querySelector(".under-dragged-piece"));
-            activePiece.style.pointerEvents = "";
-        },
-        mousedown: (event) => {
-            if (activePiece !== event.target) {
-                hideLegal = true;
-                selectPiece(event.target, true);
-            }
-            if (!activePiece) return;
-            draggedPieceId = activePiece.getAttribute("data-square");
-            activePiece.classList.add("dragged");
-            PieceMoveMethods.clickDragDrop.mousemove(event);
-            document.addEventListener("mousemove", PieceMoveMethods.clickDragDrop.mousemove);
-            activePiece.addEventListener("mouseup", PieceMoveMethods.clickDragDrop.mouseup);
-        },
-        mouseup: (event) => {
-            document.removeEventListener("mousemove", PieceMoveMethods.clickDragDrop.mousemove);
-            activePiece.removeEventListener("mouseup", PieceMoveMethods.clickDragDrop.mouseup);
-            const draggedOverSquare = chessBoard.querySelector(".under-dragged-piece");
-            if (draggedOverSquare) draggedOverSquare.classList.remove("under-dragged-piece", "touch-drag");
-            activePiece.style.pointerEvents = "none";
-            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            if (legalMoves.includes(dropTarget.getAttribute("data-square"))) {
-                if (dropTarget.classList.contains("chess-piece")) dropTarget.remove();
-                movePiece(dropTarget.getAttribute("data-square"), true);
-                removeLegalMoveIndicators();
-                hideLegal = false;
+            if (event.altKey) {
+                highlightSquare(square, false, "blue");
+            } else if (event.ctrlKey) {
+                highlightSquare(square, false, "yellow");
+            } else if (event.shiftKey) {
+                highlightSquare(square, false, "green");
             } else {
-                const file = draggedPieceId[0].charCodeAt(0) - "a".charCodeAt(0);
-                const rank = parseInt(draggedPieceId[1]);
-                activePiece.style.top = isBoardFlipped ? `calc(${rank - 1} * var(--board-square-width))` : `calc(${8 - rank} * var(--board-square-width))`;
-                activePiece.style.left = isBoardFlipped ? `calc(${7 - file} * var(--board-square-width))` : `calc(${file} * var(--board-square-width))`;
-            }
-            activePiece.style.pointerEvents = "";
-            activePiece.style.cursor = "grab";
-            activePiece.classList.remove("dragged");
-            hideLegal = !hideLegal;
-            if (hideLegal) {
-                activePiece = null;
-                legalMoves = [];
-                removeLegalMoveIndicators();
-            }
-            draggedPieceId = "";
-        },
-        touchstart: (event) => {
-            event.preventDefault();
-            const touch = event.touches[0];
-            const touchEvent = {
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.clickDragDrop.mousedown(touchEvent);
-            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
-            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
-            document.addEventListener("touchmove", PieceMoveMethods.clickDragDrop.touchmove, { passive: false });
-            activePiece.addEventListener("touchend", PieceMoveMethods.clickDragDrop.touchend, { passive: false });
-        },
-        touchmove: (event) => {
-            event.preventDefault();
-            const touch = event.touches[0];
-            const touchEvent = {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.clickDragDrop.mousemove(touchEvent);
-            const squareUnderPiece = chessBoard.querySelector(".under-dragged-piece");
-            if (squareUnderPiece) squareUnderPiece.classList.add("touch-drag");
-        },
-        touchend: (event) => {
-            event.preventDefault();
-            document.removeEventListener("touchmove", PieceMoveMethods.clickDragDrop.touchmove);
-            activePiece.removeEventListener("touchend", PieceMoveMethods.clickDragDrop.touchend);
-            const touch = event.changedTouches[0];
-            const touchEvent = {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-            };
-            PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
-        },
-        document: (event) => {
-            if (!event.target.classList.contains("chess-piece")) {
-                removeLegalMoveIndicators();
-                removeSquareHighlight();
-                activePiece = null;
-                hideLegal = true;
+                highlightSquare(square, false, "red");
             }
         },
         remove: function () {
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "";
-                piece.removeEventListener("mousedown", this.mousedown);
-                piece.removeEventListener("touchstart", this.touchstart);
-            });
-            document.removeEventListener("click", this.document);
+            chessBoard.removeEventListener("click", this.leftclick);
+            chessBoard.removeEventListener("contextmenu", this.rightclick);
         },
         add: function () {
             this.remove();
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "grab";
-                piece.addEventListener("mousedown", this.mousedown);
-                piece.addEventListener("touchstart", this.touchstart, { passive: false });
-            });
-            document.addEventListener("click", this.document);
+            chessBoard.addEventListener("click", this.leftclick);
+            chessBoard.addEventListener("contextmenu", this.rightclick);
         },
     },
 };
@@ -377,9 +191,16 @@ const getSquareFromClassList = (element) => {
 
 const setUpEmptyBoard = () => {
     const background = chessBoard.querySelector(".background");
-    for (let i = 0; i < 32; i++) {
-        const lightSquare = document.createElement("div");
-        background.appendChild(lightSquare);
+    for (let rank = 8; rank > 0; rank--) {
+        for (let file = 1; file < 9; file++) {
+            const square = document.createElement("div");
+            square.classList.add("board-square");
+            square.setAttribute("data-square", `${file}${rank}`)
+            if ((file + rank) % 2 === 1) {
+                square.classList.add("light-square");
+            }
+            background.appendChild(square);
+        }
     }
     const filesContainer = document.createElement("div");
     filesContainer.className = "files-container";
@@ -519,7 +340,7 @@ const isKingInCheck = (board, kingColor) => {
     if (kingSquare === "") return false;
     return isSquareAttacked(board, kingSquare, kingColor === "w" ? "b" : "w");
 };
-const getLegalMoves = (pieceSquare, board = piecePositions) => {
+function getLegalMoves (pieceSquare, board = piecePositions) {
     const candidateMoves = getCandidateMoves(pieceSquare, board);
     let legalMovesForPiece = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
@@ -570,6 +391,8 @@ const removeLegalMoveIndicators = () => {
     });
 };
 const selectPiece = (piece, dragged = false) => {
+    if (piece.classList.contains("removed")) return;
+
     // Get square
     const pieceSquare = getSquareFromClassList(piece);
 
@@ -586,8 +409,6 @@ const selectPiece = (piece, dragged = false) => {
 
     // Handle piece capture
     if (activePiece && legalMoves.includes(pieceSquare)) {
-        piece.style.opacity = "0";
-        setTimeout(() => piece.remove(), 250);
         movePiece(pieceSquare);
         halfmoveClock = 0;
         activePiece = null;
@@ -638,13 +459,21 @@ const showPromotionBox = (targetSquare) => {
         chessBoard.appendChild(promotionBox);
     });
 }
-async function movePiece(targetSquare, dropped = false) {
+async function movePiece(targetSquare, dropped = false, recurse = false) {
     // Basic variables
     const pieceSquare = getSquareFromClassList(activePiece);
     const toFile = parseInt(targetSquare[0]);
     const toRank = parseInt(targetSquare[1]);
     const pieceType = piecePositions[convertSquareToIndex(pieceSquare)];
     const previousRank = parseInt(pieceSquare[1]);
+
+    // Handle piece capture
+    const capturedPieceType = piecePositions[convertSquareToIndex(targetSquare)];
+    if (capturedPieceType) {
+        const capturedPiece = chessBoard.querySelector(`.chess-piece.square-${targetSquare}:not(.removed)`);
+        capturedPiece.classList.add("removed");
+        setTimeout(() => capturedPiece.remove(), 250);
+    }
 
     // Change the position of piece
     const activePieceStyle = activePiece.style;
@@ -671,9 +500,9 @@ async function movePiece(targetSquare, dropped = false) {
     // Handle en passant
     if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${toFile}${previousRank}`;
-        const enemyPawn = chessBoard.querySelector(`.chess-piece.square-${enemyPawnSquare}`);
+        const enemyPawn = chessBoard.querySelector(`.chess-piece.square-${enemyPawnSquare}:not(.removed)`);
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = "";
-        enemyPawn.style.opacity = "0";
+        enemyPawn.classList.add("removed");
         setTimeout(() => enemyPawn.remove(), 250);
     }
 
@@ -704,11 +533,13 @@ async function movePiece(targetSquare, dropped = false) {
             `;
         document.getElementById("move-grid").appendChild(newMoveRow);
         if (moveNotation[moveNotation.length - 1] === "#") {
+            gameStatus = "1–0";
             document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;wins by checkmate!`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">1–0</div>`;
             document.getElementById("move-grid").appendChild(newResultRow);
         } else if (isStalemate(activeColor)) {
+            gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
                 <div style="background-color: black;">
                     <div style="background-color: white;"></div>
@@ -735,11 +566,13 @@ async function movePiece(targetSquare, dropped = false) {
         }
         fullmoveNumber++;
         if (moveNotation[moveNotation.length - 1] === "#") {
+            gameStatus = "0–1";
             document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;wins by checkmate!`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">0–1</div>`;
             document.getElementById("move-grid").appendChild(newResultRow);
         } else if (isStalemate(activeColor)) {
+            gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
                 <div style="background-color: white;">
                     <div style="background-color: black;"></div>
@@ -756,6 +589,20 @@ async function movePiece(targetSquare, dropped = false) {
     // Handle halfmove clock
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++; // If a capture takes place, then the `selectPiece` function takes care of it.
+
+    // Find next move
+    if (recurse || gameStatus !== "*") return;
+    const allLegalMoves = [];
+    for (i in piecePositions) {
+        const piece = piecePositions[i];
+        if (piece.toLowerCase() === piece === (activeColor === "b")) {
+            const currentSquare = convertIndexToSquare(i);
+            allLegalMoves.push(...getLegalMoves(currentSquare).map(move => `${currentSquare}-${move}`));
+        }
+    }
+    const randomItem = allLegalMoves[Math.floor(Math.random() * allLegalMoves.length)];
+    activePiece = chessBoard.querySelector(`.chess-piece.square-${randomItem.slice(0, 2)}:not(.removed)`);
+    movePiece(randomItem.slice(3, 5), false, true);
 }
 const removeSquareHighlight = (permanent = false, square = "") => {
     if (square === "") {
@@ -810,6 +657,7 @@ let piecePositions = [];
 let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock = "", fullmoveNumber = "";
 let activePiece = null, legalMoves = [];
 let pieceMoveAnimation = "ease-in-out";
+let gameStatus = "*";
 let boardContainer = document.querySelector(".board-container.one");
 let chessBoard = boardContainer.querySelector(".chess-board");
 if (!chessBoard) {
