@@ -479,7 +479,7 @@ textarea {
     :root {
         --board-square-width: round(down, min(
         calc((100vh - 2*2px) / 8),
-        calc((100vw) / 8)), 1px);
+        calc((100vw - 8px) / 8)), 1px);
         --options-display: flex;
     }
     body {
@@ -496,7 +496,7 @@ textarea {
         border: none;
         border-bottom: var(--border);
         border-radius: 0;
-        & > div {
+        &::after {
             transform: translateX(calc(50% * clamp(-1, 1 * var(--evaluation) / 5, 1) + 50%));
         }
     }

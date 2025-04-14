@@ -121,7 +121,7 @@ const Notation = {
 };
 let hideLegal = true;
 let draggedPieceId = "";
-const highlightSquareUnderPoint = (x, y, previousTarget = null) => {
+function highlightSquareUnderPoint(x, y, previousTarget = null) {
     let target = document.elementFromPoint(x, y);
     if (previousTarget !== target) {
         if (previousTarget) {
@@ -152,50 +152,34 @@ const PieceMoveMethods = {
                 activePiece = null;
             }
         },
-        rightclick: (event) => {
-            event.preventDefault();
-            const target = event.target;
-            let square = "";
-            if (target.classList.contains("board-square")) {
-                square = target.getAttribute("data-square");
-            } else {
-                square = getSquareFromClassList(target);
-            }
-            if (event.altKey) {
-                highlightSquare(square, false, "blue");
-            } else if (event.ctrlKey) {
-                highlightSquare(square, false, "yellow");
-            } else if (event.shiftKey) {
-                highlightSquare(square, false, "green");
-            } else {
-                highlightSquare(square, false, "red");
-            }
-        },
         remove: function () {
             chessBoard.removeEventListener("click", this.leftclick);
-            chessBoard.removeEventListener("contextmenu", this.rightclick);
         },
         add: function () {
             this.remove();
             chessBoard.addEventListener("click", this.leftclick);
-            chessBoard.addEventListener("contextmenu", this.rightclick);
         },
     },
 };
-const convertSquareToIndex = (square) => 8 * (8 - square[1]) + (square[0] - 1);
-const convertIndexToSquare = (index) => `${1 + (index % 8)}${8 - Math.floor(index / 8)}`;
-const getSquareFromClassList = (element) => {
+function convertSquareToIndex(square) {
+    return 8 * (8 - square[1]) + (square[0] - 1);
+}
+function convertIndexToSquare(index) {
+    return `${1 + (index % 8)}${8 - Math.floor(index / 8)}`;
+}
+function getSquareFromClassList(element) {
     const squareClass = Array.from(element.classList).find(className => className.startsWith("square-"));
-    if (squareClass) return squareClass.substring(7);
+    if (squareClass) {
+        return squareClass.substring(7);
+    }
 };
-
-const setUpEmptyBoard = () => {
+function setUpEmptyBoard() {
     const background = chessBoard.querySelector(".background");
     for (let rank = 8; rank > 0; rank--) {
         for (let file = 1; file < 9; file++) {
             const square = document.createElement("div");
             square.classList.add("board-square");
-            square.setAttribute("data-square", `${file}${rank}`)
+            square.dataset.square = `${file}${rank}`;
             if ((file + rank) % 2 === 1) {
                 square.classList.add("light-square");
             }
@@ -219,7 +203,7 @@ const setUpEmptyBoard = () => {
     }
     chessBoard.appendChild(ranksContainer);
 };
-const setUpPieces = () => {
+function setUpPieces() {
     let squareNumber = 0;
     for (let rank = 8; rank > 0; rank--) {
         for (let file = 0; file < 8; file++) {
@@ -236,7 +220,7 @@ const setUpPieces = () => {
         }
     }
 };
-const getCandidateMoves = (pieceSquare, board) => {
+function getCandidateMoves(pieceSquare, board) {
     let candidateMoves = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
     const pieceFile = parseInt(pieceSquare[0]);
@@ -314,7 +298,7 @@ const getCandidateMoves = (pieceSquare, board) => {
     }
     return candidateMoves;
 };
-const isSquareAttacked = (board, square, attackerColor) => {
+function isSquareAttacked(board, square, attackerColor) {
     for (let i = 0; i < board.length; i++) {
         const attacker = board[i];
         if (!attacker) continue;
@@ -328,7 +312,7 @@ const isSquareAttacked = (board, square, attackerColor) => {
     }
     return false;
 };
-const isKingInCheck = (board, kingColor) => {
+function isKingInCheck(board, kingColor) {
     const kingPiece = kingColor === "w" ? "K" : "k";
     let kingSquare = "";
     for (let i = 0; i < board.length; i++) {
@@ -356,7 +340,7 @@ function getLegalMoves (pieceSquare, board = piecePositions) {
     });
     return legalMovesForPiece;
 };
-const isCheckmate = (activeColor, board = piecePositions) => {
+function isCheckmate(activeColor, board = piecePositions) {
     if (!isKingInCheck(board, activeColor)) return false;
     for (let i = 0; i < board.length; i++) {
         const piece = board[i];
@@ -370,7 +354,7 @@ const isCheckmate = (activeColor, board = piecePositions) => {
     }
     return true;
 };
-const isStalemate = (activeColor, board = piecePositions) => {
+function isStalemate(activeColor, board = piecePositions) {
     if (isKingInCheck(board, activeColor)) return false;
     for (let i = 0; i < board.length; i++) {
         const piece = board[i];
@@ -384,13 +368,13 @@ const isStalemate = (activeColor, board = piecePositions) => {
     }
     return true;
 };
-const removeLegalMoveIndicators = () => {
+function removeLegalMoveIndicators() {
     chessBoard.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.classList.add("fade-out");
         setTimeout(() => indicator.remove(), 200);
     });
 };
-const selectPiece = (piece, dragged = false) => {
+function selectPiece(piece, dragged = false) {
     if (piece.classList.contains("removed")) return;
 
     // Get square
@@ -440,7 +424,7 @@ const selectPiece = (piece, dragged = false) => {
         chessBoard.appendChild(moveIndicator);
     });
 };
-const showPromotionBox = (targetSquare) => {
+function showPromotionBox(targetSquare) {
     return new Promise(resolve => {
         const pieceToPromote = activePiece;
         const promotionBox = document.createElement("div");
@@ -604,7 +588,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     activePiece = chessBoard.querySelector(`.chess-piece.square-${randomItem.slice(0, 2)}:not(.removed)`);
     movePiece(randomItem.slice(3, 5), false, true);
 }
-const removeSquareHighlight = (permanent = false, square = "") => {
+function removeSquareHighlight(permanent = false, square = "") {
     if (square === "") {
         chessBoard.querySelectorAll(`.square-highlight${permanent ? "" : ":not(.permanent)"}`).forEach(highlight => {
             highlight.style.opacity = "0";
@@ -612,10 +596,13 @@ const removeSquareHighlight = (permanent = false, square = "") => {
         });
         return;
     }
-    const highlight = chessBoard.querySelector(`.square-highlight.square-${square}:not(.permanent)`);
-    if (highlight) highlight.remove();
+    const highlight = chessBoard.querySelector(`.square-highlight.square-${square}${permanent ? "" : ":not(.permanent)"}`);
+    if (highlight) {
+        highlight.style.opacity = "0";
+        setTimeout(() => highlight.remove(), 200);
+    }
 };
-const highlightSquare = (square, permanent = false, color = "") => {
+function highlightSquare(square, permanent = false, color = "") {
     const highlight = document.createElement("div");
     highlight.className = `square-highlight square-${square}`;
     if (color === "") {
@@ -626,17 +613,17 @@ const highlightSquare = (square, permanent = false, color = "") => {
     if (permanent === true) highlight.classList.add("permanent");
     chessBoard.appendChild(highlight);
 };
-const mouseEntersPiece = (event) => {
+function mouseEntersPiece(event) {
     const square = getSquareFromClassList(event.target);
     const captureIndicator = chessBoard.querySelector(`.capture-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.add("hovered");
 };
-const mouseLeavesPiece = (event) => {
+function mouseLeavesPiece(event) {
     const square = getSquareFromClassList(event.target);
     const captureIndicator = chessBoard.querySelector(`.capture-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.remove("hovered");
 };
-const checkFenValidity = (fen) => {
+function checkFenValidity(fen) {
     const parsedFen = Notation.read.fen(fen.trim());
     if (parsedFen) {
         positionInputBox.style.border = "";
@@ -645,11 +632,18 @@ const checkFenValidity = (fen) => {
     positionInputBox.style.border = "2px solid var(--danger-color)";
     return false;
 };
-const flipBoard = () => {
+function flipBoard() {
     isBoardFlipped = !isBoardFlipped;
     document.getElementById("flip-svg").style.transform = `rotate(${isBoardFlipped ? "" : "-"}90deg)`;
-    if (isBoardFlipped) chessBoard.classList.add("flipped");
-    else chessBoard.classList.remove("flipped");
+    if (isBoardFlipped) {
+        chessBoard.classList.add("flipped");
+    } else {
+        chessBoard.classList.remove("flipped");
+    }
+    chessBoard.querySelectorAll(".background > div").forEach(square => {
+        const oldSquare = square.getAttribute("data-square");
+        square.dataset.square = `${9 - oldSquare[0]}${9 - oldSquare[1]}`;
+    });
 };
 
 let isBoardFlipped = false;
@@ -701,14 +695,38 @@ if (parsedFen) {
 }
 const startingPositionRow = document.createElement("div");
 if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-    startingPositionRow.innerHTML = `<div class="info">Starting position</div>`;
+    startingPositionRow.innerHTML = "<div class='info'>Starting position</div>";
 } else {
-    startingPositionRow.innerHTML = `<div class="info">Custom position</div>`;
+    startingPositionRow.innerHTML = "<div class='info'>Custom position</div>";
 }
 document.getElementById("move-grid").appendChild(startingPositionRow);
 setUpEmptyBoard();
 setUpPieces();
 PieceMoveMethods.click.add();
+chessBoard.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    const target = event.target;
+    let square = "";
+    if (target.classList.contains("board-square")) {
+        square = target.dataset.square;
+    } else {
+        square = getSquareFromClassList(target);
+    }
+    const color = event.altKey ? "blue"
+        : (event.ctrlKey || event.metaKey) ? "yellow"
+        : event.shiftKey ? "green"
+        : "red";
+    const oldHighlight = chessBoard.querySelector(`.square-highlight.square-${square}`);
+    if (oldHighlight) {
+        removeSquareHighlight(false, square);
+        if (!oldHighlight.classList.contains(color)) {
+            highlightSquare(square, false, color);
+        }
+    } else {
+        highlightSquare(square, false, color);
+    }
+
+});
 if (isBoardFlipped) {
     isBoardFlipped = !isBoardFlipped;
     flipBoard();
