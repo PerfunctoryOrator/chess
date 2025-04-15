@@ -590,6 +590,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
             "n": 3,
             "b": 3,
             "q": 9,
+            "k": Infinity,
             "p": 1,
             "": 0,
         };
