@@ -126,20 +126,20 @@ function highlightSquareUnderPoint(x, y, previousTarget = null) {
     if (previousTarget !== target) {
         if (previousTarget) {
             previousTarget.classList.remove("under-dragged-piece", "touch-drag");
-            mouseLeavesSquare(previousTarget);
+            // mouseLeavesSquare(previousTarget);
         }
         if (target.classList.contains("board-square") || target.classList.contains("chess-piece")) {
             if (target.classList.contains("chess-piece")) {
                 target = chessBoard.querySelector(`.board-square[data-square="${target.getAttribute("data-square")}"]`);
             }
             target.classList.add("under-dragged-piece");
-            mouseEntersSquare(target);
+            // mouseEntersSquare(target);
         }
     }
 };
 const PieceMoveMethods = {
     click: {
-        leftclick: (event) => {
+        click: (event) => {
             const target = event.target;
             if (target.classList.contains("move-indicator")) {
                 movePiece(getSquareFromClassList(target));
@@ -153,11 +153,11 @@ const PieceMoveMethods = {
             }
         },
         remove: function () {
-            chessBoard.removeEventListener("click", this.leftclick);
+            chessBoard.removeEventListener("click", this.click);
         },
         add: function () {
             this.remove();
-            chessBoard.addEventListener("click", this.leftclick);
+            chessBoard.addEventListener("click", this.click);
         },
     },
 };
@@ -584,7 +584,29 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
             allLegalMoves.push(...getLegalMoves(currentSquare).map(move => `${currentSquare}-${move}`));
         }
     }
-    const randomItem = allLegalMoves[Math.floor(Math.random() * allLegalMoves.length)];
+    const randomItem = (() => {
+        const points = {
+            "r": 5,
+            "n": 3,
+            "b": 3,
+            "q": 9,
+            "p": 1,
+            "": 0,
+        };
+        let takeAblePiece = ["", 0];
+        allLegalMoves.forEach(move => {
+            const pieceOnTargetSquare = piecePositions[convertSquareToIndex(move.slice(3, 5))].toLowerCase();
+            takeAblePiece[1] = points[piecePositions[convertSquareToIndex(move.slice(0, 2))].toLowerCase()];
+            if (points[pieceOnTargetSquare] >= takeAblePiece[1]) {
+                takeAblePiece[0] = move;
+                takeAblePiece[1] = pieceOnTargetSquare;
+            }
+        });
+        if (takeAblePiece[0]) {
+            return takeAblePiece[0];
+        }
+        return allLegalMoves[Math.floor(Math.random() * allLegalMoves.length)];
+    })();
     activePiece = chessBoard.querySelector(`.chess-piece.square-${randomItem.slice(0, 2)}:not(.removed)`);
     movePiece(randomItem.slice(3, 5), false, true);
 }
@@ -634,6 +656,7 @@ function checkFenValidity(fen) {
 };
 function flipBoard() {
     isBoardFlipped = !isBoardFlipped;
+    const allChessPieces = chessBoard.querySelectorAll(".chess-piece");
     document.getElementById("flip-svg").style.transform = `rotate(${isBoardFlipped ? "" : "-"}90deg)`;
     if (isBoardFlipped) {
         chessBoard.classList.add("flipped");
@@ -641,9 +664,17 @@ function flipBoard() {
         chessBoard.classList.remove("flipped");
     }
     chessBoard.querySelectorAll(".background > div").forEach(square => {
-        const oldSquare = square.getAttribute("data-square");
+        const oldSquare = square.dataset.square;
         square.dataset.square = `${9 - oldSquare[0]}${9 - oldSquare[1]}`;
     });
+    allChessPieces.forEach(piece => {
+        piece.style.transition = "none";
+    });
+    setTimeout(() => {
+        allChessPieces.forEach(piece => {
+            piece.style.transition = "";
+        });
+    }, 0);
 };
 
 let isBoardFlipped = false;

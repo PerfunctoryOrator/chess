@@ -134,6 +134,7 @@
         outline: none;
         z-index: 10;
         filter: drop-shadow(6px 6px 2px var(--shadow-color));
+        transition: none;
         cursor: grabbing !important;
     }
     &.removed {
@@ -316,7 +317,6 @@
     box-shadow: 8px 16px 16px rgba(0, 0, 0, 0.2);
     animation: appear 0.3s ease-in-out;
     z-index: 9;
-    transition: transform 0.3s ease-out;
     display: flex;
     flex-direction: column;
     & > button {
