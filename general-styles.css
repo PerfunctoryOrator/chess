@@ -319,7 +319,7 @@ textarea {
     background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);
-    z-index: 11;
+    z-index: 10;
     will-change: transform;
 }
 .overflow-container > button {
@@ -374,7 +374,7 @@ textarea {
     border: var(--border);
     border-radius: var(--box-radius);
     box-shadow: 8px 16px 16px var(--shadow-color);
-    z-index: 11;
+    z-index: 10;
 }
 .drop-down-menu > button {
     width: 100%;
@@ -393,7 +393,7 @@ textarea {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    z-index: 12;
+    z-index: 11;
 }
 .full-screen-box-container > div {
     position: absolute;
@@ -496,7 +496,7 @@ textarea {
         border: none;
         border-bottom: var(--border);
         border-radius: 0;
-        &::after {
+        &::before {
             transform: translateX(calc(50% * clamp(-1, 1 * var(--evaluation) / 5, 1) + 50%));
         }
     }

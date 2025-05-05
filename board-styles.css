@@ -19,6 +19,7 @@
         calc((100vw - 2*var(--padding) - 32px - 4*2px - 2*var(--margin)) / 8)), 1px);
 
     --evaluation: 0.2;
+    --evaluation-text: "0.2";
 }
 
 /* Evaluation bar */
@@ -40,7 +41,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    &::after {
+    &::before {
         content: "";
         position: absolute;
         top: 0;
@@ -50,6 +51,14 @@
         background-color: black;
         transform: translateY(calc(50% * clamp(-1, -1 * var(--evaluation) / 5, 1) - 50%));
         transition: transform 0.3s ease-out;
+    }
+    &::after {
+        content: var(--evaluation-text);
+        position: absolute;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--background-color);
     }
 }
 .flipped ~ #eval-bar {
@@ -88,51 +97,50 @@
         background-color: var(--light-square-color);
     }
 }
-/* .board-square {
-    overflow: hidden;
-    position: relative;
-    background-color: var(--board-color);
+#drag-effect {
+    position: absolute;
+    width: var(--board-square-width);
+    aspect-ratio: 1;
+    outline: round(down, calc(var(--board-square-width) / 25), 1px) solid white;
     outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
-    &.light-board-square {
-        background-color: var(--light-square-color);
+    visibility: hidden;
+    z-index: 3;
+    box-shadow: 0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6);
+    &.touch-drag {
+        outline: none;
+        box-shadow: none;
     }
-    &.under-dragged-piece {
-        outline: calc(var(--board-square-width) / 25) solid white;
-        z-index: 1;
-        box-shadow: 0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6);
-        overflow: visible;
-        &.touch-drag {
-            outline: none;
-            box-shadow: none;
-        }
-        &.touch-drag::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 200%;
-            height: 200%;
-            border-radius: 50%;
-            box-shadow: inset 0 0 0 var(--board-square-width) var(--move-indicator-color);
-            transform: translate(-50%, -50%);
-        }
+    &.touch-drag::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 200%;
+        height: 200%;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 var(--board-square-width) var(--move-indicator-color);
+        transform: translate(-50%, -50%);
     }
-} */
+}
 .chess-piece {
     position: absolute;
     width: var(--board-square-width);
     aspect-ratio: 1;
     outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
-    z-index: 7;
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    z-index: 6;
+    transition: opacity 0.3s ease-out;
     &:hover {
         outline: round(down, calc(var(--board-square-width) / 25), 1px) solid white;
+    }
+    &.sliding {
+        outline: none;
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
     }
     &.dragged {
         position: fixed;
         transform: translate(-50%, -50%) scale(1.3);
         outline: none;
-        z-index: 10;
+        z-index: 9;
         filter: drop-shadow(6px 6px 2px var(--shadow-color));
         transition: none;
         cursor: grabbing !important;
@@ -159,7 +167,7 @@
     font-weight: bold;
     display: flex;
     position: absolute;
-    z-index: 5;
+    z-index: 4;
     pointer-events: none;
     & > div {
         font-size: calc(var(--board-square-width) / 5);
@@ -232,8 +240,9 @@
     left: 0;
     width: var(--board-square-width);
     aspect-ratio: 1;
+    border-radius: 0;
     background-color: rgba(255, 255, 0, 0.5);
-    z-index: 3;
+    z-index: 2;
     pointer-events: none;
     animation: appear 0.25s ease;
     transition: opacity 0.25s ease;
@@ -254,7 +263,10 @@
     }
 }
 .square-highlight.permanent {
-    z-index: 2;
+    z-index: 1;
+}
+.square-highlight.removed {
+    opacity: 0;
 }
 
 /* Legal move indicators */
@@ -264,7 +276,7 @@
     left: 0;
     width: var(--board-square-width);
     aspect-ratio: 1;
-    z-index: 6;
+    z-index: 5;
     &::after {
         content: "";
         position: absolute;
@@ -316,7 +328,7 @@
     transform: translate(2px, 2px);
     box-shadow: 8px 16px 16px rgba(0, 0, 0, 0.2);
     animation: appear 0.3s ease-in-out;
-    z-index: 9;
+    z-index: 8;
     display: flex;
     flex-direction: column;
     & > button {

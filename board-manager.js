@@ -120,21 +120,22 @@ const Notation = {
     },
 };
 let hideLegal = true;
-let draggedPieceId = "";
-function highlightSquareUnderPoint(x, y, previousTarget = null) {
-    let target = document.elementFromPoint(x, y);
-    if (previousTarget !== target) {
-        if (previousTarget) {
-            previousTarget.classList.remove("under-dragged-piece", "touch-drag");
-            // mouseLeavesSquare(previousTarget);
+let draggedPiece = null;
+function highlightSquareUnderPoint(x, y) {
+    const target = document.elementFromPoint(x, y);
+    let newSquare = target.dataset.square;
+    if (!target.classList.contains("board-square")) {
+        newSquare = getSquareFromClassList(target);
+    }
+    if (target) {
+        const dragEffectElement = document.getElementById("drag-effect");
+        const oldSquare = getSquareFromClassList(dragEffectElement);
+        if (oldSquare === newSquare || !newSquare) {
+            return;
         }
-        if (target.classList.contains("board-square") || target.classList.contains("chess-piece")) {
-            if (target.classList.contains("chess-piece")) {
-                target = chessBoard.querySelector(`.board-square[data-square="${target.getAttribute("data-square")}"]`);
-            }
-            target.classList.add("under-dragged-piece");
-            // mouseEntersSquare(target);
-        }
+        dragEffectElement.style.visibility = "visible";
+        dragEffectElement.classList.remove("square-" + oldSquare);
+        dragEffectElement.classList.add("square-" + newSquare);
     }
 };
 const PieceMoveMethods = {
@@ -160,6 +161,80 @@ const PieceMoveMethods = {
             chessBoard.addEventListener("click", this.click);
         },
     },
+    dragDrop: {
+        click: (event) => {
+            if (!event.target.classList.contains("chess-piece")) {
+                removeSquareHighlight();
+            }
+        },
+        mousedown: (event) => {
+            if (event.button !== 0) return;
+            const target = event.target;
+            if (target.classList.contains("chess-piece")) {
+                activePiece = null;
+                removeSquareHighlight();
+                selectPiece(target, true);
+                // if (!activePiece) return;
+                draggedPiece = event.target;
+                target.classList.add("dragged");
+                PieceMoveMethods.dragDrop.mousemove(event);
+            }
+        },
+        mousemove: (event) => {
+            if (!draggedPiece) return;
+            event.preventDefault();
+            draggedPiece.style.left = event.clientX + "px";
+            draggedPiece.style.top = event.clientY + "px";
+            activePiece.style.pointerEvents = "none";
+            highlightSquareUnderPoint(event.clientX, event.clientY);
+            activePiece.style.pointerEvents = "";
+        },
+        mouseup: (event) => {
+            if (!draggedPiece) return;
+
+            const dragEffectElement = document.getElementById("drag-effect");
+            dragEffectElement.style.visibility = "";
+            dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
+
+            draggedPiece.style.pointerEvents = "none";
+            const target = document.elementFromPoint(event.clientX, event.clientY);
+            const toSquare = getSquareFromClassList(target);
+            if (legalMoves.includes(toSquare)) {
+                movePiece(toSquare, true);
+                createRipple(toSquare);
+            } else {
+                createRipple(getSquareFromClassList(draggedPiece));
+            }
+            removeLegalMoveIndicators();
+            removeSquareHighlight();
+            activePiece = null;
+            draggedPiece.style.pointerEvents = "";
+            draggedPiece.style.cursor = "grab";
+            draggedPiece.classList.remove("dragged");
+            draggedPiece.style.top = "";
+            draggedPiece.style.left = "";
+            draggedPiece = null;
+        },
+        remove: function () {
+            chessBoard.removeEventListener("click", this.click);
+            chessBoard.removeEventListener("mousedown", this.mousedown);
+            document.removeEventListener("mousemove", this.mousemove);
+            document.removeEventListener("mouseup", this.mouseup);
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "";
+            });
+        },
+        add: function () {
+            this.remove();
+            chessBoard.addEventListener("click", this.click);
+            chessBoard.addEventListener("mousedown", this.mousedown);
+            document.addEventListener("mousemove", this.mousemove);
+            document.addEventListener("mouseup", this.mouseup);
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "grab";
+            });
+        },
+    }
 };
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + (square[0] - 1);
@@ -202,6 +277,9 @@ function setUpEmptyBoard() {
         ranksContainer.appendChild(rankIndicator);
     }
     chessBoard.appendChild(ranksContainer);
+    const dragEffectElement = document.createElement("div");
+    dragEffectElement.id = "drag-effect";
+    chessBoard.appendChild(dragEffectElement);
 };
 function setUpPieces() {
     let squareNumber = 0;
@@ -374,6 +452,17 @@ function removeLegalMoveIndicators() {
         setTimeout(() => indicator.remove(), 200);
     });
 };
+function createRipple(square) {
+    // Create ripple element
+    const ripple = document.createElement("div");
+    ripple.className = `ripple square-${square}`;
+
+    // Add ripple to the board
+    chessBoard.appendChild(ripple);
+
+    // Remove ripple
+    setTimeout(() => ripple.remove(), 450);
+}
 function selectPiece(piece, dragged = false) {
     if (piece.classList.contains("removed")) return;
 
@@ -382,10 +471,7 @@ function selectPiece(piece, dragged = false) {
 
     // Create ripple effect if the piece is not being dragged
     if (!dragged) {
-        const ripple = document.createElement("div");
-        ripple.className = `ripple square-${pieceSquare}`;
-        chessBoard.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 450);
+        createRipple(pieceSquare);
     }
 
     // Remove all previous legal move indicators
@@ -407,7 +493,7 @@ function selectPiece(piece, dragged = false) {
     }
 
     // Highlight the selected square
-    const prevHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}`);
+    const prevHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}:not(.removed)`);
     if (!prevHighlight) highlightSquare(pieceSquare);
 
     // Select the piece and highlight legal moves
@@ -460,11 +546,21 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     }
 
     // Change the position of piece
-    const activePieceStyle = activePiece.style;
-    if (!dropped) activePieceStyle.outline = "none";
+    const backupActivePiece = activePiece;
+    if (!dropped) {
+        backupActivePiece.classList.add("sliding");
+        // activePieceStyle.outline = "none";
+        // activePieceStyle.transition = "transform 0.3s ease-out";
+    }
     activePiece.classList.remove(`square-${pieceSquare}`);
     activePiece.classList.add(`square-${targetSquare}`);
-    if (!dropped) setTimeout(() => activePieceStyle.outline = "", 300);
+    if (!dropped) {
+        setTimeout(() => {
+            backupActivePiece.classList.remove("sliding");
+            // activePieceStyle.outline = "";
+            // activePieceStyle.transition = "";
+        }, 300);
+    }
 
     // Handle pawn promotion
     let promotedTo = "";
@@ -574,6 +670,9 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++; // If a capture takes place, then the `selectPiece` function takes care of it.
 
+    const evaluation = evaluatePosition();
+    document.documentElement.style.setProperty("--evaluation", evaluation);
+
     // Find next move
     if (recurse || gameStatus !== "*") return;
     const allLegalMoves = [];
@@ -613,15 +712,15 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
 }
 function removeSquareHighlight(permanent = false, square = "") {
     if (square === "") {
-        chessBoard.querySelectorAll(`.square-highlight${permanent ? "" : ":not(.permanent)"}`).forEach(highlight => {
-            highlight.style.opacity = "0";
+        chessBoard.querySelectorAll(`.square-highlight${permanent ? "" : ":not(.permanent):not(.removed)"}`).forEach(highlight => {
+            highlight.classList.add("removed");
             setTimeout(() => highlight.remove(), 200);
         });
         return;
     }
-    const highlight = chessBoard.querySelector(`.square-highlight.square-${square}${permanent ? "" : ":not(.permanent)"}`);
+    const highlight = chessBoard.querySelector(`.square-highlight.square-${square}${permanent ? "" : ":not(.permanent):not(.removed)"}`);
     if (highlight) {
-        highlight.style.opacity = "0";
+        highlight.classList.add("removed");
         setTimeout(() => highlight.remove(), 200);
     }
 };
@@ -637,13 +736,25 @@ function highlightSquare(square, permanent = false, color = "") {
     chessBoard.appendChild(highlight);
 };
 function mouseEntersPiece(event) {
-    const square = getSquareFromClassList(event.target);
-    const captureIndicator = chessBoard.querySelector(`.capture-indicator.square-${square}`);
+    const target = event.target;
+    let square = "";
+    if (target.classList.contains("board-square")) {
+        square = target.dataset.square;
+    } else {
+        square = getSquareFromClassList(target);
+    }
+    const captureIndicator = chessBoard.querySelector(`.move-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.add("hovered");
 };
 function mouseLeavesPiece(event) {
-    const square = getSquareFromClassList(event.target);
-    const captureIndicator = chessBoard.querySelector(`.capture-indicator.square-${square}`);
+    const target = event.target;
+    let square = "";
+    if (event.target.classList.contains("board-square")) {
+        square = target.dataset.square;
+    } else {
+        square = getSquareFromClassList(event.target);
+    }
+    const captureIndicator = chessBoard.querySelector(`.move-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.remove("hovered");
 };
 function checkFenValidity(fen) {
@@ -734,7 +845,7 @@ if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
 document.getElementById("move-grid").appendChild(startingPositionRow);
 setUpEmptyBoard();
 setUpPieces();
-PieceMoveMethods.click.add();
+PieceMoveMethods.dragDrop.add();
 chessBoard.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     const target = event.target;
@@ -748,7 +859,7 @@ chessBoard.addEventListener("contextmenu", (event) => {
         : (event.ctrlKey || event.metaKey) ? "yellow"
         : event.shiftKey ? "green"
         : "red";
-    const oldHighlight = chessBoard.querySelector(`.square-highlight.square-${square}`);
+    const oldHighlight = chessBoard.querySelector(`.square-highlight.square-${square}:not(.permanent):not(.removed)`);
     if (oldHighlight) {
         removeSquareHighlight(false, square);
         if (!oldHighlight.classList.contains(color)) {
@@ -757,7 +868,6 @@ chessBoard.addEventListener("contextmenu", (event) => {
     } else {
         highlightSquare(square, false, color);
     }
-
 });
 if (isBoardFlipped) {
     isBoardFlipped = !isBoardFlipped;
@@ -767,4 +877,283 @@ if (activeColor === "b") {
     document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
 } else {
     document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
+}
+
+
+
+/****
+    * Evaluates the current board position stored in the global variable `piecePositions`.
+    * Positive scores favor White, negative scores favor Black.
+    *
+    * The evaluation considers:
+    *  1. Piece mobility
+    *  2. King safety
+    *  3. Center control (squares: "44", "45", "54", "55")
+    *  4. Pawn chains
+    *  5. King mobility (only in endgame when there are fewer than 10 non-king pieces)
+    *
+    * This implementation leverages helper functions from board-manager.js such as:
+    *    - convertSquareToIndex() / convertIndexToSquare()
+    *    - getCandidateMoves()
+    *    - isKingInCheck()
+    *
+    * Adjust the weights of the factors below if desired.
+    *
+    * @returns {number} Evaluation score (positive: White advantage, negative: Black advantage)
+    */
+function evaluatePosition() {
+    // Compute weighted scores:
+    const mobilityScore = evaluatePieceMobility();
+    const kingSafetyScore = evaluateKingSafety();
+    const centerControlScore = evaluateCenterControl();
+    const pawnChainScore = evaluatePawnChains();
+    const kingMobilityScore = isEndgamePhase() ? evaluateKingMobility() : 0;
+
+    // Weights (tweak as needed)
+    const weights = {
+        mobility: 0.3,
+        kingSafety: 0.3,
+        center: 0.2,
+        pawnChain: 0.1,
+        kingMobility: 0.1,
+    };
+
+    // Total evaluation: positive score favors white; negative favors black.
+    const totalScore =
+        weights.mobility * mobilityScore +
+        weights.kingSafety * kingSafetyScore +
+        weights.center * centerControlScore +
+        weights.pawnChain * pawnChainScore +
+        weights.kingMobility * kingMobilityScore;
+    return totalScore;
+}
+
+/****
+    * Returns the total mobility score computed by summing the number of legal moves
+    * for each piece on the board. This function re-implements legal move calculation
+    * for a piece without relying on the global activeColor.
+    */
+function evaluatePieceMobility() {
+    let score = 0;
+    // Iterate over all 64 squares.
+    for (let index = 0; index < piecePositions.length; index++) {
+        const piece = piecePositions[index];
+        if (!piece) continue;
+        const square = convertIndexToSquare(index);
+        const legalMoves = computeLegalMovesForPiece(square, piecePositions);
+        // White pieces (uppercase) add to white’s mobility; black subtract.
+        if (isUpperCase(piece)) score += legalMoves.length;
+        else score -= legalMoves.length;
+    }
+    return score;
+}
+
+
+/****
+    * Computes the king safety score.
+    * For each king, looks at the eight surrounding squares and evaluates how many are safe.
+    * The final king safety score is the difference: (White king safety - Black king safety).
+    */
+function evaluateKingSafety() {
+    const whiteSafety = computeKingSafetyForColor("w");
+    const blackSafety = computeKingSafetyForColor("b");
+    return whiteSafety - blackSafety;
+}
+
+/****
+    * Computes a simple safety score for the king of the given color.
+    * It checks the eight adjacent squares and counts how many are not attacked.
+    * (Here, a higher count indicates greater safety.)
+    */
+function computeKingSafetyForColor(color) {
+    const kingPiece = color === "w" ? "K" : "k";
+    let kingSquare = "";
+    // Find king square
+    for (let i = 0; i < piecePositions.length; i++) {
+        if (piecePositions[i] === kingPiece) {
+        kingSquare = convertIndexToSquare(i);
+        break;
+        }
+    }
+    if (!kingSquare) return 0;
+    // Directions: up, down, left, right and the four diagonals
+    const directions = [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0],
+        [1, 1],
+        [1, -1],
+        [-1, 1],
+        [-1, -1],
+    ];
+    let safeCount = 0;
+    const kingFile = parseInt(kingSquare[0], 10);
+    const kingRank = parseInt(kingSquare[1], 10);
+    directions.forEach(([df, dr]) => {
+        const newFile = kingFile + df;
+        const newRank = kingRank + dr;
+        if (newFile >= 1 && newFile <= 8 && newRank >= 1 && newRank <= 8) {
+        const sq = "" + newFile + newRank;
+        // Use the isSquareAttacked function from board-manager.js to determine if the square is attacked
+        // Enemy color is the opposite of the king's color.
+        const enemyColor = color === "w" ? "b" : "w";
+        if (!isSquareAttacked(piecePositions, sq, enemyColor)) {
+            safeCount++;
+        }
+        }
+    });
+    return safeCount;
+}
+
+/****
+    * Evaluates center control.
+    * The center is defined as the squares: "44", "45", "54", and "55".
+    * For every piece, if one of its candidate moves (even if not strictly legal)
+    * lands on a center square, add one to that side's control.
+    */
+function evaluateCenterControl() {
+    const centerSquares = ["44", "45", "54", "55"];
+    let whiteControl = 0;
+    let blackControl = 0;
+    // Iterate over all squares and check candidate moves of pieces.
+    for (let index = 0; index < piecePositions.length; index++) {
+        const piece = piecePositions[index];
+        if (!piece) continue;
+        const square = convertIndexToSquare(index);
+        const candidates = getCandidateMoves(square, piecePositions);
+        candidates.forEach(move => {
+        if (centerSquares.includes(move)) {
+            if (isUpperCase(piece)) whiteControl++;
+            else blackControl++;
+        }
+        });
+    }
+    // Control is more valuable; return difference.
+    return whiteControl - blackControl;
+}
+
+/****
+    * Evaluates pawn chains.
+    * For every pawn, if it is supported by another pawn of the same color (on a diagonal behind it),
+    * then a bonus is added. Returns the difference:
+    *    (White pawn chain count - Black pawn chain count)
+    */
+function evaluatePawnChains() {
+    let whiteChain = 0;
+    let blackChain = 0;
+    for (let index = 0; index < piecePositions.length; index++) {
+        const piece = piecePositions[index];
+        if (!piece) continue;
+        // Check for pawn (using lowercase for black, uppercase for white)
+        if (piece.toLowerCase() !== "p") continue;
+        const square = convertIndexToSquare(index);
+        const file = parseInt(square[0], 10);
+        const rank = parseInt(square[1], 10);
+        // For white, supported pawn is one row behind (smaller rank); for black, one row ahead.
+        let supportSquares = [];
+        if (isUpperCase(piece)) {
+        supportSquares = [(file - 1) + "" + (rank - 1), (file + 1) + "" + (rank - 1)];
+        } else {
+        supportSquares = [(file - 1) + "" + (rank + 1), (file + 1) + "" + (rank + 1)];
+        }
+        let supported = false;
+        supportSquares.forEach(sq => {
+        // Verify square is on board (files 1-8 and ranks 1-8)
+        if (sq.length === 2) {
+            const f = parseInt(sq[0], 10);
+            const r = parseInt(sq[1], 10);
+            if (f >= 1 && f <= 8 && r >= 1 && r <= 8) {
+            const pieceIndex = convertSquareToIndex(sq);
+            const supportingPiece = piecePositions[pieceIndex];
+            if (supportingPiece && supportingPiece.toLowerCase() === "p" &&
+                ((isUpperCase(piece) && isUpperCase(supportingPiece)) ||
+                (!isUpperCase(piece) && !isUpperCase(supportingPiece)))) {
+                supported = true;
+            }
+            }
+        }
+        });
+        if (supported) {
+        if (isUpperCase(piece)) whiteChain++;
+        else blackChain++;
+        }
+    }
+    return whiteChain - blackChain;
+}
+
+/****
+    * Evaluates king mobility in the endgame.
+    * The function counts the number of legal moves available for both kings.
+    * Returns the difference: (White king moves - Black king moves)
+    */
+function evaluateKingMobility() {
+    const whiteKingMoves = computeLegalMovesForKing("w");
+    const blackKingMoves = computeLegalMovesForKing("b");
+    return whiteKingMoves - blackKingMoves;
+}
+
+/****
+    * Helper: Computes the number of legal moves for the king of a given color.
+    */
+function computeLegalMovesForKing(color) {
+    const kingPiece = color === "w" ? "K" : "k";
+    let kingSquare = "";
+    for (let i = 0; i < piecePositions.length; i++) {
+        if (piecePositions[i] === kingPiece) {
+        kingSquare = convertIndexToSquare(i);
+        break;
+        }
+    }
+    if (!kingSquare) return 0;
+    const legalMoves = computeLegalMovesForPiece(kingSquare, piecePositions);
+    return legalMoves.length;
+}
+
+/****
+    * Determines if the current position is in the endgame.
+    * For this purpose, endgame is defined as having fewer than 10 non-king pieces on the board.
+    */
+function isEndgamePhase() {
+    let countNonKings = 0;
+    piecePositions.forEach(piece => {
+        if (piece && piece.toLowerCase() !== "k") countNonKings++;
+    });
+    return countNonKings < 10;
+}
+
+/****
+    * Computes the legal move list for a given piece at a specified square on the board.
+    * This function emulates the logic from getLegalMoves but works for any given piece,
+    * independent of the current global activeColor.
+    *
+    * @param {string} square - The square from which to compute moves (e.g., "18", "44")
+    * @param {Array} board  - The board array (piecePositions)
+    * @returns {Array}      - Array of squares the piece can legally move to.
+    */
+function computeLegalMovesForPiece(square, board) {
+    const index = convertSquareToIndex(square);
+    const piece = board[index];
+    if (!piece) return [];
+    const color = isUpperCase(piece) ? "w" : "b";
+    const candidateMoves = getCandidateMoves(square, board); // from board-manager.js
+    const legalMoves = [];
+    candidateMoves.forEach(move => {
+        const newBoard = board.slice();
+        newBoard[convertSquareToIndex(move)] = piece;
+        newBoard[index] = "";
+        // Check if the king is in check after this move.
+        if (!isKingInCheck(newBoard, color)) {
+        legalMoves.push(move);
+        }
+    });
+    return legalMoves;
+}
+
+/****
+    * Helper function to check if a character is uppercase.
+    * Assumes the character is an alphabet letter.
+    */
+function isUpperCase(char) {
+    return char === char.toUpperCase();
 }
