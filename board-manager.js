@@ -119,23 +119,47 @@ const Notation = {
         },
     },
 };
-let hideLegal = true;
+// let hideLegal = true;
 let draggedPiece = null;
-function highlightSquareUnderPoint(x, y) {
+function highlightSquareUnderPoint(x, y, touch = false) {
+    // Get square
     const target = document.elementFromPoint(x, y);
+    if (!target) return;
     let newSquare = target.dataset.square;
     if (!target.classList.contains("board-square")) {
         newSquare = getSquareFromClassList(target);
     }
-    if (target) {
-        const dragEffectElement = document.getElementById("drag-effect");
-        const oldSquare = getSquareFromClassList(dragEffectElement);
-        if (oldSquare === newSquare || !newSquare) {
-            return;
-        }
-        dragEffectElement.style.visibility = "visible";
-        dragEffectElement.classList.remove("square-" + oldSquare);
-        dragEffectElement.classList.add("square-" + newSquare);
+    if (!target) return;
+
+    // Get `drag-effect` element
+    const dragEffectElement = document.getElementById("drag-effect");
+    const oldSquare = getSquareFromClassList(dragEffectElement);
+
+    // Do not change anything if the mouse is inside the previous square or the user has dragged outside the board
+    if (oldSquare === newSquare || !newSquare) {
+        return;
+    }
+
+    // Add drag effect
+    dragEffectElement.style.visibility = "visible";
+    dragEffectElement.classList.remove("square-" + oldSquare);
+    dragEffectElement.classList.add("square-" + newSquare);
+
+    // Handle touch effect
+    if (touch) {
+        dragEffectElement.classList.add("touch-drag");
+    } else {
+        dragEffectElement.classList.remove("touch-drag");
+    }
+
+    // Handle `hover` effect on legal move indicators
+    const oldMoveIndicator = chessBoard.querySelector(`.move-indicator.square-${oldSquare}`);
+    if (oldMoveIndicator) {
+        oldMoveIndicator.classList.remove("hovered");
+    }
+    const newMoveIndicator = chessBoard.querySelector(`.move-indicator.square-${newSquare}`);
+    if (newMoveIndicator) {
+        newMoveIndicator.classList.add("hovered");
     }
 };
 const PieceMoveMethods = {
@@ -186,7 +210,7 @@ const PieceMoveMethods = {
             draggedPiece.style.left = event.clientX + "px";
             draggedPiece.style.top = event.clientY + "px";
             activePiece.style.pointerEvents = "none";
-            highlightSquareUnderPoint(event.clientX, event.clientY);
+            highlightSquareUnderPoint(event.clientX, event.clientY, event.touch);
             activePiece.style.pointerEvents = "";
         },
         mouseup: (event) => {
@@ -215,11 +239,50 @@ const PieceMoveMethods = {
             draggedPiece.style.left = "";
             draggedPiece = null;
         },
+        touchstart: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.dragDrop.mousedown(touchEvent);
+        },
+        touchmove: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.dragDrop.mousemove(touchEvent);
+        },
+        touchend: (event) => {
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.dragDrop.mouseup(touchEvent);
+        },
         remove: function () {
             chessBoard.removeEventListener("click", this.click);
             chessBoard.removeEventListener("mousedown", this.mousedown);
             document.removeEventListener("mousemove", this.mousemove);
             document.removeEventListener("mouseup", this.mouseup);
+            chessBoard.removeEventListener("touchstart", this.touchstart);
+            document.removeEventListener("touchmove", this.touchmove);
+            document.removeEventListener("touchend", this.touchend);
             chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "";
             });
@@ -230,11 +293,18 @@ const PieceMoveMethods = {
             chessBoard.addEventListener("mousedown", this.mousedown);
             document.addEventListener("mousemove", this.mousemove);
             document.addEventListener("mouseup", this.mouseup);
+            chessBoard.addEventListener("touchstart", this.touchstart, { passive: false });
+            document.addEventListener("touchmove", this.touchmove, { passive: false });
+            document.addEventListener("touchend", this.touchend, { passive: false });
             chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
                 piece.style.cursor = "grab";
             });
         },
-    }
+    },
+
+    clickDragDrop: {
+
+    },
 };
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + (square[0] - 1);
@@ -243,6 +313,7 @@ function convertIndexToSquare(index) {
     return `${1 + (index % 8)}${8 - Math.floor(index / 8)}`;
 }
 function getSquareFromClassList(element) {
+    if (!element) return;
     const squareClass = Array.from(element.classList).find(className => className.startsWith("square-"));
     if (squareClass) {
         return squareClass.substring(7);
@@ -736,8 +807,8 @@ function highlightSquare(square, permanent = false, color = "") {
     chessBoard.appendChild(highlight);
 };
 function mouseEntersPiece(event) {
-    const target = event.target;
     let square = "";
+    const target = event.target;
     if (target.classList.contains("board-square")) {
         square = target.dataset.square;
     } else {
@@ -747,8 +818,8 @@ function mouseEntersPiece(event) {
     if (captureIndicator) captureIndicator.classList.add("hovered");
 };
 function mouseLeavesPiece(event) {
-    const target = event.target;
     let square = "";
+    const target = event.target;
     if (event.target.classList.contains("board-square")) {
         square = target.dataset.square;
     } else {

@@ -105,10 +105,12 @@
     outline-offset: round(up, calc(var(--board-square-width) / -25), 1px);
     visibility: hidden;
     z-index: 3;
+    pointer-events: none;
     box-shadow: 0 0 calc(var(--board-square-width) * 3/50) calc(var(--board-square-width) / 100) rgba(0, 0, 0, 0.6);
     &.touch-drag {
         outline: none;
         box-shadow: none;
+        z-index: 9;
     }
     &.touch-drag::after {
         content: "";
