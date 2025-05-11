@@ -301,7 +301,6 @@ const PieceMoveMethods = {
             });
         },
     },
-
     clickDragDrop: {
 
     },
@@ -692,8 +691,8 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         } else if (isStalemate(activeColor)) {
             gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
-                <div style="background-color: black;">
-                    <div style="background-color: white;"></div>
+                <div style="background-color: white;">
+                    <div style="background-color: black;"></div>
                 </div>
                 <b>Draw</b>&nbsp; by stalemate`;
             const newResultRow = document.createElement("div");
@@ -725,8 +724,8 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         } else if (isStalemate(activeColor)) {
             gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
-                <div style="background-color: white;">
-                    <div style="background-color: black;"></div>
+                <div style="background-color: black;">
+                    <div style="background-color: white;"></div>
                 </div>
                 <b>Draw</b>&nbsp; by stalemate`;
             const newResultRow = document.createElement("div");

@@ -140,7 +140,7 @@
     }
     &.dragged {
         position: fixed;
-        transform: translate(-50%, -50%) scale(1.3);
+        transform: translate(-50%, -50%) scale(1.3) !important;
         outline: none;
         z-index: 9;
         filter: drop-shadow(6px 6px 2px var(--shadow-color));
