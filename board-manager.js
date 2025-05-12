@@ -198,7 +198,7 @@ const PieceMoveMethods = {
                 activePiece = null;
                 removeSquareHighlight();
                 selectPiece(target, true);
-                // if (!activePiece) return;
+                if (!activePiece) return;
                 draggedPiece = event.target;
                 target.classList.add("dragged");
                 PieceMoveMethods.dragDrop.mousemove(event);
@@ -916,6 +916,7 @@ document.getElementById("move-grid").appendChild(startingPositionRow);
 setUpEmptyBoard();
 setUpPieces();
 PieceMoveMethods.dragDrop.add();
+
 let arrowStartSquare = null;
 let arrowSVG = null;
 let activeArrow = null;
@@ -958,7 +959,7 @@ function calculateArrowPoints(startSquare, endSquare) {
     // Adjust start and end points to square edges
     const startOffset = squareWidth * 0.15;
     const endOffset = squareWidth * 0.15;
-    
+
     return {
         start: {
             x: start.x + unitX * startOffset,
@@ -982,7 +983,7 @@ function createArrowElement(startSquare, endSquare, color = defaultArrowColor) {
     const dx = end.x - start.x;
     const dy = end.y - start.y;
     const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-    
+
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.setAttribute("class", "chess-arrow");
     g.setAttribute("data-start", startSquare);
@@ -1033,76 +1034,43 @@ chessBoard.addEventListener("contextmenu", (event) => {
     } else {
         square = getSquareFromClassList(target);
     }
-    
+
     // Add the highlight
     const color = event.altKey ? "blue"
         : (event.ctrlKey || event.metaKey) ? "yellow"
         : event.shiftKey ? "green"
         : "red";
-    
-    let shouldHighlight = true;
-    
-    // If we're starting an arrow drag, schedule the highlight to be removed
-    if (square) {
-        const oldHighlight = chessBoard.querySelector(`.square-highlight.square-${square}:not(.permanent):not(.removed)`);
-        if (oldHighlight) {
-            removeSquareHighlight(false, square);
-            if (!oldHighlight.classList.contains(color)) {
-                highlightSquare(square, false, color);
-                // Remove this highlight if we start dragging
-                arrowStartSquare = square;
-                setTimeout(() => {
-                    if (arrowStartSquare === square) {
-                        const highlight = chessBoard.querySelector(`.square-highlight.square-${square}:not(.permanent):not(.removed)`);
-                        if (highlight) {
-                            removeSquareHighlight(false, square);
-                        }
-                    }
-                }, 0);
-            }
-        } else {
+
+    const oldHighlight = chessBoard.querySelector(`.square-highlight.square-${square}:not(.permanent):not(.removed)`);
+    if (oldHighlight) {
+        removeSquareHighlight(false, square);
+        if (!oldHighlight.classList.contains(color)) {
             highlightSquare(square, false, color);
-            // Remove this highlight if we start dragging
-            arrowStartSquare = square;
-            setTimeout(() => {
-                if (arrowStartSquare === square) {
-                    const highlight = chessBoard.querySelector(`.square-highlight.square-${square}:not(.permanent):not(.removed)`);
-                    if (highlight) {
-                        removeSquareHighlight(false, square);
-                    }
-                }
-            }, 0);
         }
+    } else {
+        highlightSquare(square, false, color);
     }
 });
 
-chessBoard.addEventListener("mousedown", (event) => {
-    if (event.button === 2) {
-        const target = event.target;
-        if (target.classList.contains("board-square")) {
-            arrowStartSquare = target.dataset.square;
-        } else {
-            arrowStartSquare = getSquareFromClassList(target);
-        }
-        
-        if (!arrowSVG) {
-            arrowSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-            arrowSVG.setAttribute("class", "arrow-layer");
-            arrowSVG.style.position = "absolute";
-            arrowSVG.style.top = "0";
-            arrowSVG.style.left = "0";
-            arrowSVG.style.width = "100%";
-            arrowSVG.style.height = "100%";
-            arrowSVG.style.pointerEvents = "none";
-            arrowSVG.style.zIndex = "7";
-            chessBoard.appendChild(arrowSVG);
-        }
+chessBoard.addEventListener("contextmenu", (event) => {
+    const target = event.target;
+    if (target.classList.contains("board-square")) {
+        arrowStartSquare = target.dataset.square;
+    } else {
+        arrowStartSquare = getSquareFromClassList(target);
+    }
 
-        // Don't proceed with square highlighting if we're drawing an arrow
-        if (arrowStartSquare) {
-            event.stopPropagation();
-            return;
-        }
+    if (!arrowSVG) {
+        arrowSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        arrowSVG.setAttribute("class", "arrow-layer");
+        arrowSVG.style.position = "absolute";
+        arrowSVG.style.top = "0";
+        arrowSVG.style.left = "0";
+        arrowSVG.style.width = "100%";
+        arrowSVG.style.height = "100%";
+        arrowSVG.style.pointerEvents = "none";
+        arrowSVG.style.zIndex = "7";
+        chessBoard.appendChild(arrowSVG);
     }
 });
 
@@ -1128,7 +1096,7 @@ chessBoard.addEventListener("mousemove", (event) => {
             if (arrow) {
                 // Preview state
                 arrow.style.opacity = "0.6";
-                
+
                 // Set color based on modifier keys
                 const color = event.altKey ? arrowColors.alt
                     : (event.ctrlKey || event.metaKey) ? arrowColors.ctrl
@@ -1136,7 +1104,7 @@ chessBoard.addEventListener("mousemove", (event) => {
                     : arrowColors.default;
                 arrow.querySelector("line").setAttribute("stroke", color);
                 arrow.querySelector("path").setAttribute("fill", color);
-                
+
                 arrowSVG.appendChild(arrow);
                 activeArrow = arrow;
             }
@@ -1144,16 +1112,14 @@ chessBoard.addEventListener("mousemove", (event) => {
     }
 });
 
-chessBoard.addEventListener("mousedown", (event) => {
-    if (event.button === 0) { // Left click
-        // Clear all non-permanent arrows
-        arrows.forEach(arrow => {
-            if (!arrow.classList.contains("permanent")) {
-                arrow.remove();
-                arrows.delete(arrow);
-            }
-        });
-    }
+chessBoard.addEventListener("click", (event) => {
+    // Clear all non-permanent arrows
+    arrows.forEach(arrow => {
+        if (!arrow.classList.contains("permanent")) {
+            arrow.remove();
+            arrows.delete(arrow);
+        }
+    });
 });
 
 chessBoard.addEventListener("mouseup", (event) => {
@@ -1163,36 +1129,36 @@ chessBoard.addEventListener("mouseup", (event) => {
             : (event.ctrlKey || event.metaKey) ? arrowColors.ctrl
             : event.shiftKey ? arrowColors.shift
             : arrowColors.default;
-            
+
         // Check if this exact arrow already exists
-        const existingArrow = Array.from(arrows).find(arr => 
-            arr.getAttribute("data-start") === arrowStartSquare && 
-            arr.getAttribute("data-end") === endSquare && 
-            (!arr.classList.contains("permanent") && 
+        const existingArrow = Array.from(arrows).find(arr =>
+            arr.getAttribute("data-start") === arrowStartSquare &&
+            arr.getAttribute("data-end") === endSquare &&
+            (!arr.classList.contains("permanent") &&
              arr.querySelector("line").getAttribute("stroke") === color)
         );
-        
+
         if (existingArrow) {
             existingArrow.remove();
             arrows.delete(existingArrow);
         } else {
             // Remove non-permanent arrow with same squares but different color
-            const sameSquaresArrow = Array.from(arrows).find(arr => 
+            const sameSquaresArrow = Array.from(arrows).find(arr =>
                 !arr.classList.contains("permanent") &&
-                arr.getAttribute("data-start") === arrowStartSquare && 
+                arr.getAttribute("data-start") === arrowStartSquare &&
                 arr.getAttribute("data-end") === endSquare
             );
             if (sameSquaresArrow) {
                 sameSquaresArrow.remove();
                 arrows.delete(sameSquaresArrow);
             }
-            
+
             const finalArrow = activeArrow.cloneNode(true);
             finalArrow.style.opacity = "0.8";
             arrowSVG.appendChild(finalArrow);
             arrows.add(finalArrow);
         }
-        
+
         activeArrow.remove();
         activeArrow = null;
         arrowStartSquare = null;
