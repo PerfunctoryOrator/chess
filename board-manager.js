@@ -302,7 +302,128 @@ const PieceMoveMethods = {
         },
     },
     clickDragDrop: {
+        click: (event) => {
+            const target = event.target;
+            if (target.classList.contains("move-indicator")) {
+                movePiece(getSquareFromClassList(target));
+            }
+            if (target.classList.contains("chess-piece")) {
+                selectPiece(target);
+            } else {
+                removeLegalMoveIndicators();
+                removeSquareHighlight();
+                activePiece = null;
+            }
+        },
+        mousedown: (event) => {
+            if (event.button !== 0) return;
+            const target = event.target;
+            if (target.classList.contains("chess-piece")) {
+                activePiece = null;
+                removeSquareHighlight();
+                selectPiece(target, true);
+                if (!activePiece) return;
+                draggedPiece = event.target;
+                target.classList.add("dragged");
+                PieceMoveMethods.clickDragDrop.mousemove(event);
+            }
+        },
+        mousemove: (event) => {
+            if (!draggedPiece) return;
+            event.preventDefault();
+            draggedPiece.style.left = event.clientX + "px";
+            draggedPiece.style.top = event.clientY + "px";
+            activePiece.style.pointerEvents = "none";
+            highlightSquareUnderPoint(event.clientX, event.clientY, event.touch);
+            activePiece.style.pointerEvents = "";
+        },
+        mouseup: (event) => {
+            if (!draggedPiece) return;
 
+            const dragEffectElement = document.getElementById("drag-effect");
+            dragEffectElement.style.visibility = "";
+            dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
+
+            draggedPiece.style.pointerEvents = "none";
+            const target = document.elementFromPoint(event.clientX, event.clientY);
+            const toSquare = getSquareFromClassList(target);
+            if (legalMoves.includes(toSquare)) {
+                movePiece(toSquare, true);
+                createRipple(toSquare);
+            } else {
+                createRipple(getSquareFromClassList(draggedPiece));
+            }
+            removeLegalMoveIndicators();
+            removeSquareHighlight();
+            activePiece = null;
+            draggedPiece.style.pointerEvents = "";
+            draggedPiece.style.cursor = "grab";
+            draggedPiece.classList.remove("dragged");
+            draggedPiece.style.top = "";
+            draggedPiece.style.left = "";
+            draggedPiece = null;
+        },
+        touchstart: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.clickDragDrop.mousedown(touchEvent);
+        },
+        touchmove: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.clickDragDrop.mousemove(touchEvent);
+        },
+        touchend: (event) => {
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
+        },
+        remove: function () {
+            chessBoard.removeEventListener("click", this.click);
+            chessBoard.removeEventListener("mousedown", this.mousedown);
+            document.removeEventListener("mousemove", this.mousemove);
+            document.removeEventListener("mouseup", this.mouseup);
+            chessBoard.removeEventListener("touchstart", this.touchstart);
+            document.removeEventListener("touchmove", this.touchmove);
+            document.removeEventListener("touchend", this.touchend);
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "";
+            });
+        },
+        add: function () {
+            this.remove();
+            chessBoard.addEventListener("click", this.click);
+            chessBoard.addEventListener("mousedown", this.mousedown);
+            document.addEventListener("mousemove", this.mousemove);
+            document.addEventListener("mouseup", this.mouseup);
+            chessBoard.addEventListener("touchstart", this.touchstart, { passive: false });
+            document.addEventListener("touchmove", this.touchmove, { passive: false });
+            document.addEventListener("touchend", this.touchend, { passive: false });
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "grab";
+            });
+        },
     },
 };
 function convertSquareToIndex(square) {
@@ -915,115 +1036,7 @@ if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
 document.getElementById("move-grid").appendChild(startingPositionRow);
 setUpEmptyBoard();
 setUpPieces();
-PieceMoveMethods.dragDrop.add();
-
-let arrowStartSquare = null;
-let arrowSVG = null;
-let activeArrow = null;
-const arrows = new Set();
-const defaultArrowColor = "rgba(255, 170, 0, 0.8)";
-const arrowColors = {
-    default: "rgba(255, 170, 0, 0.8)",
-    alt: "rgba(82, 176, 220, 0.8)",
-    ctrl: "rgba(235, 97, 80, 0.8)",
-    shift: "rgba(172, 206, 89, 0.8)"
-};
-
-function calculateArrowPoints(startSquare, endSquare) {
-    const startElement = document.querySelector(`[data-square="${startSquare}"]`);
-    const endElement = document.querySelector(`[data-square="${endSquare}"]`);
-    if (!startElement || !endElement) return null;
-
-    const boardRect = chessBoard.getBoundingClientRect();
-    const squareWidth = boardRect.width / 8;
-    const arrowWidth = Math.max(squareWidth / 6, 8);
-    const headWidth = arrowWidth * 3;
-    const headLength = squareWidth / 3;
-
-    const start = {
-        x: startElement.offsetLeft + squareWidth / 2,
-        y: startElement.offsetTop + squareWidth / 2
-    };
-    const end = {
-        x: endElement.offsetLeft + squareWidth / 2,
-        y: endElement.offsetTop + squareWidth / 2
-    };
-
-    // Vector math
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    const unitX = dx / length;
-    const unitY = dy / length;
-
-    // Adjust start and end points to square edges
-    const startOffset = squareWidth * 0.15;
-    const endOffset = squareWidth * 0.15;
-
-    return {
-        start: {
-            x: start.x + unitX * startOffset,
-            y: start.y + unitY * startOffset
-        },
-        end: {
-            x: end.x,
-            y: end.y
-        },
-        width: arrowWidth,
-        headWidth,
-        headLength
-    };
-}
-
-function createArrowElement(startSquare, endSquare, color = defaultArrowColor) {
-    const points = calculateArrowPoints(startSquare, endSquare);
-    if (!points) return null;
-
-    const { start, end, width, headWidth, headLength } = points;
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    g.setAttribute("class", "chess-arrow");
-    g.setAttribute("data-start", startSquare);
-    g.setAttribute("data-end", endSquare);
-
-    // Create arrow shaft
-    // Create arrow shaft with round start cap
-    const startCap = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    startCap.setAttribute("x1", start.x);
-    startCap.setAttribute("y1", start.y);
-    startCap.setAttribute("x2", start.x + width/2 * Math.cos(angle * Math.PI / 180));
-    startCap.setAttribute("y2", start.y + width/2 * Math.sin(angle * Math.PI / 180));
-    startCap.setAttribute("stroke", color);
-    startCap.setAttribute("stroke-width", width);
-    startCap.setAttribute("stroke-linecap", "round");
-
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", start.x);
-    line.setAttribute("y1", start.y);
-    line.setAttribute("x2", end.x - headLength * Math.cos(angle * Math.PI / 180));
-    line.setAttribute("y2", end.y - headLength * Math.sin(angle * Math.PI / 180));
-    line.setAttribute("stroke", color);
-    line.setAttribute("stroke-width", width);
-    line.setAttribute("stroke-linecap", "butt");
-
-    // Create arrow head
-    const head = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const headBase = {
-        x: end.x - headLength * Math.cos(angle * Math.PI / 180),
-        y: end.y - headLength * Math.sin(angle * Math.PI / 180)
-    };
-    const headPath = `M ${end.x},${end.y} L ${headBase.x - headWidth/2 * Math.sin(angle * Math.PI / 180)},${headBase.y + headWidth/2 * Math.cos(angle * Math.PI / 180)} L ${headBase.x + headWidth/2 * Math.sin(angle * Math.PI / 180)},${headBase.y - headWidth/2 * Math.cos(angle * Math.PI / 180)} Z`;
-    head.setAttribute("d", headPath);
-    head.setAttribute("fill", color);
-
-    g.appendChild(line);
-    g.appendChild(startCap);
-    g.appendChild(head);
-    return g;
-}
+PieceMoveMethods.clickDragDrop.add();
 
 chessBoard.addEventListener("contextmenu", (event) => {
     event.preventDefault();
@@ -1052,121 +1065,6 @@ chessBoard.addEventListener("contextmenu", (event) => {
     }
 });
 
-chessBoard.addEventListener("contextmenu", (event) => {
-    const target = event.target;
-    if (target.classList.contains("board-square")) {
-        arrowStartSquare = target.dataset.square;
-    } else {
-        arrowStartSquare = getSquareFromClassList(target);
-    }
-
-    if (!arrowSVG) {
-        arrowSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        arrowSVG.setAttribute("class", "arrow-layer");
-        arrowSVG.style.position = "absolute";
-        arrowSVG.style.top = "0";
-        arrowSVG.style.left = "0";
-        arrowSVG.style.width = "100%";
-        arrowSVG.style.height = "100%";
-        arrowSVG.style.pointerEvents = "none";
-        arrowSVG.style.zIndex = "7";
-        chessBoard.appendChild(arrowSVG);
-    }
-});
-
-chessBoard.addEventListener("mousemove", (event) => {
-    if (arrowStartSquare && event.buttons === 2) {
-        const target = event.target;
-        let arrowEndSquare = "";
-        if (target.classList.contains("board-square")) {
-            arrowEndSquare = target.dataset.square;
-        } else {
-            arrowEndSquare = getSquareFromClassList(target);
-        }
-
-        if (arrowEndSquare && arrowStartSquare !== arrowEndSquare) {
-            // Remove active arrow if it exists
-            if (activeArrow) {
-                activeArrow.remove();
-                activeArrow = null;
-            }
-
-            // Create and add new active arrow
-            const arrow = createArrowElement(arrowStartSquare, arrowEndSquare);
-            if (arrow) {
-                // Preview state
-                arrow.style.opacity = "0.6";
-
-                // Set color based on modifier keys
-                const color = event.altKey ? arrowColors.alt
-                    : (event.ctrlKey || event.metaKey) ? arrowColors.ctrl
-                    : event.shiftKey ? arrowColors.shift
-                    : arrowColors.default;
-                arrow.querySelector("line").setAttribute("stroke", color);
-                arrow.querySelector("path").setAttribute("fill", color);
-
-                arrowSVG.appendChild(arrow);
-                activeArrow = arrow;
-            }
-        }
-    }
-});
-
-chessBoard.addEventListener("click", (event) => {
-    // Clear all non-permanent arrows
-    arrows.forEach(arrow => {
-        if (!arrow.classList.contains("permanent")) {
-            arrow.remove();
-            arrows.delete(arrow);
-        }
-    });
-});
-
-chessBoard.addEventListener("mouseup", (event) => {
-    if (event.button === 2 && arrowStartSquare && activeArrow) {
-        const endSquare = activeArrow.getAttribute("data-end");
-        const color = event.altKey ? arrowColors.alt
-            : (event.ctrlKey || event.metaKey) ? arrowColors.ctrl
-            : event.shiftKey ? arrowColors.shift
-            : arrowColors.default;
-
-        // Check if this exact arrow already exists
-        const existingArrow = Array.from(arrows).find(arr =>
-            arr.getAttribute("data-start") === arrowStartSquare &&
-            arr.getAttribute("data-end") === endSquare &&
-            (!arr.classList.contains("permanent") &&
-             arr.querySelector("line").getAttribute("stroke") === color)
-        );
-
-        if (existingArrow) {
-            existingArrow.remove();
-            arrows.delete(existingArrow);
-        } else {
-            // Remove non-permanent arrow with same squares but different color
-            const sameSquaresArrow = Array.from(arrows).find(arr =>
-                !arr.classList.contains("permanent") &&
-                arr.getAttribute("data-start") === arrowStartSquare &&
-                arr.getAttribute("data-end") === endSquare
-            );
-            if (sameSquaresArrow) {
-                sameSquaresArrow.remove();
-                arrows.delete(sameSquaresArrow);
-            }
-
-            const finalArrow = activeArrow.cloneNode(true);
-            finalArrow.style.opacity = "0.8";
-            arrowSVG.appendChild(finalArrow);
-            arrows.add(finalArrow);
-        }
-
-        activeArrow.remove();
-        activeArrow = null;
-        arrowStartSquare = null;
-        event.preventDefault();
-    } else if (event.button === 2) {
-        arrowStartSquare = null;
-    }
-});
 if (isBoardFlipped) {
     isBoardFlipped = !isBoardFlipped;
     flipBoard();
