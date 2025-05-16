@@ -1036,7 +1036,7 @@ if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
 document.getElementById("move-grid").appendChild(startingPositionRow);
 setUpEmptyBoard();
 setUpPieces();
-PieceMoveMethods.clickDragDrop.add();
+PieceMoveMethods.click.add();
 
 chessBoard.addEventListener("contextmenu", (event) => {
     event.preventDefault();
