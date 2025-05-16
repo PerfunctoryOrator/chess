@@ -1,4 +1,4 @@
-# Online Chess Platform
+# Chess
 
 This repository contains the source code for an online chess platform developed as an experiment. The platform offers an interactive chess-playing experience directly in the browser.
 
