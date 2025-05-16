@@ -1036,10 +1036,11 @@ if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
 document.getElementById("move-grid").appendChild(startingPositionRow);
 setUpEmptyBoard();
 setUpPieces();
-PieceMoveMethods.click.add();
+PieceMoveMethods.dragDrop.add();
 
 chessBoard.addEventListener("contextmenu", (event) => {
     event.preventDefault();
+    if (event.button !== 2) return;
     const target = event.target;
     let square = "";
     if (target.classList.contains("board-square")) {
