@@ -11,7 +11,7 @@ const toggleDropDownMenu = (id) => {
         setTimeout(() => {
             arrow.transition = "";
             menu.style.display = "";
-        }, 300);
+        }, 200);
         menu.animate(
             [{ opacity: "1", transform: "translateY(0)" }, { opacity: "0", transform: "translateY(-32px)" }],
             { duration: 300, easing: emphasisAnimation },
@@ -24,7 +24,7 @@ const toggleDropDownMenu = (id) => {
             for (let i = 0; i < menuOptions.length; i++) {
                 menuOptions[i].style.pointerEvents = "all";
             }
-        }, 200);
+        }, 300);
         menu.style.display = "block";
         menu.animate(
             [{ opacity: "0", transform: "translateY(-32px)" }, { opacity: "1", transform: "translateY(0)" }],
@@ -106,7 +106,7 @@ const toggleOverflowContainer = (callerId) => {
             [{ opacity: "1", transform: "translateY(0)" }, { opacity: "0", transform: "translateY(32px)" }],
             { duration: 300, easing: emphasisAnimation },
         );
-        setTimeout(() => overflowMenu.style.display = "", 300);
+        setTimeout(() => overflowMenu.style.display = "", 200);
     } else {
         overflowButton.style.fill = "var(--active-color)";
         overflowButton.style.color = "var(--active-color)";

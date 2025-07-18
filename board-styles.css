@@ -21,7 +21,7 @@
         calc((100vh - 2*var(--padding) - 2*48px - 6*2px - 2*var(--margin)) / 8),
         calc((100vw - 2*var(--padding) - 32px - 4*2px - 2*var(--margin)) / 8)), 1px);
 
-    --evaluation: 0.2;
+    --evaluation: 0.22;
     --evaluation-text: "0.2";
 }
 
@@ -38,7 +38,7 @@
 
 /* Evaluation bar */
 #eval-bar {
-    font-weight: bold;
+    font-weight: 600;
     text-align: center;
     grid-row: 2 / 3;
     grid-column: 1 / 2;
@@ -69,14 +69,17 @@
     &::after {
         content: var(--evaluation-text);
         position: absolute;
-        top: 4px;
+        bottom: 4px;
         left: 50%;
         transform: translateX(-50%);
-        color: var(--background-color);
+        color: var(--dark-gray);
     }
 }
 .flipped ~ #eval-bar {
     transform: rotate(180deg);
+    &::after {
+        transform: translateX(-50%) rotate(180deg);
+    }
 }
 
 /* Board squares */

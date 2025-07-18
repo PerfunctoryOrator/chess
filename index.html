@@ -113,7 +113,7 @@
                     <span class="button-desc">Advanced</span>
                 </button>
             </div>
-            <div id="general-settings" class="input-grid settings-view">
+            <div id="general-settings" class="input-grid settings-view" style="display: none;">
                 <span>Appearance</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
@@ -180,6 +180,74 @@
                 <span id="font-input-text">Custom font</span>
                 <input id="font-input" type="text" spellcheck="false" placeholder="Arial, Helvetica, etc…" oninput="setFont('custom');" />
             </div>
+            <div id="board-settings" class="input-grid settings-view">
+                <span>Board colour</span>
+                <div class="radio-input-area">
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="brown" onchange="setAppearance(value);" />
+                        <div style="background-color: rgb(236, 218, 185); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: rgb(174, 138, 104); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>Brown</span>
+                    </label>
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="red" onchange="setAppearance(value);" />
+                        <div style="background-color: rgb(235, 236, 211); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: rgb(122, 148, 90); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>Green</span>
+                    </label>
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="red" onchange="setAppearance(value);" />
+                        <div style="background-color: rgb(241, 220, 198); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: rgb(174, 93, 75); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>Red</span>
+                    </label>
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="blue" onchange="setAppearance(value);" />
+                        <div style="background-color: rgb(243, 246, 250); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: rgb(101, 148, 235); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>Blue</span>
+                    </label>
+                </div>
+                <span>Piece style</span>
+                <div class="radio-input-area">
+
+                </div>
+                <span>Piece animation</span>
+                <div id="piece-animation" class="drop-down-menu-container">
+                    <button value="ease" selected>Ease</button>
+                    <button value="emphasis">Emphasis</button>
+                </div>
+                <span>Show legal moves</span>
+                <label class="toggle-switch">
+                    <input class="toggle" type="checkbox" value="show-legal-moves" />
+                    <div class="slider"></div>
+                </label>
+                <span>Move method</span>
+                <div id="move-method" class="drop-down-menu-container">
+                    <button value="drag-click" selected>Drag or click</button>
+                    <button value="click">Click squares</button>
+                    <button value="drag">Drag pieces</button>
+                </div>
+                <span>Show coordinates</span>
+                <label class="toggle-switch">
+                    <input class="toggle" type="checkbox" value="show-coordinates" />
+                    <div class="slider"></div>
+                </label>
+                <span>Location of coordinates</span>
+                <div id="board-coordinates" class="drop-down-menu-container">
+                    <button value="inside" selected>Inside</button>
+                    <button value="outside">Outside</button>
+                </div>
+                <span>Location of ranks</span>
+                <div id="location-ranks" class="drop-down-menu-container">
+                    <button value="left" selected>Left side of board</button>
+                    <button value="right">Right side of board</button>
+                </div>
+            </div>
             <div class="options">
                 <button class="dangerous-button" onclick="{
                     if (confirm('Are you sure you want to reset all settings?')) {
@@ -222,7 +290,13 @@
                             startingPositionRow.innerHTML = `<div class='info'>Custom position</div>`;
                         }
                         document.getElementById('move-grid').appendChild(startingPositionRow);
-                        pieceArea.remove();
+                        chessBoard.querySelectorAll('.chess-piece').forEach(piece => {
+                            piece.remove();
+                        });
+                        const promotionBox = chessBoard.querySelector('.promotion-box');
+                        if (promotionBox) {
+                            promotionBox.remove();
+                        }
                         setUpPieces();
                         removeSquareHighlight(true);
                         hideFullScreenBox('board-position-input-container');
@@ -235,7 +309,3 @@
         <script src="board-manager.js?modified=15-05-25-1"></script>
     </body>
 </html>
-<!-- <label class="toggle-switch">
-    <input class="toggle" type="checkbox" value="show-border" />
-    <div class="slider"></div>
-</label> -->
