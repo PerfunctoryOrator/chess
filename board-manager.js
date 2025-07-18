@@ -1579,6 +1579,8 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++; // If a capture takes place, then the `selectPiece` function takes care of it.
 
+    if (!computer) return;
+
     // Find next move
     if (recurse || gameStatus !== "*") return;
     const allLegalMoves = [];
@@ -1807,3 +1809,5 @@ if (activeColor === "b") {
 } else {
     document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
 }
+
+computer = true;

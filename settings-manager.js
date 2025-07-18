@@ -82,7 +82,7 @@ function applyCurrentSettings() {
 
 const Settings = {
     default: {
-        version: "beta20",
+        version: "beta30",
         appearance: "system",
         edges: "soft",
         buttons: "round",
