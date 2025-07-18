@@ -1,115 +1,298 @@
 const Notation = {
     read: {
         san: (san) => {
-
+            // TODO: Implement SAN parsing
+            throw new Error("SAN parsing not yet implemented");
         },
         fen: (fen) => {
-            let ranksParsed = 0;
-            let piecePositions = [];
-            let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock = "", fullmoveNumber = "";
-            function readValueFromFen() {
-                let value = "";
-                i++;
-                if (i < fen.length) fenChar = fen[i];
-                else return;
-                while (fenChar !== " ") {
-                    value += fenChar;
-                    i++;
-                    if (i < fen.length) fenChar = fen[i];
-                    else break;
-                }
-                return value;
-            }
-            let i = 0, fenChar = "";
-            if (i < fen.length) fenChar = fen[i];
-            else return false;
-            while (fenChar !== " ") {
-                if (!(parseInt(fenChar) || fenChar === "/")) {
-                    switch (fenChar.toLowerCase()) {
-                        case "r": break;
-                        case "n": break;
-                        case "b": break;
-                        case "q": break;
-                        case "k": break;
-                        case "p": break;
-                        default: return false;
+            if (!fen || typeof fen !== 'string') return false;
+
+            const fenParts = fen.trim().split(/\s+/);
+            if (fenParts.length !== 6) return false;
+
+            const [position, activeColor, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber] = fenParts;
+
+            // Parse piece positions
+            const piecePositions = [];
+            const ranks = position.split('/');
+
+            if (ranks.length !== 8) return false;
+
+            for (let rankIndex = 0; rankIndex < 8; rankIndex++) {
+                const rank = ranks[rankIndex];
+                let fileIndex = 0;
+
+                for (let i = 0; i < rank.length; i++) {
+                    const char = rank[i];
+
+                    if (char >= '1' && char <= '8') {
+                        const emptySquares = parseInt(char);
+                        if (fileIndex + emptySquares > 8) return false;
+                        for (let j = 0; j < emptySquares; j++) {
+                            piecePositions.push("");
+                            fileIndex++;
+                        }
+                    } else if (/[prnbqkPRNBQK]/.test(char)) {
+                        if (fileIndex >= 8) return false;
+                        piecePositions.push(char);
+                        fileIndex++;
+                    } else {
+                        return false;
                     }
-                    piecePositions.push(fenChar);
-                } else if (fenChar === "/") {
-                    ranksParsed++;
-                    if (piecePositions.length !== 8 * ranksParsed) return false;
-                } else {
-                    for (let j = parseInt(fenChar); j > 0; j--) piecePositions.push("");
                 }
-                i++;
-                if (i < fen.length) fenChar = fen[i];
-                else return false;
+
+                if (fileIndex !== 8) return false;
             }
-            if (piecePositions.length !== 64 || ranksParsed !== 7) return false;
-            activeColor = readValueFromFen();
-            if (!activeColor == true || !(activeColor === "w" || activeColor === "b")) return false;
-            castlingRights = readValueFromFen();
-            if (!castlingRights == true || castlingRights.length > 4) return false;
-            if (castlingRights !== "-") {
+
+            // Validate active color
+            if (activeColor !== 'w' && activeColor !== 'b') return false;
+
+            // Validate castling rights
+            if (castlingRights !== '-') {
+                if (castlingRights.length > 4) return false;
+                const validCastlingChars = new Set(['K', 'Q', 'k', 'q']);
+                const seenChars = new Set();
+
                 for (const char of castlingRights) {
-                    switch (char) {
-                        case "K": break;
-                        case "Q": break;
-                        case "k": break;
-                        case "q": break;
-                        default: return false;
-                    }
+                    if (!validCastlingChars.has(char) || seenChars.has(char)) return false;
+                    seenChars.add(char);
                 }
             }
-            enPassantSquare = readValueFromFen();
-            if (!enPassantSquare == true || enPassantSquare.length > 2 || (enPassantSquare !== "-" && (enPassantSquare[1] !== "3" && enPassantSquare[1] !== "6"))) return false;
-            if (enPassantSquare === "-") enPassantSquare = "";
-            else enPassantSquare = (enPassantSquare[0].charCodeAt(0) - "a".charCodeAt(0) + 1) + enPassantSquare[1];
-            halfmoveClock = parseInt(readValueFromFen());
-            if (!halfmoveClock == true && halfmoveClock !== 0) return false;
-            fullmoveNumber = parseInt(readValueFromFen());
-            if (!fullmoveNumber == true) return false;
-            if (piecePositions.filter(x => x === "K").length !== 1 || piecePositions.filter(x => x === "k").length !== 1) return false;
-            if (isKingInCheck(piecePositions, activeColor === "w" ? "b" : "w")) return false;
+
+            // Validate en passant square
+            let enPassantIndex = "";
+            if (enPassantSquare !== '-') {
+                if (enPassantSquare.length !== 2) return false;
+                const file = enPassantSquare[0];
+                const rank = enPassantSquare[1];
+
+                if (file < 'a' || file > 'h') return false;
+                if (rank !== '3' && rank !== '6') return false;
+
+                // Convert to internal format
+                enPassantIndex = (file.charCodeAt(0) - 'a'.charCodeAt(0) + 1) + rank;
+            }
+
+            // Validate halfmove clock
+            const halfmoveClockNum = parseInt(halfmoveClock);
+            if (isNaN(halfmoveClockNum) || halfmoveClockNum < 0 || halfmoveClockNum > 50) return false;
+
+            // Validate fullmove number
+            const fullmoveNum = parseInt(fullmoveNumber);
+            if (isNaN(fullmoveNum) || fullmoveNum < 1) return false;
+
+            // Validate kings
+            const whiteKings = piecePositions.filter(p => p === 'K').length;
+            const blackKings = piecePositions.filter(p => p === 'k').length;
+            if (whiteKings !== 1 || blackKings !== 1) return false;
+
+            // Validate that the side not to move is not in check
+            const opponentColor = activeColor === 'w' ? 'b' : 'w';
+            if (isKingInCheck(piecePositions, opponentColor)) return false;
+
+            // Validate pawn positions (no pawns on 1st or 8th rank)
+            for (let i = 0; i < 8; i++) {
+                if (piecePositions[i].toLowerCase() === 'p') return false; // 8th rank
+                if (piecePositions[i + 56].toLowerCase() === 'p') return false; // 1st rank
+            }
+
             return [
                 piecePositions,
                 activeColor,
                 castlingRights,
-                enPassantSquare,
-                halfmoveClock,
-                fullmoveNumber,
+                enPassantIndex,
+                halfmoveClockNum,
+                fullmoveNum,
             ];
         },
         pgn: (pgn) => {
-
+            // TODO: Implement PGN parsing
+            throw new Error("PGN parsing not yet implemented");
         },
     },
     write: {
         san: (fromSquare, toSquare, promotedTo, enPassantSquare, board = piecePositions) => {
-            const pieceType = board[convertSquareToIndex(fromSquare)];
-            const pieceIsPawn = pieceType.toLowerCase() === "p";
-            let moveNotation = pieceIsPawn ? "" : pieceType.toUpperCase();
-            if (board[convertSquareToIndex(toSquare)] !== "" || toSquare === enPassantSquare && pieceIsPawn) {
-                if (pieceIsPawn) moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1);
-                moveNotation += "x";
-            }
-            moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(toSquare[0]) - 1) + toSquare[1];
-            if (pieceIsPawn && promotedTo) moveNotation += "=" + promotedTo.toUpperCase();
-            const newBoard = board.slice();
-            newBoard[convertSquareToIndex(fromSquare)] = "";
-            newBoard[convertSquareToIndex(toSquare)] = promotedTo ? promotedTo : pieceType;
-            if (isKingInCheck(newBoard, activeColor)) moveNotation += isCheckmate(activeColor, newBoard) ? "#" : "+";
-            return moveNotation;
-        },
-        fen: () => {
+            try {
+                const pieceType = board[convertSquareToIndex(fromSquare)];
+                const pieceIsPawn = pieceType.toLowerCase() === "p";
+                const targetSquare = board[convertSquareToIndex(toSquare)];
+                const isCapture = targetSquare !== "" || (toSquare === enPassantSquare && pieceIsPawn);
 
+                // Castling detection
+                let isCastling = false;
+                let castlingNotation = "";
+                if (pieceType.toLowerCase() === "k") {
+                    const isWhite = pieceType === "K";
+                    const backRank = isWhite ? 1 : 8;
+                    const fromRank = parseInt(fromSquare[1]);
+                    if (fromRank === backRank) {
+                        if (toSquare === `7${backRank}`) {
+                            isCastling = true;
+                            castlingNotation = "O–O";
+                        } else if (toSquare === `3${backRank}`) {
+                            isCastling = true;
+                            castlingNotation = "O–O–O";
+                        }
+                    }
+                }
+
+                // Build notation
+                let moveNotation = "";
+                if (isCastling) {
+                    moveNotation = castlingNotation;
+                } else {
+                    if (!pieceIsPawn) {
+                        moveNotation += pieceType.toUpperCase();
+                        // Disambiguation
+                        const ambiguousPieces = [];
+                        for (let square = 0; square < 64; square++) {
+                            const piece = board[square];
+                            if (piece === pieceType && square !== convertSquareToIndex(fromSquare)) {
+                                const squareNotation = convertIndexToSquare(square);
+                                const candidateMoves = getCandidateMoves(squareNotation, board);
+                                if (candidateMoves && candidateMoves.includes(toSquare)) {
+                                    // Only add if move doesn’t leave own king in check
+                                    const testBoard = board.slice();
+                                    const testFromIndex = convertSquareToIndex(squareNotation);
+                                    const testToIndex = convertSquareToIndex(toSquare);
+                                    testBoard[testFromIndex] = "";
+                                    testBoard[testToIndex] = piece;
+                                    const movingColor = piece === piece.toUpperCase() ? "w" : "b";
+                                    if (!isKingInCheck(testBoard, movingColor)) {
+                                        ambiguousPieces.push(squareNotation);
+                                    }
+                                }
+                            }
+                        }
+                        if (ambiguousPieces.length > 0) {
+                            const sameFile = ambiguousPieces.some(piece => piece[0] === fromSquare[0]);
+                            const sameRank = ambiguousPieces.some(piece => piece[1] === fromSquare[1]);
+                            if (!sameFile) {
+                                moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1);
+                            } else if (!sameRank) {
+                                moveNotation += fromSquare[1];
+                            } else {
+                                moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1) + fromSquare[1];
+                            }
+                        }
+                    }
+                    if (isCapture) {
+                        if (pieceIsPawn) {
+                            moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1);
+                        }
+                        moveNotation += "x";
+                    }
+                    moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(toSquare[0]) - 1) + toSquare[1];
+                    if (pieceIsPawn && promotedTo) {
+                        moveNotation += "=" + promotedTo.toUpperCase();
+                    }
+                }
+
+                // Simulate move
+                const newBoard = board.slice();
+                // Support both algebraic notation and index for fromSquare/toSquare
+                const fromIdx = typeof fromSquare === "string" && fromSquare.length === 2
+                    ? convertSquareToIndex(fromSquare)
+                    : parseInt(fromSquare);
+                const toIdx = typeof toSquare === "string" && toSquare.length === 2
+                    ? convertSquareToIndex(toSquare)
+                    : parseInt(toSquare);
+
+                newBoard[toIdx] = promotedTo || newBoard[fromIdx];
+                newBoard[fromIdx] = "";
+
+                // En passant
+                if (pieceIsPawn && toSquare === enPassantSquare) {
+                    const capturedPawnRank = activeColor === 'w' ? '5' : '4';
+                    const capturedPawnSquare = enPassantSquare[0] + capturedPawnRank;
+                    const capturedPawnIndex = convertSquareToIndex(capturedPawnSquare);
+                    newBoard[capturedPawnIndex] = "";
+                }
+
+                // Castling rook move
+                if (pieceType.toLowerCase() === "k") {
+                    const isWhite = pieceType === "K";
+                    const backRank = isWhite ? 1 : 8;
+                    const fromRank = parseInt(fromSquare[1]);
+                    if (fromRank === backRank) {
+                        if (toSquare === `7${backRank}`) {
+                            newBoard[convertSquareToIndex(`8${backRank}`)] = "";
+                            newBoard[convertSquareToIndex(`6${backRank}`)] = isWhite ? "R" : "r";
+                        } else if (toSquare === `3${backRank}`) {
+                            newBoard[convertSquareToIndex(`1${backRank}`)] = "";
+                            newBoard[convertSquareToIndex(`4${backRank}`)] = isWhite ? "R" : "r";
+                        }
+                    }
+                }
+
+                // Check/checkmate detection (always run, even for castling)
+                const opponentColor = activeColor === 'w' ? 'b' : 'w';
+
+
+
+                if (isKingInCheck(newBoard, opponentColor)) {
+                    if (isCheckmate(opponentColor, newBoard)) {
+                        moveNotation += "#";
+                    } else {
+                        moveNotation += "+";
+                    }
+                }
+
+                return moveNotation;
+            } catch (error) {
+                return "";
+            }
+        },
+        fen: (board = piecePositions, color = activeColor, castling = castlingRights, enPassant = enPassantSquare, halfmove = halfmoveClock, fullmove = fullmoveNumber) => {
+            try {
+                // Build position string
+                let position = "";
+                for (let rank = 7; rank >= 0; rank--) {
+                    let emptyCount = 0;
+
+                    for (let file = 0; file < 8; file++) {
+                        const square = board[rank * 8 + file];
+
+                        if (square === "") {
+                            emptyCount++;
+                        } else {
+                            if (emptyCount > 0) {
+                                position += emptyCount;
+                                emptyCount = 0;
+                            }
+                            position += square;
+                        }
+                    }
+
+                    if (emptyCount > 0) position += emptyCount;
+                    if (rank > 0) position += "/";
+                }
+
+                // Convert en passant from internal format
+                let enPassantSquareNotation = "-";
+                if (enPassant && enPassant.length === 2) {
+                    const file = String.fromCharCode("a".charCodeAt(0) + parseInt(enPassant[0]) - 1);
+                    const rank = enPassant[1];
+                    enPassantSquareNotation = file + rank;
+                }
+
+                return `${position} ${color} ${castling || "-"} ${enPassantSquareNotation} ${halfmove || 0} ${fullmove || 1}`;
+            } catch (error) {
+                console.error("Error generating FEN:", error);
+                return "";
+            }
         },
         pgn: () => {
-
+            // TODO: Implement PGN writing
+            throw new Error("PGN writing not yet implemented");
         },
     },
     assign: {
         parsedFen: (parsedFen) => {
+            if (!parsedFen || !Array.isArray(parsedFen) || parsedFen.length !== 6) {
+                throw new Error("Invalid parsed FEN data");
+            }
+
             piecePositions = parsedFen[0];
             activeColor = parsedFen[1];
             castlingRights = parsedFen[2];
@@ -118,6 +301,23 @@ const Notation = {
             fullmoveNumber = parsedFen[5];
         },
     },
+
+    // Utility functions
+    validate: {
+        fen: (fen) => {
+            const result = Notation.read.fen(fen);
+            return result !== false;
+        },
+        square: (square) => {
+            if (typeof square !== 'string' || square.length !== 2) return false;
+            const file = square[0];
+            const rank = square[1];
+            return file >= 'a' && file <= 'h' && rank >= '1' && rank <= '8';
+        },
+        piece: (piece) => {
+            return typeof piece === 'string' && /^[prnbqkPRNBQK]$/.test(piece);
+        }
+    }
 };
 // let hideLegal = true;
 let draggedPiece = null;
@@ -489,7 +689,7 @@ function setUpPieces() {
         }
     }
 };
-function getCandidateMoves(pieceSquare, board) {
+function getBasicCandidateMoves(pieceSquare, board) {
     let candidateMoves = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
     const pieceFile = parseInt(pieceSquare[0]);
@@ -567,6 +767,229 @@ function getCandidateMoves(pieceSquare, board) {
     }
     return candidateMoves;
 };
+
+function getCandidateMoves(pieceSquare, board) {
+    let candidateMoves = getBasicCandidateMoves(pieceSquare, board);
+    const piece = board[convertSquareToIndex(pieceSquare)];
+
+    // Add castling moves for kings
+    if (piece.toLowerCase() === "k") {
+        const isWhite = piece === "K";
+        const backRank = isWhite ? 1 : 8;
+        const kingFile = parseInt(pieceSquare[0]);
+        const kingRank = parseInt(pieceSquare[1]);
+
+        // Only allow castling if king is on the back rank
+        if (kingRank === backRank) {
+            // Find rooks on the back rank
+            const rooks = [];
+            for (let file = 1; file <= 8; file++) {
+                const square = `${file}${backRank}`;
+                const pieceOnSquare = board[convertSquareToIndex(square)];
+                if (pieceOnSquare === (isWhite ? "R" : "r")) {
+                    rooks.push(file);
+                }
+            }
+
+            // Kingside castling (uses rightmost rook)
+            if ((isWhite && castlingRights.includes("K")) || (!isWhite && castlingRights.includes("k"))) {
+                const kingsideRook = Math.max(...rooks.filter(rookFile => rookFile > kingFile));
+                if (kingsideRook > kingFile) {
+                    const kingDestination = `7${backRank}`; // g1 for white, g8 for black
+                    const rookDestination = `6${backRank}`; // f1 for white, f8 for black
+
+                    // Check if squares between king and rook are empty (excluding king and rook squares)
+                    const squaresBetween = [];
+                    for (let file = Math.min(kingFile, kingsideRook) + 1; file < Math.max(kingFile, kingsideRook); file++) {
+                        squaresBetween.push(`${file}${backRank}`);
+                    }
+
+                    // Check if king destination and rook destination are empty (if different from current positions)
+                    const destinationSquares = [];
+                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
+                    if (rookDestination !== `${kingsideRook}${backRank}`) destinationSquares.push(rookDestination);
+
+                    const squaresEmpty = [...squaresBetween, ...destinationSquares].every(sq =>
+                        board[convertSquareToIndex(sq)] === "");
+
+                    if (squaresEmpty) {
+                        // Check that king doesn’t pass through attacked squares
+                        const kingPath = [];
+                        const startFile = kingFile;
+                        const endFile = 7; // g-file
+                        const step = startFile < endFile ? 1 : -1;
+                        for (let file = startFile; file !== endFile + step; file += step) {
+                            kingPath.push(`${file}${backRank}`);
+                        }
+
+                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
+                        if (notAttacked && kingDestination !== pieceSquare) {
+                            candidateMoves.push(kingDestination);
+                        }
+                    }
+                }
+            }
+
+            // Queenside castling (uses leftmost rook)
+            if ((isWhite && castlingRights.includes("Q")) || (!isWhite && castlingRights.includes("q"))) {
+                const queensideRook = Math.min(...rooks.filter(rookFile => rookFile < kingFile));
+                if (queensideRook < kingFile) {
+                    const kingDestination = `3${backRank}`; // c1 for white, c8 for black
+                    const rookDestination = `4${backRank}`; // d1 for white, d8 for black
+
+                    // Check if squares between king and rook are empty (excluding king and rook squares)
+                    const squaresBetween = [];
+                    for (let file = Math.min(kingFile, queensideRook) + 1; file < Math.max(kingFile, queensideRook); file++) {
+                        squaresBetween.push(`${file}${backRank}`);
+                    }
+
+                    // Check if king destination and rook destination are empty (if different from current positions)
+                    const destinationSquares = [];
+                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
+                    if (rookDestination !== `${queensideRook}${backRank}`) destinationSquares.push(rookDestination);
+
+                    const squaresEmpty = [...squaresBetween, ...destinationSquares].every(sq =>
+                        board[convertSquareToIndex(sq)] === "");
+
+                    if (squaresEmpty) {
+                        // Check that king doesn’t pass through attacked squares
+                        const kingPath = [];
+                        const startFile = kingFile;
+                        const endFile = 3; // c-file
+                        const step = startFile < endFile ? 1 : -1;
+                        for (let file = startFile; file !== endFile + step; file += step) {
+                            kingPath.push(`${file}${backRank}`);
+                        }
+
+                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
+                        if (notAttacked && kingDestination !== pieceSquare) {
+                            candidateMoves.push(kingDestination);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return candidateMoves;
+};
+
+function getCastlingTargets(pieceSquare, board) {
+    const piece = board[convertSquareToIndex(pieceSquare)];
+    let castlingTargets = [];
+
+    // Only for kings
+    if (piece.toLowerCase() === "k") {
+        const isWhite = piece === "K";
+        const backRank = isWhite ? 1 : 8;
+        const kingFile = parseInt(pieceSquare[0]);
+        const kingRank = parseInt(pieceSquare[1]);
+
+        // Only allow castling if king is on the back rank
+        if (kingRank === backRank) {
+            // Find rooks on the back rank
+            const rooks = [];
+            for (let file = 1; file <= 8; file++) {
+                const square = `${file}${backRank}`;
+                const pieceOnSquare = board[convertSquareToIndex(square)];
+                if (pieceOnSquare === (isWhite ? "R" : "r")) {
+                    rooks.push(file);
+                }
+            }
+
+            // Check kingside castling
+            if ((isWhite && castlingRights.includes("K")) || (!isWhite && castlingRights.includes("k"))) {
+                const kingsideRook = Math.max(...rooks.filter(rookFile => rookFile > kingFile));
+                if (kingsideRook > kingFile) {
+                    const kingDestination = `7${backRank}`;
+                    const rookDestination = `6${backRank}`;
+
+                    // Check if squares between king and rook are empty
+                    const squaresBetween = [];
+                    for (let file = Math.min(kingFile, kingsideRook) + 1; file < Math.max(kingFile, kingsideRook); file++) {
+                        squaresBetween.push(`${file}${backRank}`);
+                    }
+
+                    // Check if destinations are empty (if different from current positions)
+                    const destinationSquares = [];
+                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
+                    if (rookDestination !== `${kingsideRook}${backRank}`) destinationSquares.push(rookDestination);
+
+                    // For Chess960: exclude occupied destination squares from the empty check
+                    const squaresToCheck = [...squaresBetween, ...destinationSquares];
+                    const squaresEmpty = squaresToCheck.every(sq => {
+                        const piece = board[convertSquareToIndex(sq)];
+                        // Square is empty, or contains the king/rook that will move away
+                        return piece === "" || sq === pieceSquare || sq === `${kingsideRook}${backRank}`;
+                    });
+
+                    if (squaresEmpty) {
+                        // Check that king doesn’t pass through attacked squares
+                        const kingPath = [];
+                        const startFile = kingFile;
+                        const endFile = 7;
+                        const step = startFile < endFile ? 1 : -1;
+                        for (let file = startFile; file !== endFile + step; file += step) {
+                            kingPath.push(`${file}${backRank}`);
+                        }
+
+                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
+                        if (notAttacked) {
+                            castlingTargets.push(`${kingsideRook}${backRank}`); // Rook as target
+                        }
+                    }
+                }
+            }
+
+            // Check queenside castling
+            if ((isWhite && castlingRights.includes("Q")) || (!isWhite && castlingRights.includes("q"))) {
+                const queensideRook = Math.min(...rooks.filter(rookFile => rookFile < kingFile));
+                if (queensideRook < kingFile) {
+                    const kingDestination = `3${backRank}`;
+                    const rookDestination = `4${backRank}`;
+
+                    // Check if squares between king and rook are empty
+                    const squaresBetween = [];
+                    for (let file = Math.min(kingFile, queensideRook) + 1; file < Math.max(kingFile, queensideRook); file++) {
+                        squaresBetween.push(`${file}${backRank}`);
+                    }
+
+                    // Check if destinations are empty (if different from current positions)
+                    const destinationSquares = [];
+                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
+                    if (rookDestination !== `${queensideRook}${backRank}`) destinationSquares.push(rookDestination);
+
+                    // For Chess960: exclude occupied destination squares from the empty check
+                    const squaresToCheck = [...squaresBetween, ...destinationSquares];
+                    const squaresEmpty = squaresToCheck.every(sq => {
+                        const piece = board[convertSquareToIndex(sq)];
+                        // Square is empty, or contains the king/rook that will move away
+                        return piece === "" || sq === pieceSquare || sq === `${queensideRook}${backRank}`;
+                    });
+
+                    if (squaresEmpty) {
+                        // Check that king doesn’t pass through attacked squares
+                        const kingPath = [];
+                        const startFile = kingFile;
+                        const endFile = 3;
+                        const step = startFile < endFile ? 1 : -1;
+                        for (let file = startFile; file !== endFile + step; file += step) {
+                            kingPath.push(`${file}${backRank}`);
+                        }
+
+                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
+                        if (notAttacked) {
+                            castlingTargets.push(`${queensideRook}${backRank}`); // Rook as target
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return castlingTargets;
+};
+
 function isSquareAttacked(board, square, attackerColor) {
     for (let i = 0; i < board.length; i++) {
         const attacker = board[i];
@@ -575,12 +998,13 @@ function isSquareAttacked(board, square, attackerColor) {
         if ((attackerColor === "w" && isWhite) ||
             (attackerColor === "b" && !isWhite)) {
             const attackerSquare = convertIndexToSquare(i);
-            const moves = getCandidateMoves(attackerSquare, board);
+            const moves = getBasicCandidateMoves(attackerSquare, board);
             if (moves.includes(square)) return true;
         }
     }
     return false;
-};
+}
+
 function isKingInCheck(board, kingColor) {
     const kingPiece = kingColor === "w" ? "K" : "k";
     let kingSquare = "";
@@ -593,12 +1017,12 @@ function isKingInCheck(board, kingColor) {
     if (kingSquare === "") return false;
     return isSquareAttacked(board, kingSquare, kingColor === "w" ? "b" : "w");
 };
-function getLegalMoves (pieceSquare, board = piecePositions) {
+function getLegalMoves(pieceSquare, board = piecePositions, color = activeColor) {
     const candidateMoves = getCandidateMoves(pieceSquare, board);
     let legalMovesForPiece = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
     const movingColor = piece === piece.toUpperCase() ? "w" : "b";
-    if (movingColor !== activeColor) return [];
+    if (movingColor !== color) return [];
     candidateMoves.forEach(move => {
         let newBoard = board.slice();
         newBoard[convertSquareToIndex(move)] = newBoard[convertSquareToIndex(pieceSquare)];
@@ -610,33 +1034,58 @@ function getLegalMoves (pieceSquare, board = piecePositions) {
     return legalMovesForPiece;
 };
 function isCheckmate(activeColor, board = piecePositions) {
+    // If king is not in check, it can’t be checkmate
     if (!isKingInCheck(board, activeColor)) return false;
+
+    // Try every piece of the active color
     for (let i = 0; i < board.length; i++) {
         const piece = board[i];
         if (!piece) continue;
+
+        // Check if this piece belongs to the active color
         const isWhite = piece === piece.toUpperCase();
-        if (activeColor === "w" === isWhite) {
+        if ((activeColor === "w") === isWhite) {
             const pieceSquare = convertIndexToSquare(i);
-            const legalMoves = getLegalMoves(pieceSquare, board);
+            const legalMoves = getLegalMoves(pieceSquare, board, activeColor);
             if (legalMoves.length > 0) return false;
         }
     }
+    // If we’ve tried all pieces and moves and found nothing, it’s checkmate
     return true;
 };
 function isStalemate(activeColor, board = piecePositions) {
+    // If king is in check, it’s not stalemate
     if (isKingInCheck(board, activeColor)) return false;
+
+    // Try every piece of the active color
     for (let i = 0; i < board.length; i++) {
         const piece = board[i];
         if (!piece) continue;
+
+        // Check if this piece belongs to the active color
         const isWhite = piece === piece.toUpperCase();
-        if ((activeColor === "w" && isWhite) || (activeColor === "b" && !isWhite)) {
+        if ((activeColor === "w") === isWhite) {
             const pieceSquare = convertIndexToSquare(i);
-            const legalMoves = getLegalMoves(pieceSquare, board);
-            if (legalMoves.length > 0) return false;
+
+            // Get all possible moves for this piece
+            const candidateMoves = getCandidateMoves(pieceSquare, board);
+
+            // Try each move to see if it gets out of stalemate
+            for (const move of candidateMoves) {
+                const testBoard = board.slice();
+                testBoard[convertSquareToIndex(move)] = testBoard[i];
+                testBoard[i] = "";
+
+                // If this move doesn’t put king in check, it’s not stalemate
+                if (!isKingInCheck(testBoard, activeColor)) {
+                    return false;
+                }
+            }
         }
     }
+    // If we’ve tried all pieces and moves and found nothing, it’s stalemate
     return true;
-};
+}
 function removeLegalMoveIndicators() {
     chessBoard.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.classList.add("fade-out");
@@ -668,8 +1117,24 @@ function selectPiece(piece, dragged = false) {
     // Remove all previous legal move indicators
     removeLegalMoveIndicators();
 
-    // Handle piece capture
+    // Handle piece capture or castling target
     if (activePiece && legalMoves.includes(pieceSquare)) {
+        // Check if this is a castling target (rook clicked for castling)
+        const activeSquare = getSquareFromClassList(activePiece);
+        const activePieceType = piecePositions[convertSquareToIndex(activeSquare)];
+
+        if (activePieceType.toLowerCase() === "k") {
+            const castlingTargets = getCastlingTargets(activeSquare, piecePositions);
+            if (castlingTargets.includes(pieceSquare)) {
+                // This is a rook being clicked for castling, pass the rook’s square as target
+                movePiece(pieceSquare);
+                halfmoveClock = 0;
+                activePiece = null;
+                return;
+            }
+        }
+
+        // Regular piece capture
         movePiece(pieceSquare);
         halfmoveClock = 0;
         activePiece = null;
@@ -689,8 +1154,54 @@ function selectPiece(piece, dragged = false) {
 
     // Select the piece and highlight legal moves
     activePiece = piece;
-    legalMoves = getLegalMoves(pieceSquare);
-    legalMoves.forEach(square => {
+    const allMoves = getLegalMoves(pieceSquare);
+    const piece_type = piecePositions[convertSquareToIndex(pieceSquare)];
+
+    // Handle king castling logic
+    let castlingTargets = [];
+    let normalMoves = [];
+    let castlingMoves = [];
+
+    if (piece_type.toLowerCase() === "k") {
+        // Get castling targets (rooks that can be clicked for castling)
+        castlingTargets = getCastlingTargets(pieceSquare, piecePositions);
+
+        // Separate normal moves from castling moves
+        const isWhite = piece_type === "K";
+        const backRank = isWhite ? 1 : 8;
+
+        // Get basic candidate moves (normal moves only)
+        const basicMoves = [];
+        const candidateMoves = getBasicCandidateMoves(pieceSquare, piecePositions);
+        candidateMoves.forEach(move => {
+            let newBoard = piecePositions.slice();
+            newBoard[convertSquareToIndex(move)] = newBoard[convertSquareToIndex(pieceSquare)];
+            newBoard[convertSquareToIndex(pieceSquare)] = "";
+            if (!isKingInCheck(newBoard, piece_type === piece_type.toUpperCase() ? "w" : "b")) {
+                basicMoves.push(move);
+            }
+        });
+
+        allMoves.forEach(move => {
+            const isCastlingMove = move === `7${backRank}` || move === `3${backRank}`;
+
+            if (isCastlingMove) {
+                // Don’t show castling destination if king is already there
+                if (pieceSquare !== move) {
+                    castlingMoves.push(move);
+                }
+            } else {
+                normalMoves.push(move);
+            }
+        });
+    } else {
+        normalMoves = allMoves;
+    }
+
+    legalMoves = allMoves.concat(castlingTargets);
+
+    // Show move indicators for normal moves
+    normalMoves.forEach(square => {
         const moveIndicator = document.createElement("div");
         moveIndicator.className = `move-indicator square-${square}`;
         if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(pieceSquare)].toLowerCase() === "p")) {
@@ -698,6 +1209,28 @@ function selectPiece(piece, dragged = false) {
         } else {
             moveIndicator.classList.add("empty-move-indicator");
         }
+        chessBoard.appendChild(moveIndicator);
+    });
+
+    // Show indicators for castling moves that don’t conflict with normal moves
+    if (piece_type.toLowerCase() === "k") {
+        castlingMoves.forEach(square => {
+            if (!normalMoves.includes(square)) {
+                const moveIndicator = document.createElement("div");
+                moveIndicator.className = `move-indicator square-${square}`;
+                moveIndicator.classList.add("empty-move-indicator");
+                moveIndicator.dataset.castlingDestination = "true";
+                chessBoard.appendChild(moveIndicator);
+            }
+        });
+    }
+
+    // Show rook targets for castling
+    castlingTargets.forEach(square => {
+        const moveIndicator = document.createElement("div");
+        moveIndicator.className = `move-indicator square-${square}`;
+        moveIndicator.classList.add("capture-indicator"); // Rook targets look like captures
+        moveIndicator.dataset.castlingTarget = "true";
         chessBoard.appendChild(moveIndicator);
     });
 };
@@ -722,16 +1255,132 @@ function showPromotionBox(targetSquare) {
 }
 async function movePiece(targetSquare, dropped = false, recurse = false) {
     // Basic variables
-    const pieceSquare = getSquareFromClassList(activePiece);
-    const toFile = parseInt(targetSquare[0]);
-    const toRank = parseInt(targetSquare[1]);
-    const pieceType = piecePositions[convertSquareToIndex(pieceSquare)];
+    let pieceSquare = getSquareFromClassList(activePiece);
+    let actualTargetSquare = targetSquare;
+    let pieceType = piecePositions[convertSquareToIndex(pieceSquare)];
     const previousRank = parseInt(pieceSquare[1]);
 
-    // Handle piece capture
-    const capturedPieceType = piecePositions[convertSquareToIndex(targetSquare)];
-    if (capturedPieceType) {
-        const capturedPiece = chessBoard.querySelector(`.chess-piece.square-${targetSquare}:not(.removed)`);
+    // Check if this is a normal move first (priority over castling)
+    let isNormalMove = false;
+    const basicMoves = getBasicCandidateMoves(pieceSquare, piecePositions);
+    basicMoves.forEach(move => {
+        let newBoard = piecePositions.slice();
+        newBoard[convertSquareToIndex(move)] = newBoard[convertSquareToIndex(pieceSquare)];
+        newBoard[convertSquareToIndex(pieceSquare)] = "";
+        if (!isKingInCheck(newBoard, pieceType === pieceType.toUpperCase() ? "w" : "b")) {
+            if (move === targetSquare) {
+                isNormalMove = true;
+            }
+        }
+    });
+
+    // Castling move detection (Chess960 compatible) - only if not a normal move
+    let isCastlingMove = false;
+    let rookFrom = null, rookTo = null;
+
+    if (!isNormalMove && pieceType.toLowerCase() === "k") {
+        const isWhite = pieceType === "K";
+        const backRank = isWhite ? 1 : 8;
+        const kingFile = parseInt(pieceSquare[0]);
+        const kingRank = parseInt(pieceSquare[1]);
+
+        // Check if this is a castling move (king moving to g-file or c-file on back rank)
+        // But only if those squares are actually valid destinations (not occupied by other pieces)
+        if (kingRank === backRank && (targetSquare === `7${backRank}` || targetSquare === `3${backRank}`)) {
+            const isKingside = targetSquare === `7${backRank}`;
+
+            // Check if castling is legal by verifying castling rights and path
+            const castlingRightChar = isWhite ? (isKingside ? "K" : "Q") : (isKingside ? "k" : "q");
+            if (castlingRights.includes(castlingRightChar)) {
+                // Find the appropriate rook (rightmost for kingside, leftmost for queenside)
+                const candidateRooks = [];
+                for (let file = 1; file <= 8; file++) {
+                    const square = `${file}${backRank}`;
+                    const piece = piecePositions[convertSquareToIndex(square)];
+                    if (piece === (isWhite ? "R" : "r")) {
+                        candidateRooks.push(file);
+                    }
+                }
+
+                let rookFile;
+                if (isKingside) {
+                    rookFile = Math.max(...candidateRooks.filter(file => file > kingFile));
+                } else {
+                    rookFile = Math.min(...candidateRooks.filter(file => file < kingFile));
+                }
+
+                if (rookFile && ((isKingside && rookFile > kingFile) || (!isKingside && rookFile < kingFile))) {
+                    // Check if path is clear and king doesn’t move through check
+                    const kingPath = [];
+                    const startFile = kingFile;
+                    const endFile = parseInt(targetSquare[0]);
+                    const step = startFile < endFile ? 1 : -1;
+                    for (let file = startFile; file !== endFile + step; file += step) {
+                        kingPath.push(`${file}${backRank}`);
+                    }
+
+                    // Check squares between king and rook are empty (excluding king and rook positions)
+                    const squaresBetween = [];
+                    for (let file = Math.min(kingFile, rookFile) + 1; file < Math.max(kingFile, rookFile); file++) {
+                        squaresBetween.push(`${file}${backRank}`);
+                    }
+
+                    // Check if target square is empty or contains the king itself
+                    const targetEmpty = piecePositions[convertSquareToIndex(targetSquare)] === "" ||
+                                       targetSquare === pieceSquare;
+
+                    const pathClear = squaresBetween.every(sq =>
+                        piecePositions[convertSquareToIndex(sq)] === "" ||
+                        sq === pieceSquare ||
+                        sq === `${rookFile}${backRank}`
+                    );
+
+                    const notAttacked = kingPath.every(sq => !isSquareAttacked(piecePositions, sq, isWhite ? "b" : "w"));
+
+                    if (targetEmpty && pathClear && notAttacked) {
+                        rookFrom = `${rookFile}${backRank}`;
+                        rookTo = isKingside ? `6${backRank}` : `4${backRank}`; // f-file or d-file
+                        isCastlingMove = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // Check if this is a rook target for castling (king selected, rook clicked)
+    if (!isNormalMove && activePiece && !isCastlingMove) {
+        const activeSquare = getSquareFromClassList(activePiece);
+        const activePieceType = piecePositions[convertSquareToIndex(activeSquare)];
+
+        if (activePieceType.toLowerCase() === "k") {
+            const castlingTargets = getCastlingTargets(activeSquare, piecePositions);
+            if (castlingTargets.includes(targetSquare)) {
+                const isWhite = activePieceType === "K";
+                const backRank = isWhite ? 1 : 8;
+                const kingFile = parseInt(activeSquare[0]);
+                const rookFile = parseInt(targetSquare[0]);
+
+                const isKingside = rookFile > kingFile;
+                isCastlingMove = true;
+                rookFrom = targetSquare;
+                rookTo = isKingside ? `6${backRank}` : `4${backRank}`;
+
+                // Set king move for castling
+                pieceSquare = activeSquare;
+                actualTargetSquare = isKingside ? `7${backRank}` : `3${backRank}`;
+                pieceType = activePieceType;
+            }
+        }
+    }
+
+    // Calculate final target file and rank after castling logic
+    const toFile = parseInt(actualTargetSquare[0]);
+    const toRank = parseInt(actualTargetSquare[1]);
+
+    // Handle piece capture (but not for castling moves where king might be on destination)
+    const capturedPieceType = piecePositions[convertSquareToIndex(actualTargetSquare)];
+    if (capturedPieceType && !isCastlingMove) {
+        const capturedPiece = chessBoard.querySelector(`.chess-piece.square-${actualTargetSquare}:not(.removed)`);
         capturedPiece.classList.add("removed");
         setTimeout(() => capturedPiece.remove(), 250);
     }
@@ -740,11 +1389,17 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     const backupActivePiece = activePiece;
     if (!dropped) {
         backupActivePiece.classList.add("sliding");
+        // const activePieceStyle = backupActivePiece.style;
         // activePieceStyle.outline = "none";
         // activePieceStyle.transition = "transform 0.3s ease-out";
     }
-    activePiece.classList.remove(`square-${pieceSquare}`);
-    activePiece.classList.add(`square-${targetSquare}`);
+
+    // Only move the piece if it’s not already on the target square (prevents self-capture in castling)
+    if (pieceSquare !== actualTargetSquare) {
+        backupActivePiece.classList.remove(`square-${pieceSquare}`);
+        backupActivePiece.classList.add(`square-${actualTargetSquare}`);
+    }
+
     if (!dropped) {
         setTimeout(() => {
             backupActivePiece.classList.remove("sliding");
@@ -753,11 +1408,32 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         }, 300);
     }
 
+    // Handle castling rook move
+    if (isCastlingMove && rookFrom && rookTo) {
+        const rookPiece = chessBoard.querySelector(`.chess-piece.square-${rookFrom}:not(.removed)`);
+        if (rookPiece) {
+            rookPiece.classList.add("sliding");
+            rookPiece.classList.remove(`square-${rookFrom}`);
+            rookPiece.classList.add(`square-${rookTo}`);
+            setTimeout(() => {
+                rookPiece.classList.remove("sliding");
+            }, 300); // Match king’s animation duration
+            piecePositions[convertSquareToIndex(rookFrom)] = "";
+            piecePositions[convertSquareToIndex(rookTo)] = pieceType === "K" ? "R" : "r";
+        }
+        // Remove castling rights for this side
+        if (pieceType === "K") {
+            castlingRights = castlingRights.replace("K", "").replace("Q", "");
+        } else {
+            castlingRights = castlingRights.replace("k", "").replace("q", "");
+        }
+    }
+
     // Handle pawn promotion
     let promotedTo = "";
     if (pieceType.toLowerCase() === "p") {
         if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-            promotedTo = await showPromotionBox(targetSquare);
+            promotedTo = await showPromotionBox(actualTargetSquare);
             activePiece = promotedTo[0];
             promotedTo = promotedTo[1];
             activePiece.classList.remove("P", "p");
@@ -769,7 +1445,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     activeColor = activeColor === "w" ? "b" : "w";
 
     // Handle en passant
-    if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
+    if (pieceType.toLowerCase() === "p" && enPassantSquare === actualTargetSquare) {
         const enemyPawnSquare = `${toFile}${previousRank}`;
         const enemyPawn = chessBoard.querySelector(`.chess-piece.square-${enemyPawnSquare}:not(.removed)`);
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = "";
@@ -784,15 +1460,57 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     } else enPassantSquare = "";
 
     // Get move notation
-    const moveNotation = Notation.write.san(pieceSquare, targetSquare, promotedTo, prevEnPassantSquare);
+    const moveNotation = Notation.write.san(pieceSquare, actualTargetSquare, promotedTo, prevEnPassantSquare);
 
     // Update `piecePositions` and highlight move squares
-    piecePositions[convertSquareToIndex(pieceSquare)] = "";
+    // Only clear the source square if it’s different from the target (prevents erasing king in castling)
+    if (pieceSquare !== actualTargetSquare) {
+        piecePositions[convertSquareToIndex(pieceSquare)] = "";
+    }
     removeSquareHighlight(true);
     highlightSquare(pieceSquare, true);
-    highlightSquare(targetSquare, true);
-    if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
-    else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
+    highlightSquare(actualTargetSquare, true);
+    if (promotedTo) piecePositions[convertSquareToIndex(actualTargetSquare)] = promotedTo;
+    else piecePositions[convertSquareToIndex(actualTargetSquare)] = pieceType;
+
+    // Remove castling rights if king or rook moves (non-castling)
+    if (!isCastlingMove) {
+        if (pieceType === "K") {
+            castlingRights = castlingRights.replace("K", "").replace("Q", "");
+        } else if (pieceType === "k") {
+            castlingRights = castlingRights.replace("k", "").replace("q", "");
+        }
+        // If rook moves, remove its castling right (Chess960 compatible)
+        if (pieceType === "R" || pieceType === "r") {
+            const isWhite = pieceType === "R";
+            const backRank = isWhite ? 1 : 8;
+            const rookFile = parseInt(pieceSquare[0]);
+            const rookRank = parseInt(pieceSquare[1]);
+
+            if (rookRank === backRank) {
+                // Find king position to determine which rook this is
+                let kingFile = null;
+                for (let file = 1; file <= 8; file++) {
+                    const square = `${file}${backRank}`;
+                    const piece = piecePositions[convertSquareToIndex(square)];
+                    if (piece === (isWhite ? "K" : "k")) {
+                        kingFile = file;
+                        break;
+                    }
+                }
+
+                if (kingFile !== null) {
+                    // If rook is to the right of king, it’s kingside
+                    // If rook is to the left of king, it’s queenside
+                    if (rookFile > kingFile) {
+                        castlingRights = castlingRights.replace(isWhite ? "K" : "k", "");
+                    } else if (rookFile < kingFile) {
+                        castlingRights = castlingRights.replace(isWhite ? "Q" : "q", "");
+                    }
+                }
+            }
+        }
+    }
 
     // Write move notation to `#move-grid` and update the `#to-move` indicator
     if (activeColor === "b") {
@@ -911,7 +1629,7 @@ function removeSquareHighlight(permanent = false, square = "") {
         highlight.classList.add("removed");
         setTimeout(() => highlight.remove(), 200);
     }
-};
+}
 function highlightSquare(square, permanent = false, color = "") {
     const highlight = document.createElement("div");
     highlight.className = `square-highlight square-${square}`;
@@ -922,7 +1640,7 @@ function highlightSquare(square, permanent = false, color = "") {
     }
     if (permanent === true) highlight.classList.add("permanent");
     chessBoard.appendChild(highlight);
-};
+}
 function mouseEntersPiece(event) {
     let square = "";
     const target = event.target;
@@ -933,7 +1651,7 @@ function mouseEntersPiece(event) {
     }
     const captureIndicator = chessBoard.querySelector(`.move-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.add("hovered");
-};
+}
 function mouseLeavesPiece(event) {
     let square = "";
     const target = event.target;
@@ -944,16 +1662,32 @@ function mouseLeavesPiece(event) {
     }
     const captureIndicator = chessBoard.querySelector(`.move-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.remove("hovered");
-};
+}
 function checkFenValidity(fen) {
-    const parsedFen = Notation.read.fen(fen.trim());
-    if (parsedFen) {
-        positionInputBox.style.border = "";
-        return parsedFen;
+    if (!fen || typeof fen !== 'string') {
+        positionInputBox.style.border = "2px solid var(--danger-color)";
+        return false;
     }
+
+    const trimmedFen = fen.trim();
+    if (!trimmedFen) {
+        positionInputBox.style.border = "2px solid var(--danger-color)";
+        return false;
+    }
+
+    try {
+        const parsedFen = Notation.read.fen(trimmedFen);
+        if (parsedFen) {
+            positionInputBox.style.border = "";
+            return parsedFen;
+        }
+    } catch (error) {
+        console.warn("FEN validation error:", error.message);
+    }
+
     positionInputBox.style.border = "2px solid var(--danger-color)";
     return false;
-};
+}
 function flipBoard() {
     isBoardFlipped = !isBoardFlipped;
     const allChessPieces = chessBoard.querySelectorAll(".chess-piece");
@@ -975,7 +1709,7 @@ function flipBoard() {
             piece.style.transition = "";
         });
     }, 0);
-};
+}
 
 let isBoardFlipped = false;
 let piecePositions = [];
@@ -1014,6 +1748,7 @@ const parsedFen = checkFenValidity(fenOnBoard);
 if (parsedFen) {
     Notation.assign.parsedFen(parsedFen);
     positionInputBox.value = fenOnBoard;
+    activePiece = null;
 } else {
     alert("The FEN specified by the URL is not valid.\nEnter a valid FEN.");
     fenOnBoard = positionInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

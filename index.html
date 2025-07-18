@@ -113,7 +113,7 @@
                     <span class="button-desc">Advanced</span>
                 </button>
             </div>
-            <div id="general-settings" class="input-grid settings-view" style="display: none;">
+            <div id="general-settings" class="input-grid settings-view">
                 <span>Appearance</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
@@ -277,11 +277,7 @@
                     if (parsedFen) {
                         fenOnBoard = positionInputBox.value;
                         Notation.assign.parsedFen(parsedFen);
-                        if (activeColor === 'b') {
-                            document.getElementById('to-move').innerHTML = `<div style='background-color: black;'></div><b>Black</b>&nbsp;to move`;
-                        } else {
-                            document.getElementById('to-move').innerHTML = `<div style='background-color: white;'></div><b>White</b>&nbsp;to move`;
-                        }
+                        activePiece = null;
                         document.getElementById('move-grid').innerHTML = '';
                         const startingPositionRow = document.createElement('div');
                         if (fenOnBoard === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
@@ -290,8 +286,14 @@
                             startingPositionRow.innerHTML = `<div class='info'>Custom position</div>`;
                         }
                         document.getElementById('move-grid').appendChild(startingPositionRow);
+                        document.getElementById('to-move').innerHTML = activeColor === 'b'
+                            ? `<div style='background-color: black;'></div><b>Black</b>&nbsp;to move`
+                            : `<div style='background-color: white;'></div><b>White</b>&nbsp;to move`;
                         chessBoard.querySelectorAll('.chess-piece').forEach(piece => {
                             piece.remove();
+                        });
+                        chessBoard.querySelectorAll('.move-indicator').forEach(indicator => {
+                            indicator.remove();
                         });
                         const promotionBox = chessBoard.querySelector('.promotion-box');
                         if (promotionBox) {
