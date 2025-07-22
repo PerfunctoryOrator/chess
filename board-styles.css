@@ -3,11 +3,14 @@
 
 /* Variables */
 :root {
+    --brown-board-color: rgb(174, 138, 104);
+    --brown-light-square-color: rgb(236, 218, 185);
+
     --green-board-color: rgb(122, 148, 90);
     --green-light-square-color: rgb(235, 236, 211);
 
-    --brown-board-color: rgb(174, 138, 104);
-    --brown-light-square-color: rgb(236, 218, 185);
+    --red-board-color: rgb(174, 93, 75);
+    --red-light-square-color: rgb(241, 220, 198);
 
     --blue-board-color: rgb(100, 148, 235);
     --blue-light-square-color: rgb(243, 246, 250);
@@ -16,6 +19,9 @@
     --light-square-color: var(--brown-light-square-color);
 
     --move-indicator-color: rgba(0, 0, 0, 0.2);
+
+    --piece-animation: ease-out;
+    --show-moves: 1;
 
     --board-square-width: round(down, min(
         calc((100vh - 2*var(--padding) - 2*48px - 6*2px - 2*var(--margin)) / 8),
@@ -128,7 +134,7 @@
     }
     &.sliding {
         outline: none;
-        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        transition: opacity 0.3s ease-out, transform 0.3s var(--piece-animation);
     }
     &.dragged {
         position: fixed;
@@ -306,6 +312,7 @@
     left: 0;
     width: var(--board-square-width);
     aspect-ratio: 1;
+    opacity: var(--show-moves);
     z-index: 5;
     &::after {
         content: "";

@@ -158,7 +158,7 @@ textarea {
     resize: none;
 }
 
-/* Illustrated radio inputs */
+/* Stylised radio inputs */
 .radio-input-area {
     display: flex;
     gap: var(--margin);
@@ -193,6 +193,50 @@ textarea {
     outline: var(--focus-outline);
 }
 
+/* Stylised toggle switches */
+.toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    &:focus-visible {
+        border-radius: var(--button-radius);
+        outline: var(--focus-outline);
+        outline-offset: 1px;
+    }
+}
+.toggle-switch > input {
+    display: none;
+    width: 0;
+    height: 0;
+    & + div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--border-color);
+        transition: background-color 0.3s ease;
+        border-radius: var(--button-radius);
+    }
+    & + div::before {
+        content: "";
+        position: absolute;
+        height: 12px;
+        width: 12px;
+        left: 6px;
+        bottom: 6px;
+        background-color: var(--contrast-background-color);
+        transition: transform 0.3s var(--emphasis-animation);
+        border-radius: var(--button-radius);
+    }
+    &:checked + div {
+        background-color: var(--board-color);
+    }
+    &:checked + div::before {
+        transform: translateX(1.5em) scale(150%);
+    }
+}
+
 /* Game area */
 #game-area {
     display: grid;
@@ -224,7 +268,7 @@ textarea {
 .avatar {
     width: 48px;
     height: 48px;
-    background-color: var(--contrast-background-color);
+    background-color: var(--board-color);
     border: var(--border);
     border-radius: var(--box-radius);
 }
@@ -582,42 +626,4 @@ textarea {
         opacity: 1;
         transform: translateX(0);
     }
-}
-
-.toggle-switch {
-    position: relative;
-    width: 48px;
-    height: 24px;
-}
-.toggle-switch > input {
-    display: none;
-    width: 0;
-    height: 0;
-}
-.slider {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--border-color);
-    transition: background-color 0.3s ease;
-    border-radius: var(--button-radius);
-}
-.slider::before {
-    content: "";
-    position: absolute;
-    height: 12px;
-    width: 12px;
-    left: 6px;
-    bottom: 6px;
-    background-color: var(--contrast-background-color);
-    transition: transform 0.3s var(--emphasis-animation);
-    border-radius: var(--button-radius);
-}
-input:checked + .slider {
-    background-color: var(--board-color);
-}
-input:checked + .slider::before {
-    transform: translateX(1.5em) scale(150%);
 }

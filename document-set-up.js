@@ -46,6 +46,8 @@ const setDropDownValue = (dropDownId, newValue) => {
     // Perform menu-specific actions
     if (dropDownId === "font-selector") {
         setFont(newValue);
+    } else if (dropDownId === "piece-animation-selector") {
+        setPieceAnimation(newValue);
     }
 };
 
@@ -162,6 +164,18 @@ document.querySelectorAll(".more-button").forEach(button => {
 document.querySelectorAll(".radio-input > div").forEach(radioDiv => {
     radioDiv.tabIndex = "0";
     radioDiv.addEventListener("keydown", function (event) {
+        if (event.key === " " || event.key === "Enter") {
+            event.preventDefault();
+            this.click();
+        }
+    });
+});
+
+document.querySelectorAll(".toggle-switch").forEach(toggleSwitch => {
+    const slider = document.createElement("div");
+    toggleSwitch.appendChild(slider);
+    toggleSwitch.tabIndex = "0";
+    toggleSwitch.addEventListener("keydown", function (event) {
         if (event.key === " " || event.key === "Enter") {
             event.preventDefault();
             this.click();

@@ -65,6 +65,46 @@ function setFont(font) {
     }
     currentSettings.font = font;
 }
+function setBoardColor(color) {
+    switch (color) {
+        case "brown":
+            root.setProperty("--board-color", "");
+            root.setProperty("--light-square-color", "");
+            break;
+        case "green":
+            root.setProperty("--board-color", "var(--green-board-color)");
+            root.setProperty("--light-square-color", "var(--green-light-square-color)");
+            break;
+        case "red":
+            root.setProperty("--board-color", "var(--red-board-color)");
+            root.setProperty("--light-square-color", "var(--red-light-square-color)");
+            break;
+        case "blue":
+            root.setProperty("--board-color", "var(--blue-board-color)");
+            root.setProperty("--light-square-color", "var(--blue-light-square-color)");
+            break;
+    }
+    currentSettings.boardColor = color;
+}
+function setPieceAnimation(animation) {
+    switch (animation) {
+        case "ease":
+            root.setProperty("--piece-animation", "");
+            break;
+        case "emphasis":
+            root.setProperty("--piece-animation", "var(--emphasis-animation)");
+            break;
+    }
+    currentSettings.pieceAnimation = animation;
+}
+function toggleMoveIndicators(showMoves) {
+    if (showMoves === undefined) {
+        currentSettings.showMoves = root.getPropertyValue("--show-moves") === "0" ? "" : "0";
+    } else {
+        currentSettings.showMoves = showMoves;
+    }
+    root.setProperty("--show-moves", currentSettings.showMoves);
+}
 function applyCurrentSettings() {
     document.querySelector(`input[name="appearance"][value="${currentSettings.appearance}"]`).checked = true;
     document.querySelector(`input[name="edges"][value="${currentSettings.edges}"]`).checked = true;
@@ -73,21 +113,30 @@ function applyCurrentSettings() {
     if (currentSettings.customFont !== "") {
         document.querySelector("#font-selector button[value='custom']").style.fontFamily = currentSettings.customFont;
     }
+    document.querySelector(`input[name="board-color"][value="${currentSettings.boardColor}"]`).checked = true;
+    document.getElementById("piece-animation-selector").value = currentSettings.pieceAnimation;
+    document.querySelector("input[name='show-moves']").checked = !currentSettings.showMoves;
 
     setAppearance(currentSettings.appearance);
     setEdges(currentSettings.edges);
     setButtons(currentSettings.buttons);
     setDropDownValue("font-selector", currentSettings.font);
+    setBoardColor(currentSettings.boardColor);
+    setDropDownValue("piece-animation-selector", currentSettings.pieceAnimation);
+    toggleMoveIndicators(currentSettings.showMoves);
 }
 
 const Settings = {
     default: {
-        version: "beta30",
+        version: "beta37",
         appearance: "system",
         edges: "soft",
         buttons: "round",
         font: "system",
         customFont: "",
+        boardColor: "brown",
+        pieceAnimation: "ease",
+        showMoves: "",
     },
     areValid: function(settings) {
         if (!settings) {

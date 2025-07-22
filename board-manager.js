@@ -319,7 +319,6 @@ const Notation = {
         }
     }
 };
-// let hideLegal = true;
 let draggedPiece = null;
 function highlightSquareUnderPoint(x, y, touch = false) {
     // Get square
@@ -1717,7 +1716,6 @@ let isBoardFlipped = false;
 let piecePositions = [];
 let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock = "", fullmoveNumber = "";
 let activePiece = null, legalMoves = [];
-let pieceAnimation = "ease-in-out";
 let gameStatus = "*";
 let chessBoard = document.querySelector(".chess-board");
 if (!chessBoard) {
