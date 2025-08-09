@@ -112,136 +112,118 @@ const Notation = {
     },
     write: {
         san: (fromSquare, toSquare, promotedTo, enPassantSquare, board = piecePositions) => {
-            try {
-                const pieceType = board[convertSquareToIndex(fromSquare)];
-                const pieceIsPawn = pieceType.toLowerCase() === "p";
-                const targetSquare = board[convertSquareToIndex(toSquare)];
-                const isCapture = targetSquare !== "" || (toSquare === enPassantSquare && pieceIsPawn);
+            const pieceType = board[convertSquareToIndex(fromSquare)];
+            const pieceIsPawn = pieceType.toLowerCase() === "p";
+            const targetSquare = board[convertSquareToIndex(toSquare)];
+            const isCapture = targetSquare !== "" || (toSquare === enPassantSquare && pieceIsPawn);
 
-                // Castling detection
-                let isCastling = false;
-                let castlingNotation = "";
-                if (pieceType.toLowerCase() === "k") {
-                    const isWhite = pieceType === "K";
-                    const backRank = isWhite ? 1 : 8;
-                    const fromRank = parseInt(fromSquare[1]);
-                    if (fromRank === backRank) {
-                        if (toSquare === `7${backRank}`) {
-                            isCastling = true;
-                            castlingNotation = "O–O";
-                        } else if (toSquare === `3${backRank}`) {
-                            isCastling = true;
-                            castlingNotation = "O–O–O";
-                        }
+            // Castling detection
+            let isCastling = false;
+            let castlingNotation = "";
+            if (pieceType.toLowerCase() === "k") {
+                const isWhite = pieceType === "K";
+                const backRank = isWhite ? 1 : 8;
+                const fromRank = parseInt(fromSquare[1]);
+                if (fromRank === backRank) {
+                    if (toSquare === `7${backRank}`) {
+                        isCastling = true;
+                        castlingNotation = "O–O";
+                    } else if (toSquare === `3${backRank}`) {
+                        isCastling = true;
+                        castlingNotation = "O–O–O";
                     }
                 }
+            }
 
-                // Build notation
-                let moveNotation = "";
-                if (isCastling) {
-                    moveNotation = castlingNotation;
-                } else {
-                    if (!pieceIsPawn) {
-                        moveNotation += pieceType.toUpperCase();
-                        // Disambiguation
-                        const ambiguousPieces = [];
-                        for (let square = 0; square < 64; square++) {
-                            const piece = board[square];
-                            if (piece === pieceType && square !== convertSquareToIndex(fromSquare)) {
-                                const squareNotation = convertIndexToSquare(square);
-                                const candidateMoves = getCandidateMoves(squareNotation, board);
-                                if (candidateMoves && candidateMoves.includes(toSquare)) {
-                                    // Only add if move doesn’t leave own king in check
-                                    const testBoard = board.slice();
-                                    const testFromIndex = convertSquareToIndex(squareNotation);
-                                    const testToIndex = convertSquareToIndex(toSquare);
-                                    testBoard[testFromIndex] = "";
-                                    testBoard[testToIndex] = piece;
-                                    const movingColor = piece === piece.toUpperCase() ? "w" : "b";
-                                    if (!isKingInCheck(testBoard, movingColor)) {
-                                        ambiguousPieces.push(squareNotation);
-                                    }
+            // Build notation
+            let moveNotation = "";
+            if (isCastling) {
+                moveNotation = castlingNotation;
+            } else {
+                if (!pieceIsPawn) {
+                    moveNotation += pieceType.toUpperCase();
+                    // Disambiguation
+                    const ambiguousPieces = [];
+                    for (let square = 0; square < 64; square++) {
+                        const piece = board[square];
+                        if (piece === pieceType && square !== convertSquareToIndex(fromSquare)) {
+                            const squareNotation = convertIndexToSquare(square);
+                            const candidateMoves = getCandidateMoves(squareNotation, board);
+                            if (candidateMoves && candidateMoves.includes(toSquare)) {
+                                const testBoard = board.slice();
+                                testBoard[convertSquareToIndex(squareNotation)] = "";
+                                testBoard[convertSquareToIndex(toSquare)] = piece;
+                                const movingColor = piece === piece.toUpperCase() ? "w" : "b";
+                                if (!isKingInCheck(testBoard, movingColor)) {
+                                    ambiguousPieces.push(squareNotation);
                                 }
                             }
                         }
-                        if (ambiguousPieces.length > 0) {
-                            const sameFile = ambiguousPieces.some(piece => piece[0] === fromSquare[0]);
-                            const sameRank = ambiguousPieces.some(piece => piece[1] === fromSquare[1]);
-                            if (!sameFile) {
-                                moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1);
-                            } else if (!sameRank) {
-                                moveNotation += fromSquare[1];
-                            } else {
-                                moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1) + fromSquare[1];
-                            }
-                        }
                     }
-                    if (isCapture) {
-                        if (pieceIsPawn) {
+                    if (ambiguousPieces.length > 0) {
+                        const sameFile = ambiguousPieces.some(piece => piece[0] === fromSquare[0]);
+                        const sameRank = ambiguousPieces.some(piece => piece[1] === fromSquare[1]);
+                        if (!sameFile) {
                             moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1);
-                        }
-                        moveNotation += "x";
-                    }
-                    moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(toSquare[0]) - 1) + toSquare[1];
-                    if (pieceIsPawn && promotedTo) {
-                        moveNotation += "=" + promotedTo.toUpperCase();
-                    }
-                }
-
-                // Simulate move
-                const newBoard = board.slice();
-                // Support both algebraic notation and index for fromSquare/toSquare
-                const fromIdx = typeof fromSquare === "string" && fromSquare.length === 2
-                    ? convertSquareToIndex(fromSquare)
-                    : parseInt(fromSquare);
-                const toIdx = typeof toSquare === "string" && toSquare.length === 2
-                    ? convertSquareToIndex(toSquare)
-                    : parseInt(toSquare);
-
-                newBoard[toIdx] = promotedTo || newBoard[fromIdx];
-                newBoard[fromIdx] = "";
-
-                // En passant
-                if (pieceIsPawn && toSquare === enPassantSquare) {
-                    const capturedPawnRank = activeColor === 'w' ? '5' : '4';
-                    const capturedPawnSquare = enPassantSquare[0] + capturedPawnRank;
-                    const capturedPawnIndex = convertSquareToIndex(capturedPawnSquare);
-                    newBoard[capturedPawnIndex] = "";
-                }
-
-                // Castling rook move
-                if (pieceType.toLowerCase() === "k") {
-                    const isWhite = pieceType === "K";
-                    const backRank = isWhite ? 1 : 8;
-                    const fromRank = parseInt(fromSquare[1]);
-                    if (fromRank === backRank) {
-                        if (toSquare === `7${backRank}`) {
-                            newBoard[convertSquareToIndex(`8${backRank}`)] = "";
-                            newBoard[convertSquareToIndex(`6${backRank}`)] = isWhite ? "R" : "r";
-                        } else if (toSquare === `3${backRank}`) {
-                            newBoard[convertSquareToIndex(`1${backRank}`)] = "";
-                            newBoard[convertSquareToIndex(`4${backRank}`)] = isWhite ? "R" : "r";
+                        } else if (!sameRank) {
+                            moveNotation += fromSquare[1];
+                        } else {
+                            moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1) + fromSquare[1];
                         }
                     }
                 }
-
-                // Check/checkmate detection (always run, even for castling)
-                const opponentColor = activeColor === 'w' ? 'b' : 'w';
-
-
-
-                if (isKingInCheck(newBoard, opponentColor)) {
-                    if (isCheckmate(opponentColor, newBoard)) {
-                        moveNotation += "#";
-                    } else {
-                        moveNotation += "+";
+                if (isCapture) {
+                    if (pieceIsPawn) {
+                        moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(fromSquare[0]) - 1);
                     }
+                    moveNotation += "x";
                 }
-
-                return moveNotation;
-            } catch (error) {
-                return "";
+                moveNotation += String.fromCharCode("a".charCodeAt(0) + parseInt(toSquare[0]) - 1) + toSquare[1];
+                if (pieceIsPawn && promotedTo) {
+                    moveNotation += "=" + promotedTo.toUpperCase();
+                }
             }
+
+            // Simulate move
+            const newBoard = board.slice();
+            const fromIdx = convertSquareToIndex(fromSquare);
+            newBoard[convertSquareToIndex(toSquare)] = promotedTo || newBoard[fromIdx];
+            newBoard[fromIdx] = "";
+
+            // En passant
+            if (pieceIsPawn && toSquare === enPassantSquare) {
+                const capturedPawnRank = activeColor === "w" ? "5" : "4";
+                const capturedPawnSquare = enPassantSquare[0] + capturedPawnRank;
+                const capturedPawnIndex = convertSquareToIndex(capturedPawnSquare);
+                newBoard[capturedPawnIndex] = "";
+            }
+
+            // Castling rook move
+            if (isCastling) {
+                const isWhite = pieceType === "K";
+                const backRank = isWhite ? 1 : 8;
+                const fromRank = parseInt(fromSquare[1]);
+                if (fromRank === backRank) {
+                    if (toSquare === `7${backRank}`) {
+                        newBoard[convertSquareToIndex(`8${backRank}`)] = "";
+                        newBoard[convertSquareToIndex(`6${backRank}`)] = isWhite ? "R" : "r";
+                    } else if (toSquare === `3${backRank}`) {
+                        newBoard[convertSquareToIndex(`1${backRank}`)] = "";
+                        newBoard[convertSquareToIndex(`4${backRank}`)] = isWhite ? "R" : "r";
+                    }
+                }
+            }
+
+            // Check/checkmate detection
+            if (isKingInCheck(newBoard, activeColor)) {
+                if (isCheckmate(activeColor, newBoard)) {
+                    moveNotation += "#";
+                } else {
+                    moveNotation += "+";
+                }
+            }
+
+            return moveNotation;
         },
         fen: (board = piecePositions, color = activeColor, castling = castlingRights, enPassant = enPassantSquare, halfmove = halfmoveClock, fullmove = fullmoveNumber) => {
             try {
@@ -309,17 +291,18 @@ const Notation = {
             return result !== false;
         },
         square: (square) => {
-            if (typeof square !== 'string' || square.length !== 2) return false;
+            if (typeof square !== "string" || square.length !== 2) return false;
             const file = square[0];
             const rank = square[1];
-            return file >= 'a' && file <= 'h' && rank >= '1' && rank <= '8';
+            return file >= "a" && file <= "h" && rank >= "1" && rank <= "8";
         },
         piece: (piece) => {
-            return typeof piece === 'string' && /^[prnbqkPRNBQK]$/.test(piece);
+            return typeof piece === "string" && /^[prnbqkPRNBQK]$/.test(piece);
         }
     }
 };
 let draggedPiece = null;
+let hideOnRelease = false;
 function highlightSquareUnderPoint(x, y, touch = false) {
     // Get square
     const target = document.elementFromPoint(x, y);
@@ -385,11 +368,6 @@ const PieceMoveMethods = {
         },
     },
     dragDrop: {
-        click: (event) => {
-            if (!event.target.classList.contains("chess-piece")) {
-                removeSquareHighlight();
-            }
-        },
         mousedown: (event) => {
             if (event.button !== 0) return;
             const target = event.target;
@@ -414,11 +392,9 @@ const PieceMoveMethods = {
         },
         mouseup: (event) => {
             if (!draggedPiece) return;
-
             const dragEffectElement = document.getElementById("drag-effect");
             dragEffectElement.style.visibility = "";
             dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
-
             draggedPiece.style.pointerEvents = "none";
             const target = document.elementFromPoint(event.clientX, event.clientY);
             const toSquare = getSquareFromClassList(target);
@@ -475,7 +451,6 @@ const PieceMoveMethods = {
             PieceMoveMethods.dragDrop.mouseup(touchEvent);
         },
         remove: function () {
-            chessBoard.removeEventListener("click", this.click);
             chessBoard.removeEventListener("mousedown", this.mousedown);
             document.removeEventListener("mousemove", this.mousemove);
             document.removeEventListener("mouseup", this.mouseup);
@@ -488,7 +463,6 @@ const PieceMoveMethods = {
         },
         add: function () {
             this.remove();
-            chessBoard.addEventListener("click", this.click);
             chessBoard.addEventListener("mousedown", this.mousedown);
             document.addEventListener("mousemove", this.mousemove);
             document.addEventListener("mouseup", this.mouseup);
@@ -501,60 +475,47 @@ const PieceMoveMethods = {
         },
     },
     clickDragDrop: {
-        click: (event) => {
+        mousedown: (event) => {
+            if (event.button !== 0) return;
             const target = event.target;
-            if (target.classList.contains("move-indicator")) {
-                movePiece(getSquareFromClassList(target));
-            }
             if (target.classList.contains("chess-piece")) {
-                selectPiece(target);
+                hideOnRelease = activePiece === event.target;
+                selectPiece(target, true);
+                if (!activePiece) return;
+                draggedPiece = event.target;
+                target.classList.add("dragged");
+                PieceMoveMethods.dragDrop.mousemove(event);
             } else {
+                if (target.classList.contains("move-indicator")) {
+                    movePiece(getSquareFromClassList(target));
+                }
                 removeLegalMoveIndicators();
                 removeSquareHighlight();
                 activePiece = null;
             }
         },
-        mousedown: (event) => {
-            if (event.button !== 0) return;
-            const target = event.target;
-            if (target.classList.contains("chess-piece")) {
-                activePiece = null;
-                removeSquareHighlight();
-                selectPiece(target, true);
-                if (!activePiece) return;
-                draggedPiece = event.target;
-                target.classList.add("dragged");
-                PieceMoveMethods.clickDragDrop.mousemove(event);
-            }
-        },
-        mousemove: (event) => {
-            if (!draggedPiece) return;
-            event.preventDefault();
-            draggedPiece.style.left = event.clientX + "px";
-            draggedPiece.style.top = event.clientY + "px";
-            activePiece.style.pointerEvents = "none";
-            highlightSquareUnderPoint(event.clientX, event.clientY, event.touch);
-            activePiece.style.pointerEvents = "";
-        },
         mouseup: (event) => {
             if (!draggedPiece) return;
-
             const dragEffectElement = document.getElementById("drag-effect");
             dragEffectElement.style.visibility = "";
             dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
-
             draggedPiece.style.pointerEvents = "none";
             const target = document.elementFromPoint(event.clientX, event.clientY);
             const toSquare = getSquareFromClassList(target);
             if (legalMoves.includes(toSquare)) {
                 movePiece(toSquare, true);
                 createRipple(toSquare);
+                removeLegalMoveIndicators();
+                removeSquareHighlight();
+                activePiece = null;
             } else {
                 createRipple(getSquareFromClassList(draggedPiece));
+                if (hideOnRelease) {
+                    removeLegalMoveIndicators();
+                    removeSquareHighlight();
+                    activePiece = null;
+                }
             }
-            removeLegalMoveIndicators();
-            removeSquareHighlight();
-            activePiece = null;
             draggedPiece.style.pointerEvents = "";
             draggedPiece.style.cursor = "grab";
             draggedPiece.classList.remove("dragged");
@@ -584,7 +545,7 @@ const PieceMoveMethods = {
                 touch: true,
                 preventDefault: () => event.preventDefault(),
             };
-            PieceMoveMethods.clickDragDrop.mousemove(touchEvent);
+            PieceMoveMethods.dragDrop.mousemove(touchEvent);
         },
         touchend: (event) => {
             const touch = event.changedTouches[0];
@@ -599,9 +560,8 @@ const PieceMoveMethods = {
             PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
         },
         remove: function () {
-            chessBoard.removeEventListener("click", this.click);
             chessBoard.removeEventListener("mousedown", this.mousedown);
-            document.removeEventListener("mousemove", this.mousemove);
+            document.removeEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
             document.removeEventListener("mouseup", this.mouseup);
             chessBoard.removeEventListener("touchstart", this.touchstart);
             document.removeEventListener("touchmove", this.touchmove);
@@ -612,9 +572,8 @@ const PieceMoveMethods = {
         },
         add: function () {
             this.remove();
-            chessBoard.addEventListener("click", this.click);
             chessBoard.addEventListener("mousedown", this.mousedown);
-            document.addEventListener("mousemove", this.mousemove);
+            document.addEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
             document.addEventListener("mouseup", this.mouseup);
             chessBoard.addEventListener("touchstart", this.touchstart, { passive: false });
             document.addEventListener("touchmove", this.touchmove, { passive: false });
@@ -1108,6 +1067,11 @@ function selectPiece(piece, dragged = false) {
     // Get square
     const pieceSquare = getSquareFromClassList(piece);
 
+    // If click-or-drop mode  is enabled
+    if (dragged && piece === activePiece) {
+        return;
+    }
+
     // Create ripple effect if the piece is not being dragged
     if (!dragged) {
         createRipple(pieceSquare);
@@ -1254,197 +1218,47 @@ function showPromotionBox(targetSquare) {
 }
 async function movePiece(targetSquare, dropped = false, recurse = false) {
     // Basic variables
-    let pieceSquare = getSquareFromClassList(activePiece);
-    let actualTargetSquare = targetSquare;
-    let pieceType = piecePositions[convertSquareToIndex(pieceSquare)];
-    const previousRank = parseInt(pieceSquare[1]);
+    const pieceToMove = activePiece;
+    let oldSquare = getSquareFromClassList(pieceToMove);
+    let pieceType = piecePositions[convertSquareToIndex(oldSquare)];
+    const previousRank = parseInt(oldSquare[1]);
+    const toFile = parseInt(targetSquare[0]);
+    const toRank = parseInt(targetSquare[1]);
 
-    // Check if this is a normal move first (priority over castling)
-    let isNormalMove = false;
-    const basicMoves = getBasicCandidateMoves(pieceSquare, piecePositions);
-    basicMoves.forEach(move => {
-        let newBoard = piecePositions.slice();
-        newBoard[convertSquareToIndex(move)] = newBoard[convertSquareToIndex(pieceSquare)];
-        newBoard[convertSquareToIndex(pieceSquare)] = "";
-        if (!isKingInCheck(newBoard, pieceType === pieceType.toUpperCase() ? "w" : "b")) {
-            if (move === targetSquare) {
-                isNormalMove = true;
-            }
-        }
-    });
-
-    // Castling move detection (Chess960 compatible) - only if not a normal move
-    let isCastlingMove = false;
-    let rookFrom = null, rookTo = null;
-
-    if (!isNormalMove && pieceType.toLowerCase() === "k") {
-        const isWhite = pieceType === "K";
-        const backRank = isWhite ? 1 : 8;
-        const kingFile = parseInt(pieceSquare[0]);
-        const kingRank = parseInt(pieceSquare[1]);
-
-        // Check if this is a castling move (king moving to g-file or c-file on back rank)
-        // But only if those squares are actually valid destinations (not occupied by other pieces)
-        if (kingRank === backRank && (targetSquare === `7${backRank}` || targetSquare === `3${backRank}`)) {
-            const isKingside = targetSquare === `7${backRank}`;
-
-            // Check if castling is legal by verifying castling rights and path
-            const castlingRightChar = isWhite ? (isKingside ? "K" : "Q") : (isKingside ? "k" : "q");
-            if (castlingRights.includes(castlingRightChar)) {
-                // Find the appropriate rook (rightmost for kingside, leftmost for queenside)
-                const candidateRooks = [];
-                for (let file = 1; file <= 8; file++) {
-                    const square = `${file}${backRank}`;
-                    const piece = piecePositions[convertSquareToIndex(square)];
-                    if (piece === (isWhite ? "R" : "r")) {
-                        candidateRooks.push(file);
-                    }
-                }
-
-                let rookFile;
-                if (isKingside) {
-                    rookFile = Math.max(...candidateRooks.filter(file => file > kingFile));
-                } else {
-                    rookFile = Math.min(...candidateRooks.filter(file => file < kingFile));
-                }
-
-                if (rookFile && ((isKingside && rookFile > kingFile) || (!isKingside && rookFile < kingFile))) {
-                    // Check if path is clear and king doesn’t move through check
-                    const kingPath = [];
-                    const startFile = kingFile;
-                    const endFile = parseInt(targetSquare[0]);
-                    const step = startFile < endFile ? 1 : -1;
-                    for (let file = startFile; file !== endFile + step; file += step) {
-                        kingPath.push(`${file}${backRank}`);
-                    }
-
-                    // Check squares between king and rook are empty (excluding king and rook positions)
-                    const squaresBetween = [];
-                    for (let file = Math.min(kingFile, rookFile) + 1; file < Math.max(kingFile, rookFile); file++) {
-                        squaresBetween.push(`${file}${backRank}`);
-                    }
-
-                    // Check if target square is empty or contains the king itself
-                    const targetEmpty = piecePositions[convertSquareToIndex(targetSquare)] === "" ||
-                                       targetSquare === pieceSquare;
-
-                    const pathClear = squaresBetween.every(sq =>
-                        piecePositions[convertSquareToIndex(sq)] === "" ||
-                        sq === pieceSquare ||
-                        sq === `${rookFile}${backRank}`
-                    );
-
-                    const notAttacked = kingPath.every(sq => !isSquareAttacked(piecePositions, sq, isWhite ? "b" : "w"));
-
-                    if (targetEmpty && pathClear && notAttacked) {
-                        rookFrom = `${rookFile}${backRank}`;
-                        rookTo = isKingside ? `6${backRank}` : `4${backRank}`; // f-file or d-file
-                        isCastlingMove = true;
-                    }
-                }
-            }
-        }
-    }
-
-    // Check if this is a rook target for castling (king selected, rook clicked)
-    if (!isNormalMove && activePiece && !isCastlingMove) {
-        const activeSquare = getSquareFromClassList(activePiece);
-        const activePieceType = piecePositions[convertSquareToIndex(activeSquare)];
-
-        if (activePieceType.toLowerCase() === "k") {
-            const castlingTargets = getCastlingTargets(activeSquare, piecePositions);
-            if (castlingTargets.includes(targetSquare)) {
-                const isWhite = activePieceType === "K";
-                const backRank = isWhite ? 1 : 8;
-                const kingFile = parseInt(activeSquare[0]);
-                const rookFile = parseInt(targetSquare[0]);
-
-                const isKingside = rookFile > kingFile;
-                isCastlingMove = true;
-                rookFrom = targetSquare;
-                rookTo = isKingside ? `6${backRank}` : `4${backRank}`;
-
-                // Set king move for castling
-                pieceSquare = activeSquare;
-                actualTargetSquare = isKingside ? `7${backRank}` : `3${backRank}`;
-                pieceType = activePieceType;
-            }
-        }
-    }
-
-    // Calculate final target file and rank after castling logic
-    const toFile = parseInt(actualTargetSquare[0]);
-    const toRank = parseInt(actualTargetSquare[1]);
-
-    // Handle piece capture (but not for castling moves where king might be on destination)
-    const capturedPieceType = piecePositions[convertSquareToIndex(actualTargetSquare)];
-    if (capturedPieceType && !isCastlingMove) {
-        const capturedPiece = chessBoard.querySelector(`.chess-piece.square-${actualTargetSquare}:not(.removed)`);
+    // Handle piece capture
+    const capturedPieceType = piecePositions[convertSquareToIndex(targetSquare)];
+    if (capturedPieceType) {
+        const capturedPiece = chessBoard.querySelector(`.chess-piece.square-${targetSquare}:not(.removed)`);
         capturedPiece.classList.add("removed");
         setTimeout(() => capturedPiece.remove(), 250);
     }
 
     // Change the position of piece
-    const backupActivePiece = activePiece;
+    pieceToMove.classList.remove(`square-${oldSquare}`);
+    pieceToMove.classList.add(`square-${targetSquare}`);
     if (!dropped) {
-        backupActivePiece.classList.add("sliding");
-        // const activePieceStyle = backupActivePiece.style;
-        // activePieceStyle.outline = "none";
-        // activePieceStyle.transition = "transform 0.3s ease-out";
+        pieceToMove.classList.add("sliding");
     }
-
-    // Only move the piece if it’s not already on the target square (prevents self-capture in castling)
-    if (pieceSquare !== actualTargetSquare) {
-        backupActivePiece.classList.remove(`square-${pieceSquare}`);
-        backupActivePiece.classList.add(`square-${actualTargetSquare}`);
-    }
-
     if (!dropped) {
         setTimeout(() => {
-            backupActivePiece.classList.remove("sliding");
-            // activePieceStyle.outline = "";
-            // activePieceStyle.transition = "";
+            pieceToMove.classList.remove("sliding");
         }, 300);
-    }
-
-    // Handle castling rook move
-    if (isCastlingMove && rookFrom && rookTo) {
-        const rookPiece = chessBoard.querySelector(`.chess-piece.square-${rookFrom}:not(.removed)`);
-        if (rookPiece) {
-            rookPiece.classList.add("sliding");
-            rookPiece.classList.remove(`square-${rookFrom}`);
-            rookPiece.classList.add(`square-${rookTo}`);
-            setTimeout(() => {
-                rookPiece.classList.remove("sliding");
-            }, 300); // Match king’s animation duration
-            piecePositions[convertSquareToIndex(rookFrom)] = "";
-            piecePositions[convertSquareToIndex(rookTo)] = pieceType === "K" ? "R" : "r";
-        }
-        // Remove castling rights for this side
-        if (pieceType === "K") {
-            castlingRights = castlingRights.replace("K", "").replace("Q", "");
-        } else {
-            castlingRights = castlingRights.replace("k", "").replace("q", "");
-        }
     }
 
     // Handle pawn promotion
     let promotedTo = "";
     if (pieceType.toLowerCase() === "p") {
         if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-            promotedTo = await showPromotionBox(actualTargetSquare);
-            activePiece = promotedTo[0];
+            promotedTo = await showPromotionBox(targetSquare);
+            // activePiece = promotedTo[0];
             promotedTo = promotedTo[1];
-            activePiece.classList.remove("P", "p");
-            activePiece.classList.add(promotedTo);
+            pieceToMove.classList.remove("P", "p");
+            pieceToMove.classList.add(promotedTo);
         }
     }
 
-    // Set active color
-    activeColor = activeColor === "w" ? "b" : "w";
-
     // Handle en passant
-    if (pieceType.toLowerCase() === "p" && enPassantSquare === actualTargetSquare) {
+    if (pieceType.toLowerCase() === "p" && enPassantSquare === targetSquare) {
         const enemyPawnSquare = `${toFile}${previousRank}`;
         const enemyPawn = chessBoard.querySelector(`.chess-piece.square-${enemyPawnSquare}:not(.removed)`);
         piecePositions[convertSquareToIndex(enemyPawnSquare)] = "";
@@ -1455,69 +1269,29 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     // Set new en passant square
     let prevEnPassantSquare = enPassantSquare;
     if (pieceType.toLowerCase() === "p" && Math.abs(toRank - previousRank) === 2) {
-        enPassantSquare = pieceType === "P" ? `${toFile}3` : `${toFile}6`;
+        enPassantSquare = activeColor === "w" ? `${toFile}3` : `${toFile}6`;
     } else enPassantSquare = "";
 
     // Get move notation
-    const moveNotation = Notation.write.san(pieceSquare, actualTargetSquare, promotedTo, prevEnPassantSquare);
+    const moveNotation = Notation.write.san(oldSquare, targetSquare, promotedTo, prevEnPassantSquare);
 
     // Update `piecePositions` and highlight move squares
-    // Only clear the source square if it’s different from the target (prevents erasing king in castling)
-    if (pieceSquare !== actualTargetSquare) {
-        piecePositions[convertSquareToIndex(pieceSquare)] = "";
-    }
+    piecePositions[convertSquareToIndex(oldSquare)] = "";
     removeSquareHighlight(true);
-    highlightSquare(pieceSquare, true);
-    highlightSquare(actualTargetSquare, true);
-    if (promotedTo) piecePositions[convertSquareToIndex(actualTargetSquare)] = promotedTo;
-    else piecePositions[convertSquareToIndex(actualTargetSquare)] = pieceType;
+    highlightSquare(oldSquare, true);
+    highlightSquare(targetSquare, true);
+    if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
+    else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
 
-    // Remove castling rights if king or rook moves (non-castling)
-    if (!isCastlingMove) {
-        if (pieceType === "K") {
-            castlingRights = castlingRights.replace("K", "").replace("Q", "");
-        } else if (pieceType === "k") {
-            castlingRights = castlingRights.replace("k", "").replace("q", "");
-        }
-        // If rook moves, remove its castling right (Chess960 compatible)
-        if (pieceType === "R" || pieceType === "r") {
-            const isWhite = pieceType === "R";
-            const backRank = isWhite ? 1 : 8;
-            const rookFile = parseInt(pieceSquare[0]);
-            const rookRank = parseInt(pieceSquare[1]);
-
-            if (rookRank === backRank) {
-                // Find king position to determine which rook this is
-                let kingFile = null;
-                for (let file = 1; file <= 8; file++) {
-                    const square = `${file}${backRank}`;
-                    const piece = piecePositions[convertSquareToIndex(square)];
-                    if (piece === (isWhite ? "K" : "k")) {
-                        kingFile = file;
-                        break;
-                    }
-                }
-
-                if (kingFile !== null) {
-                    // If rook is to the right of king, it’s kingside
-                    // If rook is to the left of king, it’s queenside
-                    if (rookFile > kingFile) {
-                        castlingRights = castlingRights.replace(isWhite ? "K" : "k", "");
-                    } else if (rookFile < kingFile) {
-                        castlingRights = castlingRights.replace(isWhite ? "Q" : "q", "");
-                    }
-                }
-            }
-        }
-    }
+    // Set active color
+    activeColor = activeColor === "w" ? "b" : "w";
 
     // Write move notation to `#move-grid` and update the `#to-move` indicator
     if (activeColor === "b") {
         const newMoveRow = document.createElement("div");
         newMoveRow.innerHTML = `
             <div>${fullmoveNumber}.</div>
-            <div>${moveNotation}</div>
-            <div>&nbsp;</div>
+            <button class="move-notation">${moveNotation}</button>
             `;
         document.getElementById("move-grid").appendChild(newMoveRow);
         if (moveNotation[moveNotation.length - 1] === "#") {
@@ -1541,14 +1315,17 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         }
     } else {
         const moveGrid = document.getElementById("move-grid");
-        if (moveGrid.lastChild) {
-            moveGrid.lastChild.children[2].innerText = moveNotation;
+        if (moveGrid.lastChild.children[1]) {
+            const blackMoveDiv = document.createElement("button");
+            blackMoveDiv.className = "move-notation";
+            blackMoveDiv.innerText = moveNotation;
+            moveGrid.lastChild.appendChild(blackMoveDiv);
         } else {
             const newMoveRow = document.createElement("div");
             newMoveRow.innerHTML = `
                 <div>${fullmoveNumber}.</div>
-                <div>…</div>
-                <div>${moveNotation}</div>
+                <button>…</button>
+                <button class="move-notation">${moveNotation}</button>
                 `;
             moveGrid.appendChild(newMoveRow);
         }
@@ -1573,49 +1350,16 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
             document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
         }
     }
+    document.getElementById("move-grid").scrollTop = document.getElementById("move-grid").scrollHeight;
 
     // Handle halfmove clock
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
     else halfmoveClock++; // If a capture takes place, then the `selectPiece` function takes care of it.
 
-    if (!computer) return;
-
     // Find next move
+    if (!computer) return;
     if (recurse || gameStatus !== "*") return;
-    const allLegalMoves = [];
-    for (i in piecePositions) {
-        const piece = piecePositions[i];
-        if (piece.toLowerCase() === piece === (activeColor === "b")) {
-            const currentSquare = convertIndexToSquare(i);
-            allLegalMoves.push(...getLegalMoves(currentSquare).map(move => `${currentSquare}-${move}`));
-        }
-    }
-    const randomItem = (() => {
-        const points = {
-            "r": 5,
-            "n": 3,
-            "b": 3,
-            "q": 9,
-            "k": Infinity,
-            "p": 1,
-            "": 0,
-        };
-        let takeAblePiece = ["", 0];
-        allLegalMoves.forEach(move => {
-            const pieceOnTargetSquare = piecePositions[convertSquareToIndex(move.slice(3, 5))].toLowerCase();
-            takeAblePiece[1] = points[piecePositions[convertSquareToIndex(move.slice(0, 2))].toLowerCase()];
-            if (points[pieceOnTargetSquare] >= takeAblePiece[1]) {
-                takeAblePiece[0] = move;
-                takeAblePiece[1] = pieceOnTargetSquare;
-            }
-        });
-        if (takeAblePiece[0]) {
-            return takeAblePiece[0];
-        }
-        return allLegalMoves[Math.floor(Math.random() * allLegalMoves.length)];
-    })();
-    activePiece = chessBoard.querySelector(`.chess-piece.square-${randomItem.slice(0, 2)}:not(.removed)`);
-    movePiece(randomItem.slice(3, 5), false, true);
+    computerMove();
 }
 function removeSquareHighlight(permanent = false, square = "") {
     if (square === "") {
@@ -1711,6 +1455,42 @@ function flipBoard() {
         });
     }, 0);
 }
+function computerMove() {
+    const allLegalMoves = [];
+    for (i in piecePositions) {
+        const piece = piecePositions[i];
+        if (piece.toLowerCase() === piece === (activeColor === "b")) {
+            const currentSquare = convertIndexToSquare(i);
+            allLegalMoves.push(...getLegalMoves(currentSquare).map(move => `${currentSquare}-${move}`));
+        }
+    }
+    const randomItem = (() => {
+        const points = {
+            "r": 5,
+            "n": 3,
+            "b": 3,
+            "q": 9,
+            "k": Infinity,
+            "p": 1,
+            "": 0,
+        };
+        let takeAblePiece = ["", 0];
+        allLegalMoves.forEach(move => {
+            const pieceOnTargetSquare = piecePositions[convertSquareToIndex(move.slice(3, 5))].toLowerCase();
+            takeAblePiece[1] = points[piecePositions[convertSquareToIndex(move.slice(0, 2))].toLowerCase()];
+            if (points[pieceOnTargetSquare] >= takeAblePiece[1]) {
+                takeAblePiece[0] = move;
+                takeAblePiece[1] = pieceOnTargetSquare;
+            }
+        });
+        if (takeAblePiece[0]) {
+            return takeAblePiece[0];
+        }
+        return allLegalMoves[Math.floor(Math.random() * allLegalMoves.length)];
+    })();
+    activePiece = chessBoard.querySelector(`.chess-piece.square-${randomItem.slice(0, 2)}:not(.removed)`);
+    movePiece(randomItem.slice(3, 5), false, true);
+}
 
 let isBoardFlipped = false;
 let piecePositions = [];
@@ -1768,7 +1548,7 @@ if (fenOnBoard === "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
 document.getElementById("move-grid").appendChild(startingPositionRow);
 setUpEmptyBoard();
 setUpPieces();
-PieceMoveMethods.click.add();
+PieceMoveMethods.clickDragDrop.add();
 
 chessBoard.addEventListener("contextmenu", (event) => {
     event.preventDefault();

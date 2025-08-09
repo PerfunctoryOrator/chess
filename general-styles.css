@@ -130,6 +130,7 @@ button, .button-link {
 }
 .button-link {
     text-decoration: none;
+    outline-offset: 0;
 }
 
 /* Text inputs */
@@ -268,9 +269,14 @@ textarea {
 .avatar {
     width: 48px;
     height: 48px;
-    background-color: var(--board-color);
     border: var(--border);
     border-radius: var(--box-radius);
+    &.white {
+        background-color: white;
+    }
+    &.black {
+        background-color: var(--dark-gray);
+    }
 }
 .player-rating {
     color: rgb(112, 112, 112);
@@ -301,22 +307,31 @@ textarea {
     overflow-y: auto;
 }
 #move-grid > div {
-    display: flex;
+    display: grid;
+    grid-template-columns: 10% 45% 45%;
+    align-items: center;
+    &:nth-child(2n) {
+        background-color: var(--background-color);
+    }
 }
-#move-grid > div:nth-child(2n) {
-    background-color: var(--background-color);
+#move-grid > div > .info {
+    padding: var(--padding);
+    grid-column: -1 / 1;
 }
 #move-grid > div > div {
     padding: var(--padding);
-    overflow-x: hidden;
-    &:nth-child(1):not(.info) {
-        width: 10%;
-    }
-    &:nth-child(2), &:nth-child(3) {
-        width: 45%;
-    }
-    &.info {
-        width: 100%;
+}
+#move-grid > div > button {
+    justify-self: start;
+    &:not(.move-notation) {
+        &:hover, &:focus-visible {
+            fill: var(--color);
+            color: var(--color);
+            background-color: transparent;
+        }
+        &:focus-visible {
+            outline: none;
+        }
     }
 }
 
