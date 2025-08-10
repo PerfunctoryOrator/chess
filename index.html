@@ -315,32 +315,5 @@
         <script src="document-set-up.js"></script>
         <script src="settings-manager.js"></script>
         <script src="board-manager.js"></script>
-        <script>
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(() => console.log('Service worker registered'))
-            .catch(err => console.error('SW registration failed:', err));
-
-          // show your own banner when UPDATE_READY is received
-          navigator.serviceWorker.addEventListener('message', event => {
-            const msg = event.data || {};
-            if (msg.type === 'UPDATE_READY') {
-              // Example: replace with a nice banner UI
-              // Only show once per page load:
-              if (!window._updateBannerShown) {
-                window._updateBannerShown = true;
-                // Example minimal prompt:
-                if (confirm('A new version is available. Reload to update?')) {
-                  // Tell SW to delete old caches first, then reload when SW replies
-                  navigator.serviceWorker.controller.postMessage({ type: 'APPLY_UPDATE' });
-                }
-              }
-            } else if (msg.type === 'UPDATE_APPLIED') {
-              // SW has removed old caches and is ready — reload to use new files
-              window.location.reload();
-            }
-          });
-        }
-        </script>
     </body>
 </html>

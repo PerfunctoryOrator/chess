@@ -307,8 +307,7 @@ textarea {
     overflow-y: auto;
 }
 #move-grid > div {
-    display: grid;
-    grid-template-columns: 10% 45% 45%;
+    display: flex;
     align-items: center;
     &:nth-child(2n) {
         background-color: var(--background-color);
@@ -316,13 +315,15 @@ textarea {
 }
 #move-grid > div > .info {
     padding: var(--padding);
-    grid-column: -1 / 1;
+    flex: 1;
 }
 #move-grid > div > div {
     padding: var(--padding);
+    flex: 0 0 10%;
 }
 #move-grid > div > button {
-    justify-self: start;
+    flex: 1 0 calc(45% - 2*var(--padding));
+    margin-left: 0;
     &:not(.move-notation) {
         &:hover, &:focus-visible {
             fill: var(--color);

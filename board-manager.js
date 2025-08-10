@@ -1,3 +1,255 @@
+// Ways to move pieces
+let draggedPiece = null;
+let hideOnRelease = false;
+const PieceMoveMethods = {
+    click: {
+        click: (event) => {
+            const target = event.target;
+            if (target.classList.contains("move-indicator")) {
+                movePiece(getSquareFromClassList(target));
+            }
+            if (target.classList.contains("chess-piece")) {
+                selectPiece(target);
+            } else {
+                removeLegalMoveIndicators();
+                removeSquareHighlight();
+                activePiece = null;
+            }
+        },
+        remove: function () {
+            chessBoard.removeEventListener("click", this.click);
+        },
+        add: function () {
+            this.remove();
+            chessBoard.addEventListener("click", this.click);
+        },
+    },
+    dragDrop: {
+        click: (event) => {
+            if (!event.target.classList.contains("chess-piece")) {
+                removeSquareHighlight();
+            }
+        },
+        mousedown: (event) => {
+            if (event.button !== 0) return;
+            const target = event.target;
+            if (target.classList.contains("chess-piece")) {
+                activePiece = null;
+                removeSquareHighlight();
+                selectPiece(target, true);
+                if (!activePiece) return;
+                draggedPiece = event.target;
+                target.classList.add("dragged");
+                PieceMoveMethods.dragDrop.mousemove(event);
+            }
+        },
+        mousemove: (event) => {
+            if (!draggedPiece) return;
+            event.preventDefault();
+            draggedPiece.style.left = event.clientX + "px";
+            draggedPiece.style.top = event.clientY + "px";
+            activePiece.style.pointerEvents = "none";
+            highlightSquareUnderPoint(event.clientX, event.clientY, event.touch);
+            activePiece.style.pointerEvents = "";
+        },
+        mouseup: (event) => {
+            if (!draggedPiece) return;
+            const dragEffectElement = document.getElementById("drag-effect");
+            dragEffectElement.style.visibility = "";
+            dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
+            draggedPiece.style.pointerEvents = "none";
+            const target = document.elementFromPoint(event.clientX, event.clientY);
+            const toSquare = getSquareFromClassList(target);
+            if (legalMoves.includes(toSquare)) {
+                movePiece(toSquare, true);
+                createRipple(toSquare);
+            } else {
+                createRipple(getSquareFromClassList(draggedPiece));
+            }
+            removeLegalMoveIndicators();
+            removeSquareHighlight();
+            activePiece = null;
+            draggedPiece.style.pointerEvents = "";
+            draggedPiece.style.cursor = "grab";
+            draggedPiece.classList.remove("dragged");
+            draggedPiece.style.top = "";
+            draggedPiece.style.left = "";
+            draggedPiece = null;
+        },
+        touchstart: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.dragDrop.mousedown(touchEvent);
+        },
+        touchmove: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.dragDrop.mousemove(touchEvent);
+        },
+        touchend: (event) => {
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.dragDrop.mouseup(touchEvent);
+        },
+        remove: function () {
+            chessBoard.removeEventListener("click", this.click);
+            chessBoard.removeEventListener("mousedown", this.mousedown);
+            document.removeEventListener("mousemove", this.mousemove);
+            document.removeEventListener("mouseup", this.mouseup);
+            chessBoard.removeEventListener("touchstart", this.touchstart);
+            document.removeEventListener("touchmove", this.touchmove);
+            document.removeEventListener("touchend", this.touchend);
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "";
+            });
+        },
+        add: function () {
+            this.remove();
+            chessBoard.addEventListener("click", this.click);
+            chessBoard.addEventListener("mousedown", this.mousedown);
+            document.addEventListener("mousemove", this.mousemove);
+            document.addEventListener("mouseup", this.mouseup);
+            chessBoard.addEventListener("touchstart", this.touchstart, { passive: false });
+            document.addEventListener("touchmove", this.touchmove, { passive: false });
+            document.addEventListener("touchend", this.touchend, { passive: false });
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "grab";
+            });
+        },
+    },
+    clickDragDrop: {
+        mousedown: (event) => {
+            if (event.button !== 0) return;
+            const target = event.target;
+            if (target.classList.contains("chess-piece")) {
+                hideOnRelease = activePiece === event.target;
+                selectPiece(target, true);
+                if (!activePiece) return;
+                draggedPiece = event.target;
+                target.classList.add("dragged");
+                PieceMoveMethods.dragDrop.mousemove(event);
+            } else {
+                if (target.classList.contains("move-indicator")) {
+                    movePiece(getSquareFromClassList(target));
+                }
+                removeLegalMoveIndicators();
+                removeSquareHighlight();
+                activePiece = null;
+            }
+        },
+        mouseup: (event) => {
+            if (!draggedPiece) return;
+            const dragEffectElement = document.getElementById("drag-effect");
+            dragEffectElement.style.visibility = "";
+            dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
+            draggedPiece.style.pointerEvents = "none";
+            const target = document.elementFromPoint(event.clientX, event.clientY);
+            const toSquare = getSquareFromClassList(target);
+            if (legalMoves.includes(toSquare)) {
+                movePiece(toSquare, true);
+                createRipple(toSquare);
+                removeLegalMoveIndicators();
+                removeSquareHighlight();
+                activePiece = null;
+            } else {
+                createRipple(getSquareFromClassList(draggedPiece));
+                if (hideOnRelease) {
+                    removeLegalMoveIndicators();
+                    removeSquareHighlight();
+                    activePiece = null;
+                }
+            }
+            draggedPiece.style.pointerEvents = "";
+            draggedPiece.style.cursor = "grab";
+            draggedPiece.classList.remove("dragged");
+            draggedPiece.style.top = "";
+            draggedPiece.style.left = "";
+            draggedPiece = null;
+        },
+        touchstart: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.clickDragDrop.mousedown(touchEvent);
+        },
+        touchmove: (event) => {
+            const touch = event.touches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.dragDrop.mousemove(touchEvent);
+        },
+        touchend: (event) => {
+            const touch = event.changedTouches[0];
+            const touchEvent = {
+                button: 0,
+                target: event.target,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                touch: true,
+                preventDefault: () => event.preventDefault(),
+            };
+            PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
+        },
+        remove: function () {
+            chessBoard.removeEventListener("mousedown", this.mousedown);
+            document.removeEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
+            document.removeEventListener("mouseup", this.mouseup);
+            chessBoard.removeEventListener("touchstart", this.touchstart);
+            document.removeEventListener("touchmove", this.touchmove);
+            document.removeEventListener("touchend", this.touchend);
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "";
+            });
+        },
+        add: function () {
+            this.remove();
+            chessBoard.addEventListener("mousedown", this.mousedown);
+            document.addEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
+            document.addEventListener("mouseup", this.mouseup);
+            chessBoard.addEventListener("touchstart", this.touchstart, { passive: false });
+            document.addEventListener("touchmove", this.touchmove, { passive: false });
+            document.addEventListener("touchend", this.touchend, { passive: false });
+            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
+                piece.style.cursor = "grab";
+            });
+        },
+    },
+};
+
+// Handle notation (SAN, FEN, PGN)
 const Notation = {
     read: {
         san: (san) => {
@@ -301,8 +553,8 @@ const Notation = {
         }
     }
 };
-let draggedPiece = null;
-let hideOnRelease = false;
+
+// Highlight square when dragging a piece
 function highlightSquareUnderPoint(x, y, touch = false) {
     // Get square
     const target = document.elementFromPoint(x, y);
@@ -344,252 +596,18 @@ function highlightSquareUnderPoint(x, y, touch = false) {
         newMoveIndicator.classList.add("hovered");
     }
 };
-const PieceMoveMethods = {
-    click: {
-        click: (event) => {
-            const target = event.target;
-            if (target.classList.contains("move-indicator")) {
-                movePiece(getSquareFromClassList(target));
-            }
-            if (target.classList.contains("chess-piece")) {
-                selectPiece(target);
-            } else {
-                removeLegalMoveIndicators();
-                removeSquareHighlight();
-                activePiece = null;
-            }
-        },
-        remove: function () {
-            chessBoard.removeEventListener("click", this.click);
-        },
-        add: function () {
-            this.remove();
-            chessBoard.addEventListener("click", this.click);
-        },
-    },
-    dragDrop: {
-        mousedown: (event) => {
-            if (event.button !== 0) return;
-            const target = event.target;
-            if (target.classList.contains("chess-piece")) {
-                activePiece = null;
-                removeSquareHighlight();
-                selectPiece(target, true);
-                if (!activePiece) return;
-                draggedPiece = event.target;
-                target.classList.add("dragged");
-                PieceMoveMethods.dragDrop.mousemove(event);
-            }
-        },
-        mousemove: (event) => {
-            if (!draggedPiece) return;
-            event.preventDefault();
-            draggedPiece.style.left = event.clientX + "px";
-            draggedPiece.style.top = event.clientY + "px";
-            activePiece.style.pointerEvents = "none";
-            highlightSquareUnderPoint(event.clientX, event.clientY, event.touch);
-            activePiece.style.pointerEvents = "";
-        },
-        mouseup: (event) => {
-            if (!draggedPiece) return;
-            const dragEffectElement = document.getElementById("drag-effect");
-            dragEffectElement.style.visibility = "";
-            dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
-            draggedPiece.style.pointerEvents = "none";
-            const target = document.elementFromPoint(event.clientX, event.clientY);
-            const toSquare = getSquareFromClassList(target);
-            if (legalMoves.includes(toSquare)) {
-                movePiece(toSquare, true);
-                createRipple(toSquare);
-            } else {
-                createRipple(getSquareFromClassList(draggedPiece));
-            }
-            removeLegalMoveIndicators();
-            removeSquareHighlight();
-            activePiece = null;
-            draggedPiece.style.pointerEvents = "";
-            draggedPiece.style.cursor = "grab";
-            draggedPiece.classList.remove("dragged");
-            draggedPiece.style.top = "";
-            draggedPiece.style.left = "";
-            draggedPiece = null;
-        },
-        touchstart: (event) => {
-            const touch = event.touches[0];
-            const touchEvent = {
-                button: 0,
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                touch: true,
-                preventDefault: () => event.preventDefault(),
-            };
-            PieceMoveMethods.dragDrop.mousedown(touchEvent);
-        },
-        touchmove: (event) => {
-            const touch = event.touches[0];
-            const touchEvent = {
-                button: 0,
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                touch: true,
-                preventDefault: () => event.preventDefault(),
-            };
-            PieceMoveMethods.dragDrop.mousemove(touchEvent);
-        },
-        touchend: (event) => {
-            const touch = event.changedTouches[0];
-            const touchEvent = {
-                button: 0,
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                touch: true,
-                preventDefault: () => event.preventDefault(),
-            };
-            PieceMoveMethods.dragDrop.mouseup(touchEvent);
-        },
-        remove: function () {
-            chessBoard.removeEventListener("mousedown", this.mousedown);
-            document.removeEventListener("mousemove", this.mousemove);
-            document.removeEventListener("mouseup", this.mouseup);
-            chessBoard.removeEventListener("touchstart", this.touchstart);
-            document.removeEventListener("touchmove", this.touchmove);
-            document.removeEventListener("touchend", this.touchend);
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "";
-            });
-        },
-        add: function () {
-            this.remove();
-            chessBoard.addEventListener("mousedown", this.mousedown);
-            document.addEventListener("mousemove", this.mousemove);
-            document.addEventListener("mouseup", this.mouseup);
-            chessBoard.addEventListener("touchstart", this.touchstart, { passive: false });
-            document.addEventListener("touchmove", this.touchmove, { passive: false });
-            document.addEventListener("touchend", this.touchend, { passive: false });
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "grab";
-            });
-        },
-    },
-    clickDragDrop: {
-        mousedown: (event) => {
-            if (event.button !== 0) return;
-            const target = event.target;
-            if (target.classList.contains("chess-piece")) {
-                hideOnRelease = activePiece === event.target;
-                selectPiece(target, true);
-                if (!activePiece) return;
-                draggedPiece = event.target;
-                target.classList.add("dragged");
-                PieceMoveMethods.dragDrop.mousemove(event);
-            } else {
-                if (target.classList.contains("move-indicator")) {
-                    movePiece(getSquareFromClassList(target));
-                }
-                removeLegalMoveIndicators();
-                removeSquareHighlight();
-                activePiece = null;
-            }
-        },
-        mouseup: (event) => {
-            if (!draggedPiece) return;
-            const dragEffectElement = document.getElementById("drag-effect");
-            dragEffectElement.style.visibility = "";
-            dragEffectElement.classList.remove("square-" + getSquareFromClassList(dragEffectElement));
-            draggedPiece.style.pointerEvents = "none";
-            const target = document.elementFromPoint(event.clientX, event.clientY);
-            const toSquare = getSquareFromClassList(target);
-            if (legalMoves.includes(toSquare)) {
-                movePiece(toSquare, true);
-                createRipple(toSquare);
-                removeLegalMoveIndicators();
-                removeSquareHighlight();
-                activePiece = null;
-            } else {
-                createRipple(getSquareFromClassList(draggedPiece));
-                if (hideOnRelease) {
-                    removeLegalMoveIndicators();
-                    removeSquareHighlight();
-                    activePiece = null;
-                }
-            }
-            draggedPiece.style.pointerEvents = "";
-            draggedPiece.style.cursor = "grab";
-            draggedPiece.classList.remove("dragged");
-            draggedPiece.style.top = "";
-            draggedPiece.style.left = "";
-            draggedPiece = null;
-        },
-        touchstart: (event) => {
-            const touch = event.touches[0];
-            const touchEvent = {
-                button: 0,
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                touch: true,
-                preventDefault: () => event.preventDefault(),
-            };
-            PieceMoveMethods.clickDragDrop.mousedown(touchEvent);
-        },
-        touchmove: (event) => {
-            const touch = event.touches[0];
-            const touchEvent = {
-                button: 0,
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                touch: true,
-                preventDefault: () => event.preventDefault(),
-            };
-            PieceMoveMethods.dragDrop.mousemove(touchEvent);
-        },
-        touchend: (event) => {
-            const touch = event.changedTouches[0];
-            const touchEvent = {
-                button: 0,
-                target: event.target,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                touch: true,
-                preventDefault: () => event.preventDefault(),
-            };
-            PieceMoveMethods.clickDragDrop.mouseup(touchEvent);
-        },
-        remove: function () {
-            chessBoard.removeEventListener("mousedown", this.mousedown);
-            document.removeEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
-            document.removeEventListener("mouseup", this.mouseup);
-            chessBoard.removeEventListener("touchstart", this.touchstart);
-            document.removeEventListener("touchmove", this.touchmove);
-            document.removeEventListener("touchend", this.touchend);
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "";
-            });
-        },
-        add: function () {
-            this.remove();
-            chessBoard.addEventListener("mousedown", this.mousedown);
-            document.addEventListener("mousemove", PieceMoveMethods.dragDrop.mousemove);
-            document.addEventListener("mouseup", this.mouseup);
-            chessBoard.addEventListener("touchstart", this.touchstart, { passive: false });
-            document.addEventListener("touchmove", this.touchmove, { passive: false });
-            document.addEventListener("touchend", this.touchend, { passive: false });
-            chessBoard.querySelectorAll(".chess-piece").forEach(piece => {
-                piece.style.cursor = "grab";
-            });
-        },
-    },
-};
+
+// Square–index conversions
+// E.g., square = 54 (e4)
+//    => index = 36
 function convertSquareToIndex(square) {
     return 8 * (8 - square[1]) + (square[0] - 1);
 }
 function convertIndexToSquare(index) {
     return `${1 + (index % 8)}${8 - Math.floor(index / 8)}`;
 }
+
+// Get square of an element on the board from its class list
 function getSquareFromClassList(element) {
     if (!element) return;
     const squareClass = Array.from(element.classList).find(className => className.startsWith("square-"));
@@ -597,7 +615,11 @@ function getSquareFromClassList(element) {
         return squareClass.substring(7);
     }
 };
+
+// Set up empty board (background, files, ranks, `drag-effect` element)
 function setUpEmptyBoard() {
+
+    // Set up the background
     const background = chessBoard.querySelector(".background");
     for (let rank = 8; rank > 0; rank--) {
         for (let file = 1; file < 9; file++) {
@@ -610,6 +632,8 @@ function setUpEmptyBoard() {
             background.appendChild(square);
         }
     }
+
+    // Set up file indicators
     const filesContainer = document.createElement("div");
     filesContainer.className = "files-container";
     for (let i = 0; i < 8; i++) {
@@ -618,6 +642,8 @@ function setUpEmptyBoard() {
         filesContainer.appendChild(fileIndicator);
     }
     chessBoard.appendChild(filesContainer);
+
+    // Set up rank indicators
     const ranksContainer = document.createElement("div");
     ranksContainer.className = "ranks-container";
     for (let i = 1; i < 9; i++) {
@@ -626,21 +652,32 @@ function setUpEmptyBoard() {
         ranksContainer.appendChild(rankIndicator);
     }
     chessBoard.appendChild(ranksContainer);
+
+    // Set up `drag-effect` element
     const dragEffectElement = document.createElement("div");
     dragEffectElement.id = "drag-effect";
     chessBoard.appendChild(dragEffectElement);
 };
+
+// Set up pieces on the board
 function setUpPieces() {
     let squareNumber = 0;
+
+    // Top to bottom
     for (let rank = 8; rank > 0; rank--) {
-        for (let file = 0; file < 8; file++) {
+
+        // Left to right
+        for (let file = 1; file < 9; file++) {
             const pieceAtSquare = piecePositions[squareNumber];
             if (pieceAtSquare) {
                 const piece = document.createElement("div");
-                const square = `${(file + 1)}${rank}`;
+                const square = `${file}${rank}`;
                 piece.className = `chess-piece ${pieceAtSquare} square-${square}`;
+
+                // Add event listeners to animate legal move indicators when mouse is over piece
                 piece.addEventListener("mouseenter", mouseEntersPiece);
                 piece.addEventListener("mouseleave", mouseLeavesPiece);
+
                 chessBoard.appendChild(piece);
             }
             squareNumber++;
@@ -1214,6 +1251,11 @@ function showPromotionBox(targetSquare) {
             promotionBox.appendChild(pieceButton);
         }
         chessBoard.appendChild(promotionBox);
+        chessBoard.addEventListener("mousedown", (event) => {
+            if (event.target.tagName === "BUTTON") return;
+            promotionBox.remove();
+            resolve();
+        });
     });
 }
 async function movePiece(targetSquare, dropped = false, recurse = false) {
@@ -1224,6 +1266,21 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     const previousRank = parseInt(oldSquare[1]);
     const toFile = parseInt(targetSquare[0]);
     const toRank = parseInt(targetSquare[1]);
+
+    // Handle pawn promotion
+    let promotedTo = "";
+    if (pieceType.toLowerCase() === "p") {
+        if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
+            highlightSquare(oldSquare, true);
+            promotedTo = await showPromotionBox(targetSquare);
+            removeSquareHighlight(true);
+            if (!promotedTo) return;
+            activePiece = promotedTo[0];
+            promotedTo = promotedTo[1];
+            pieceToMove.classList.remove("P", "p");
+            pieceToMove.classList.add(promotedTo);
+        }
+    }
 
     // Handle piece capture
     const capturedPieceType = piecePositions[convertSquareToIndex(targetSquare)];
@@ -1243,18 +1300,6 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         setTimeout(() => {
             pieceToMove.classList.remove("sliding");
         }, 300);
-    }
-
-    // Handle pawn promotion
-    let promotedTo = "";
-    if (pieceType.toLowerCase() === "p") {
-        if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-            promotedTo = await showPromotionBox(targetSquare);
-            // activePiece = promotedTo[0];
-            promotedTo = promotedTo[1];
-            pieceToMove.classList.remove("P", "p");
-            pieceToMove.classList.add(promotedTo);
-        }
     }
 
     // Handle en passant
@@ -1286,20 +1331,34 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     // Set active color
     activeColor = activeColor === "w" ? "b" : "w";
 
-    // Write move notation to `#move-grid` and update the `#to-move` indicator
+    // Write move notation to the move grid and update the to-move indicator; also update the fullmove number
+    addMoveNotation(moveNotation);
+
+    // Handle halfmove clock
+    if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
+    else halfmoveClock++; // If a capture takes place, then the `selectPiece` function takes care of it.
+
+    // Find next move
+    if (!computer) return;
+    if (recurse || gameStatus !== "*") return;
+    computerMove();
+}
+function addMoveNotation(moveNotation) {
+    const moveGrid = document.getElementById("move-grid");
     if (activeColor === "b") {
         const newMoveRow = document.createElement("div");
         newMoveRow.innerHTML = `
             <div>${fullmoveNumber}.</div>
             <button class="move-notation">${moveNotation}</button>
+            <button></button>
             `;
-        document.getElementById("move-grid").appendChild(newMoveRow);
+        moveGrid.appendChild(newMoveRow);
         if (moveNotation[moveNotation.length - 1] === "#") {
             gameStatus = "1–0";
             document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;wins by checkmate!`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">1–0</div>`;
-            document.getElementById("move-grid").appendChild(newResultRow);
+            moveGrid.appendChild(newResultRow);
         } else if (isStalemate(activeColor)) {
             gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
@@ -1309,13 +1368,13 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
                 <b>Draw</b>&nbsp; by stalemate`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">½–½</div>`;
-            document.getElementById("move-grid").appendChild(newResultRow);
+            moveGrid.appendChild(newResultRow);
         } else {
             document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;to move`;
         }
     } else {
-        const moveGrid = document.getElementById("move-grid");
-        if (moveGrid.lastChild.children[1]) {
+        if (moveGrid.lastChild.children[2]) {
+            moveGrid.lastChild.children[2].remove();
             const blackMoveDiv = document.createElement("button");
             blackMoveDiv.className = "move-notation";
             blackMoveDiv.innerText = moveNotation;
@@ -1335,7 +1394,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
             document.getElementById("to-move").innerHTML = `<div style="background-color: black;"></div><b>Black</b>&nbsp;wins by checkmate!`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">0–1</div>`;
-            document.getElementById("move-grid").appendChild(newResultRow);
+            moveGrid.appendChild(newResultRow);
         } else if (isStalemate(activeColor)) {
             gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
@@ -1345,21 +1404,12 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
                 <b>Draw</b>&nbsp; by stalemate`;
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">½–½</div>`;
-            document.getElementById("move-grid").appendChild(newResultRow);
+            moveGrid.appendChild(newResultRow);
         } else {
             document.getElementById("to-move").innerHTML = `<div style="background-color: white;"></div><b>White</b>&nbsp;to move`;
         }
     }
-    document.getElementById("move-grid").scrollTop = document.getElementById("move-grid").scrollHeight;
-
-    // Handle halfmove clock
-    if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
-    else halfmoveClock++; // If a capture takes place, then the `selectPiece` function takes care of it.
-
-    // Find next move
-    if (!computer) return;
-    if (recurse || gameStatus !== "*") return;
-    computerMove();
+    moveGrid.scrollTop = moveGrid.scrollHeight;
 }
 function removeSquareHighlight(permanent = false, square = "") {
     if (square === "") {
@@ -1490,6 +1540,7 @@ function computerMove() {
     })();
     activePiece = chessBoard.querySelector(`.chess-piece.square-${randomItem.slice(0, 2)}:not(.removed)`);
     movePiece(randomItem.slice(3, 5), false, true);
+    activePiece = null;
 }
 
 let isBoardFlipped = false;
