@@ -7,10 +7,10 @@
         <meta name="theme-color" />
         <title>Play Chess!</title>
         <link rel="canonical" href="" />
-        <link rel="icon" type="image/x-icon" href="media-support/favicon.ico?modified=22-07-25-1" />
-        <link rel="apple-touch-icon" type="image/png" href="media-support/apple-touch-icon.png?modified=22-07-25-1" />
-        <link rel="stylesheet" href="board-styles.css?modified=22-07-25-1" />
-        <link rel="stylesheet" href="general-styles.css?modified=22-07-25-1" />
+        <link rel="icon" type="image/x-icon" href="media-support/favicon.ico" />
+        <link rel="apple-touch-icon" type="image/png" href="media-support/apple-touch-icon.png" />
+        <link rel="stylesheet" href="board-styles.css" />
+        <link rel="stylesheet" href="general-styles.css" />
     </head>
     <body>
         <div id="game-area">
@@ -312,8 +312,35 @@
                 }">Load</button>
             </div>
         </div>
-        <script src="document-set-up.js?modified=22-07-25-1"></script>
-        <script src="settings-manager.js?modified=22-07-25-2"></script>
-        <script src="board-manager.js?modified=22-07-25-1"></script>
+        <script src="document-set-up.js"></script>
+        <script src="settings-manager.js"></script>
+        <script src="board-manager.js"></script>
+        <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(() => console.log('Service worker registered'))
+            .catch(err => console.error('SW registration failed:', err));
+
+          // show your own banner when UPDATE_READY is received
+          navigator.serviceWorker.addEventListener('message', event => {
+            const msg = event.data || {};
+            if (msg.type === 'UPDATE_READY') {
+              // Example: replace with a nice banner UI
+              // Only show once per page load:
+              if (!window._updateBannerShown) {
+                window._updateBannerShown = true;
+                // Example minimal prompt:
+                if (confirm('A new version is available. Reload to update?')) {
+                  // Tell SW to delete old caches first, then reload when SW replies
+                  navigator.serviceWorker.controller.postMessage({ type: 'APPLY_UPDATE' });
+                }
+              }
+            } else if (msg.type === 'UPDATE_APPLIED') {
+              // SW has removed old caches and is ready — reload to use new files
+              window.location.reload();
+            }
+          });
+        }
+        </script>
     </body>
 </html>
