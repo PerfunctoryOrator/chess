@@ -1466,7 +1466,7 @@ function mouseLeavesPiece(event) {
     if (captureIndicator) captureIndicator.classList.remove("hovered");
 }
 function checkFenValidity(fen) {
-    if (!fen || typeof fen !== 'string') {
+    if (!fen || typeof fen !== "string") {
         positionInputBox.style.border = "2px solid var(--danger-color)";
         return false;
     }
