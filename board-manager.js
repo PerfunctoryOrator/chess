@@ -1250,6 +1250,13 @@ function showPromotionBox(targetSquare) {
             });
             promotionBox.appendChild(pieceButton);
         }
+        const cancelButton = document.createElement("button");
+        cancelButton.className = "cancel-button";
+        cancelButton.addEventListener("click", () => {
+            promotionBox.remove();
+            resolve();
+        });
+        promotionBox.appendChild(cancelButton);
         chessBoard.appendChild(promotionBox);
         chessBoard.addEventListener("mousedown", (event) => {
             if (event.target.tagName === "BUTTON") return;

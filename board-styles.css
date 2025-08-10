@@ -170,11 +170,31 @@
         border-radius: 0;
         outline-offset: -2px;
         background-color: whitesmoke;
-        &:nth-child(1) {
+        &:first-child {
             border-top: 2px solid gainsboro;
         }
-        &:nth-child(4) {
+        &:last-child {
             border-bottom: 2px solid gainsboro;
+        }
+        &.cancel-button {
+            aspect-ratio: 2 / 1;
+            justify-content: center;
+            position: relative;
+        }
+        &.cancel-button::before, &.cancel-button::after {
+          content: "";
+          position: absolute;
+          background-color: var(--dark-gray);
+          width: 20px;
+          height: 4px;
+          top: 50%;
+          left: 50%;
+        }
+        &.cancel-button::before {
+          transform: translate(-50%, -50%) rotate(45deg);
+        }
+        &.cancel-button::after {
+          transform: translate(-50%, -50%) rotate(-45deg);
         }
     }
     & > button:hover, & > button:focus-visible {
@@ -187,11 +207,11 @@
 .flipped .promotion-box:not(.black), .promotion-box.black:not(.flipped *) {
     flex-direction: column-reverse;
     & > button {
-        &:nth-child(1) {
+        &:first-child {
             border-top: none;
             border-bottom: 2px solid gainsboro;
         }
-        &:nth-child(4) {
+        &:last-child {
             border-top: 2px solid gainsboro;
             border-bottom: none;
         }
