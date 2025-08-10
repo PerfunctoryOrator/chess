@@ -1278,9 +1278,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     let promotedTo = "";
     if (pieceType.toLowerCase() === "p") {
         if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-            highlightSquare(oldSquare, true);
             promotedTo = await showPromotionBox(targetSquare);
-            removeSquareHighlight(true);
             if (!promotedTo) return;
             activePiece = promotedTo[0];
             promotedTo = promotedTo[1];
