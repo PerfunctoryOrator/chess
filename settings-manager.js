@@ -143,7 +143,7 @@ const Settings = {
             return false;
         }
         if (settings.version !== this.default.version) {
-            alert("Your settings have been reset to default due to a recent version update of our chess website. This ensures compatibility with the new features and improvements we’ve added. You can reconfigure your preferences in the ‘Settings’ menu.\n\nThank you for your understanding.");
+            window.alert("Your settings have been reset to default due to a recent version update of our chess website. This ensures compatibility with the new features and improvements we’ve added. You can reconfigure your preferences in the ‘Settings’ menu.\n\nThank you for your understanding.");
             return false;
         }
         const keys = Object.keys(this.default);

@@ -1599,7 +1599,7 @@ if (!chessBoard) {
 }
 const positionInputBox = document.getElementById("position-input");
 let fenOnBoard = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const parameters = location.search.replace(/%20/g, " ").split("?");
+const parameters = window.location.search.replace(/%20/g, " ").split("?");
 if (parameters != "") {
     const firstParameter = parameters[1];
     switch (firstParameter.slice(0, 4)) {
@@ -1622,7 +1622,7 @@ if (parsedFen) {
     positionInputBox.value = fenOnBoard;
     activePiece = null;
 } else {
-    alert("The FEN specified by the URL is not valid.\nEnter a valid FEN.");
+    window.alert("The FEN specified by the URL is not valid.\nEnter a valid FEN.");
     fenOnBoard = positionInputBox.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     Notation.assign.parsedFen(Notation.read.fen(fenOnBoard));
     document.getElementById("fen-validity-indicator").innerHTML = `

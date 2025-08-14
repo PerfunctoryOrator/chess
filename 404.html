@@ -8,8 +8,8 @@
         <link rel="canonical" href="" />
         <link rel="icon" type="image/x-icon" href="/chess/media-support/favicon.ico" />
         <link rel="apple-touch-icon" type="image/png" href="media-support/apple-touch-icon.png" />
-        <link rel="stylesheet" href="/chess-web/general-styles.css?modified=14-8-25-1" />
-        <link rel="stylesheet" href="/chess-web/error-styles.css?modified=14-8-25-1" />
+        <link rel="stylesheet" href="/chess-web/general-styles.css" />
+        <link rel="stylesheet" href="/chess-web/error-styles.css" />
     </head>
     <body>
         <main>
@@ -107,7 +107,7 @@
             </div>
             <div class="options">
                 <button class="dangerous-button" onclick="{
-                    if (confirm('Are you sure you want to reset all settings?')) {
+                    if (window.confirm('Are you sure you want to reset all settings?')) {
                     currentSettings = {...Settings.default};
                     applyCurrentSettings();
                     }
@@ -118,7 +118,7 @@
                 }">Save</button>
             </div>
         </div>
-        <script src="/chess-web/document-set-up.js?modified=14-8-25-1"></script>
-        <script src="/chess-web/settings-manager.js?modified=14-8-25-1"></script>
+        <script src="/chess-web/document-set-up.js"></script>
+        <script src="/chess-web/settings-manager.js"></script>
     </body>
 </html>

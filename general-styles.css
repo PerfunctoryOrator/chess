@@ -80,6 +80,13 @@ body {
     background-color: var(--background-color);
 }
 
+/* Headers */
+h2 {
+    padding: var(--margin);
+    margin: 0;
+    border-bottom: var(--border);
+}
+
 /* Anchors */
 a {
     color: var(--active-color);
@@ -464,11 +471,6 @@ textarea {
     border: var(--border);
     border-radius: var(--box-radius);
     transform: translate(-50%, -50%);
-    & > h2 {
-        padding: var(--margin);
-        margin: 0;
-        border-bottom: var(--border);
-    }
 }
 .input-grid {
     display: grid;
