@@ -556,28 +556,38 @@ const Notation = {
 
 // Highlight square when dragging a piece
 function highlightSquareUnderPoint(x, y, touch = false) {
-    // Get square
-    const target = document.elementFromPoint(x, y);
-    if (!target) return;
-    let newSquare = target.dataset.square;
-    if (!target.classList.contains("board-square")) {
-        newSquare = getSquareFromClassList(target);
-    }
-    if (!target) return;
 
     // Get `drag-effect` element
     const dragEffectElement = document.getElementById("drag-effect");
     const oldSquare = getSquareFromClassList(dragEffectElement);
 
-    // Do not change anything if the mouse is inside the previous square or the user has dragged outside the board
-    if (oldSquare === newSquare || !newSquare) {
+    // Get square
+    const target = document.elementFromPoint(x, y);
+    if (!target) { // If the user is dragging outside the window
+        dragEffectElement.style.visibility = "";
+        dragEffectElement.classList.remove("square-" + oldSquare);
+        const oldMoveIndicator = chessBoard.querySelector(`.move-indicator.square-${oldSquare}`);
+        if (oldMoveIndicator) {
+            oldMoveIndicator.classList.remove("hovered");
+        }
         return;
     }
+    let newSquare = target.dataset.square;
+    if (!target.classList.contains("board-square")) {
+        newSquare = getSquareFromClassList(target);
+    }
+
+    // If the mouse is inside the previous square
+    if (oldSquare === newSquare) return;
 
     // Add drag effect
-    dragEffectElement.style.visibility = "visible";
     dragEffectElement.classList.remove("square-" + oldSquare);
-    dragEffectElement.classList.add("square-" + newSquare);
+    if (newSquare) {
+        dragEffectElement.classList.add("square-" + newSquare);
+        dragEffectElement.style.visibility = "visible";
+    } else {
+        dragEffectElement.style.visibility = "";
+    }
 
     // Handle touch effect
     if (touch) {
@@ -684,6 +694,7 @@ function setUpPieces() {
         }
     }
 };
+
 function getBasicCandidateMoves(pieceSquare, board) {
     let candidateMoves = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
@@ -1012,6 +1023,7 @@ function isKingInCheck(board, kingColor) {
     if (kingSquare === "") return false;
     return isSquareAttacked(board, kingSquare, kingColor === "w" ? "b" : "w");
 };
+
 function getLegalMoves(pieceSquare, board = piecePositions, color = activeColor) {
     const candidateMoves = getCandidateMoves(pieceSquare, board);
     let legalMovesForPiece = [];
@@ -1028,6 +1040,7 @@ function getLegalMoves(pieceSquare, board = piecePositions, color = activeColor)
     });
     return legalMovesForPiece;
 };
+
 function isCheckmate(activeColor, board = piecePositions) {
     // If king is not in check, it can’t be checkmate
     if (!isKingInCheck(board, activeColor)) return false;
@@ -1048,6 +1061,7 @@ function isCheckmate(activeColor, board = piecePositions) {
     // If we’ve tried all pieces and moves and found nothing, it’s checkmate
     return true;
 };
+
 function isStalemate(activeColor, board = piecePositions) {
     // If king is in check, it’s not stalemate
     if (isKingInCheck(board, activeColor)) return false;
@@ -1081,12 +1095,14 @@ function isStalemate(activeColor, board = piecePositions) {
     // If we’ve tried all pieces and moves and found nothing, it’s stalemate
     return true;
 }
+
 function removeLegalMoveIndicators() {
     chessBoard.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.classList.add("fade-out");
         setTimeout(() => indicator.remove(), 200);
     });
 };
+
 function createRipple(square) {
     // Create ripple element
     const ripple = document.createElement("div");
@@ -1098,16 +1114,22 @@ function createRipple(square) {
     // Remove ripple
     setTimeout(() => ripple.remove(), 450);
 }
+
 function selectPiece(piece, dragged = false) {
-    if (piece.classList.contains("removed")) return;
+
+    // If the user has selected a to-be-removed piece
+    if (piece.classList.contains("removed")) {
+        removeLegalMoveIndicators();
+        removeSquareHighlight();
+        activePiece = null;
+        return;
+    }
 
     // Get square
     const pieceSquare = getSquareFromClassList(piece);
 
     // If click-or-drop mode  is enabled
-    if (dragged && piece === activePiece) {
-        return;
-    }
+    if (dragged && piece === activePiece) return;
 
     // Create ripple effect if the piece is not being dragged
     if (!dragged) {
@@ -1119,6 +1141,7 @@ function selectPiece(piece, dragged = false) {
 
     // Handle piece capture or castling target
     if (activePiece && legalMoves.includes(pieceSquare)) {
+
         // Check if this is a castling target (rook clicked for castling)
         const activeSquare = getSquareFromClassList(activePiece);
         const activePieceType = piecePositions[convertSquareToIndex(activeSquare)];
@@ -1126,7 +1149,8 @@ function selectPiece(piece, dragged = false) {
         if (activePieceType.toLowerCase() === "k") {
             const castlingTargets = getCastlingTargets(activeSquare, piecePositions);
             if (castlingTargets.includes(pieceSquare)) {
-                // This is a rook being clicked for castling, pass the rook’s square as target
+
+                // This is a rook being clicked for castling; pass the rook’s square as target
                 movePiece(pieceSquare);
                 halfmoveClock = 0;
                 activePiece = null;
@@ -1150,24 +1174,28 @@ function selectPiece(piece, dragged = false) {
 
     // Highlight the selected square
     const prevHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}:not(.removed)`);
-    if (!prevHighlight) highlightSquare(pieceSquare);
+    removeSquareHighlight();
+    if (!prevHighlight) {
+        highlightSquare(pieceSquare);
+    }
 
     // Select the piece and highlight legal moves
     activePiece = piece;
     const allMoves = getLegalMoves(pieceSquare);
-    const piece_type = piecePositions[convertSquareToIndex(pieceSquare)];
+    const pieceType = piecePositions[convertSquareToIndex(pieceSquare)];
 
     // Handle king castling logic
     let castlingTargets = [];
     let normalMoves = [];
     let castlingMoves = [];
 
-    if (piece_type.toLowerCase() === "k") {
+    if (pieceType.toLowerCase() === "k") {
+
         // Get castling targets (rooks that can be clicked for castling)
         castlingTargets = getCastlingTargets(pieceSquare, piecePositions);
 
         // Separate normal moves from castling moves
-        const isWhite = piece_type === "K";
+        const isWhite = pieceType === "K";
         const backRank = isWhite ? 1 : 8;
 
         // Get basic candidate moves (normal moves only)
@@ -1177,7 +1205,7 @@ function selectPiece(piece, dragged = false) {
             let newBoard = piecePositions.slice();
             newBoard[convertSquareToIndex(move)] = newBoard[convertSquareToIndex(pieceSquare)];
             newBoard[convertSquareToIndex(pieceSquare)] = "";
-            if (!isKingInCheck(newBoard, piece_type === piece_type.toUpperCase() ? "w" : "b")) {
+            if (!isKingInCheck(newBoard, pieceType === pieceType.toUpperCase() ? "w" : "b")) {
                 basicMoves.push(move);
             }
         });
@@ -1186,6 +1214,7 @@ function selectPiece(piece, dragged = false) {
             const isCastlingMove = move === `7${backRank}` || move === `3${backRank}`;
 
             if (isCastlingMove) {
+
                 // Don’t show castling destination if king is already there
                 if (pieceSquare !== move) {
                     castlingMoves.push(move);
@@ -1213,13 +1242,12 @@ function selectPiece(piece, dragged = false) {
     });
 
     // Show indicators for castling moves that don’t conflict with normal moves
-    if (piece_type.toLowerCase() === "k") {
+    if (pieceType.toLowerCase() === "k") {
         castlingMoves.forEach(square => {
             if (!normalMoves.includes(square)) {
                 const moveIndicator = document.createElement("div");
                 moveIndicator.className = `move-indicator square-${square}`;
                 moveIndicator.classList.add("empty-move-indicator");
-                moveIndicator.dataset.castlingDestination = "true";
                 chessBoard.appendChild(moveIndicator);
             }
         });
@@ -1229,11 +1257,11 @@ function selectPiece(piece, dragged = false) {
     castlingTargets.forEach(square => {
         const moveIndicator = document.createElement("div");
         moveIndicator.className = `move-indicator square-${square}`;
-        moveIndicator.classList.add("capture-indicator"); // Rook targets look like captures
-        moveIndicator.dataset.castlingTarget = "true";
+        moveIndicator.classList.add("capture-indicator");
         chessBoard.appendChild(moveIndicator);
     });
 };
+
 function showPromotionBox(targetSquare) {
     return new Promise(resolve => {
         const pieceToPromote = activePiece;
@@ -1265,7 +1293,9 @@ function showPromotionBox(targetSquare) {
         });
     });
 }
+
 async function movePiece(targetSquare, dropped = false, recurse = false) {
+
     // Basic variables
     const pieceToMove = activePiece;
     let oldSquare = getSquareFromClassList(pieceToMove);
@@ -1348,6 +1378,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     if (recurse || gameStatus !== "*") return;
     computerMove();
 }
+
 function addMoveNotation(moveNotation) {
     const moveGrid = document.getElementById("move-grid");
     if (activeColor === "b") {
@@ -1416,6 +1447,7 @@ function addMoveNotation(moveNotation) {
     }
     moveGrid.scrollTop = moveGrid.scrollHeight;
 }
+
 function removeSquareHighlight(permanent = false, square = "") {
     if (square === "") {
         chessBoard.querySelectorAll(`.square-highlight${permanent ? "" : ":not(.permanent):not(.removed)"}`).forEach(highlight => {
@@ -1430,17 +1462,17 @@ function removeSquareHighlight(permanent = false, square = "") {
         setTimeout(() => highlight.remove(), 200);
     }
 }
+
 function highlightSquare(square, permanent = false, color = "") {
     const highlight = document.createElement("div");
     highlight.className = `square-highlight square-${square}`;
-    if (color === "") {
-        removeSquareHighlight();
-    } else {
+    if (color !== "") {
         highlight.classList.add(color);
     }
     if (permanent === true) highlight.classList.add("permanent");
     chessBoard.appendChild(highlight);
 }
+
 function mouseEntersPiece(event) {
     let square = "";
     const target = event.target;
@@ -1452,6 +1484,7 @@ function mouseEntersPiece(event) {
     const captureIndicator = chessBoard.querySelector(`.move-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.add("hovered");
 }
+
 function mouseLeavesPiece(event) {
     let square = "";
     const target = event.target;
@@ -1463,6 +1496,7 @@ function mouseLeavesPiece(event) {
     const captureIndicator = chessBoard.querySelector(`.move-indicator.square-${square}`);
     if (captureIndicator) captureIndicator.classList.remove("hovered");
 }
+
 function checkFenValidity(fen) {
     if (!fen || typeof fen !== "string") {
         positionInputBox.style.border = "2px solid var(--danger-color)";
@@ -1488,6 +1522,7 @@ function checkFenValidity(fen) {
     positionInputBox.style.border = "2px solid var(--danger-color)";
     return false;
 }
+
 function flipBoard() {
     isBoardFlipped = !isBoardFlipped;
     const allChessPieces = chessBoard.querySelectorAll(".chess-piece");
@@ -1510,6 +1545,7 @@ function flipBoard() {
         });
     }, 0);
 }
+
 function computerMove() {
     const allLegalMoves = [];
     for (i in piecePositions) {
@@ -1607,6 +1643,7 @@ setUpPieces();
 PieceMoveMethods.clickDragDrop.add();
 
 chessBoard.addEventListener("contextmenu", (event) => {
+    if (event.button !== 2) return;
     event.preventDefault();
     const target = event.target;
     let square = "";

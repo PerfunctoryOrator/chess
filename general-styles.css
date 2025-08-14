@@ -272,10 +272,10 @@ textarea {
     border: var(--border);
     border-radius: var(--box-radius);
     &.white {
-        background-color: white;
+        background-color: var(--board-color);
     }
     &.black {
-        background-color: var(--dark-gray);
+        background-color: var(--light-square-color);
     }
 }
 .player-rating {
