@@ -17,8 +17,8 @@ To run this project locally:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/PerfunctoryOrator/chess.git
-   cd chess
+   git clone https://github.com/PerfunctoryOrator/chess-web.git
+   cd chess-web
    ```
 
 2. **Open the application**:
@@ -38,6 +38,6 @@ The icons used in this project are from [Google’s Material Icons](https://font
 
 ---
 
-For a live demonstration, visit: [https://perfunctoryorator.github.io/chess/](https://perfunctoryorator.github.io/chess/)
+For a live demonstration, visit: [https://perfunctoryorator.github.io/chess-web/](https://perfunctoryorator.github.io/chess-web/)
 
 *Note: This project is a personal endeavour and is not officially affiliated with any chess organisations.*
