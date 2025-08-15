@@ -379,10 +379,10 @@ const Notation = {
                 if (fromRank === backRank) {
                     if (toSquare === `7${backRank}`) {
                         isCastling = true;
-                        castlingNotation = "O–O";
+                        castlingNotation = "O-O";
                     } else if (toSquare === `3${backRank}`) {
                         isCastling = true;
-                        castlingNotation = "O–O–O";
+                        castlingNotation = "O-O-O";
                     }
                 }
             }
@@ -467,8 +467,9 @@ const Notation = {
             }
 
             // Check/checkmate detection
-            if (isKingInCheck(newBoard, activeColor)) {
-                if (isCheckmate(activeColor, newBoard)) {
+            const attackedKingColor = activeColor === "w" ? "b" : "w";
+            if (isKingInCheck(newBoard, attackedKingColor)) {
+                if (isCheckmate(attackedKingColor, newBoard)) {
                     moveNotation += "#";
                 } else {
                     moveNotation += "+";
@@ -1363,11 +1364,11 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
     else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
 
-    // Set active color
-    activeColor = activeColor === "w" ? "b" : "w";
-
     // Write move notation to the move grid and update the to-move indicator; also update the fullmove number
     addMoveNotation(moveNotation);
+
+    // Set active color
+    activeColor = activeColor === "w" ? "b" : "w";
 
     // Handle halfmove clock
     if (pieceType.toLowerCase() === "p") halfmoveClock = 0;
@@ -1381,7 +1382,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
 
 function addMoveNotation(moveNotation) {
     const moveGrid = document.getElementById("move-grid");
-    if (activeColor === "b") {
+    if (activeColor === "w") {
         const newMoveRow = document.createElement("div");
         newMoveRow.innerHTML = `
             <div>${fullmoveNumber}.</div>
@@ -1419,7 +1420,7 @@ function addMoveNotation(moveNotation) {
             const newMoveRow = document.createElement("div");
             newMoveRow.innerHTML = `
                 <div>${fullmoveNumber}.</div>
-                <button>…</button>
+                <button>...</button>
                 <button class="move-notation">${moveNotation}</button>
                 `;
             moveGrid.appendChild(newMoveRow);

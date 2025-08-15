@@ -1,63 +1,63 @@
 {
-  "name": "Chess Web Interface",
-  "short_name": "Chess",
-  "description": "Play chess online with a modern, responsive interface",
-  "start_url": "/chess-web/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#667eea",
-  "orientation": "any",
-  "scope": "/chess-web/",
-  "lang": "en-IN",
-  "icons": [
-    {
-      "src": "media-support/favicon.ico",
-      "sizes": "16x16 32x32 48x48",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "media-support/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "media-support/apple-touch-icon-tint.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "media-support/white-pawn.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["games", "entertainment", "sports"],
-  "screenshots": [
-    {
-      "src": "media-support/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "New Game",
-      "short_name": "New Game",
-      "description": "Start a new chess game",
-      "url": "/chess-web/?action=new",
-      "icons": [
+    "name": "Chess Web Interface",
+    "short_name": "Chess",
+    "description": "Play chess online with a modern, responsive interface",
+    "start_url": "/chess-web/",
+    "display": "standalone",
+    "background_color": "whitesmoke",
+    "theme_color": "rgb(174, 138, 104)",
+    "orientation": "any",
+    "scope": "/chess-web/",
+    "lang": "en-IN",
+    "icons": [
         {
-          "src": "media-support/white-pawn.png",
-          "sizes": "96x96"
+            "src": "media-support/favicon.ico",
+            "sizes": "96x96",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "media-support/apple-touch-icon.png",
+            "sizes": "2048x2048",
+            "type": "image/png"
+        },
+        {
+            "src": "media-support/apple-touch-icon-tint.png",
+            "sizes": "2048x2048",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "media-support/white-pawn.png",
+            "sizes": "1024x1024",
+            "type": "image/png",
+            "purpose": "any maskable"
         }
-      ]
-    }
-  ],
-  "related_applications": [],
-  "prefer_related_applications": false,
-  "dir": "ltr",
-  "id": "chess-web-interface"
+    ],
+    "categories": ["games", "entertainment", "sports"],
+    "screenshots": [
+        {
+            "src": "media-support/apple-touch-icon.png",
+            "sizes": "2048x2048",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "New Game",
+            "short_name": "New Game",
+            "description": "Start a new chess game",
+            "url": "/chess-web/?action=new",
+            "icons": [
+                {
+                    "src": "media-support/white-pawn.png",
+                    "sizes": "1024x1024"
+                }
+            ]
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "dir": "ltr",
+    "id": "chess-web-interface"
 }

@@ -46,9 +46,23 @@ class UpdateTester {
 
         document.body.appendChild(panel);
 
-        const output = document.createElement("code");
-        output.id = "tester-output";
-        document.body.appendChild(output);
+        const console = document.createElement("code");
+        console.style.cssText = `
+            position: fixed;
+            bottom: var(--margin);
+            right: var(--margin);
+            background-color: var(--color);
+            color: var(--background-color);
+            z-index: 9999;
+            overflow: hidden;
+            box-shadow: 8px 16px 16px var(--shadow-color);
+            border: var(--border);
+            border-radius: var(--box-radius);
+            `;
+        console.innerHTML = `
+            <div id="tester-output" style="overflow: auto; width: 30vw; height: 30vh; padding: var(--padding);"></div>
+            `
+        document.body.appendChild(console);
     }
 
     updateOutput(message) {
