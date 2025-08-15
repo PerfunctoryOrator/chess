@@ -12,7 +12,7 @@ class ServiceWorkerManager {
     if ('serviceWorker' in navigator) {
       try {
         console.log('[SWM] Registering service worker…');
-        this.swRegistration = await navigator.serviceWorker.register('/sw.js');
+        this.swRegistration = await navigator.serviceWorker.register('/chess-web/sw.js');
 
         console.log('[SWM] Service worker registered successfully');
 
