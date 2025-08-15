@@ -9,32 +9,32 @@ const MEDIA_CACHE_NAME = `chess-media-v${MEDIA_VERSION}`;
 
 // Files associated with core version
 const CORE_FILES = [
-    "/",
-    "/index.html",
-    "/board-manager.js",
-    "/board-styles.css",
-    "/document-set-up.js",
-    "/error-styles.css",
-    "/general-styles.css",
-    "/settings-manager.js",
-    "/square-positions.css",
+    "/chess-web/",
+    "/chess-web/index.html",
+    "/chess-web/board-manager.js",
+    "/chess-web/board-styles.css",
+    "/chess-web/document-set-up.js",
+    "/chess-web/error-styles.css",
+    "/chess-web/general-styles.css",
+    "/chess-web/settings-manager.js",
+    "/chess-web/square-positions.css",
 ];
 
 // Files associated with media version
 const MEDIA_FILES = [
-    "/square-positions.css",
-    "/board-pieces.css",
-    "/media-support/apple-touch-icon-dark.png",
-    "/media-support/apple-touch-icon-tint.png",
-    "/media-support/apple-touch-icon.png",
-    "/media-support/favicon-dark.ico",
-    "/media-support/favicon-tint.ico",
-    "/media-support/favicon.ico",
-    "/media-support/white-pawn.png",
-    "/media-support/fonts/noto-sans/noto-sans.ttf",
-    "/media-support/fonts/noto-sans/noto-sans-italic.ttf",
-    "/media-support/fonts/noto-serif/noto-serif.ttf",
-    "/media-support/fonts/noto-serif/noto-serif-italic.ttf",
+    "/chess-web/square-positions.css",
+    "/chess-web/board-pieces.css",
+    "/chess-web/media-support/apple-touch-icon-dark.png",
+    "/chess-web/media-support/apple-touch-icon-tint.png",
+    "/chess-web/media-support/apple-touch-icon.png",
+    "/chess-web/media-support/favicon-dark.ico",
+    "/chess-web/media-support/favicon-tint.ico",
+    "/chess-web/media-support/favicon.ico",
+    "/chess-web/media-support/white-pawn.png",
+    "/chess-web/media-support/fonts/noto-sans/noto-sans.ttf",
+    "/chess-web/media-support/fonts/noto-sans/noto-sans-italic.ttf",
+    "/chess-web/media-support/fonts/noto-serif/noto-serif.ttf",
+    "/chess-web/media-support/fonts/noto-serif/noto-serif-italic.ttf",
 ];
 
 // Installation event — cache initial files
@@ -109,7 +109,7 @@ self.addEventListener("fetch", event => {
       .catch(() => {
         // Network failed, try to serve offline page for HTML requests
         if (event.request.headers.get("accept").includes("text/html")) {
-          return caches.match("/index.html");
+          return caches.match("/chess-web/index.html");
         }
       })
   );
@@ -158,7 +158,7 @@ async function cleanupOldCaches() {
 async function checkForUpdates() {
   try {
     // Fetch the service worker file to check for version changes
-    const response = await fetch("/sw.js", { cache: "no-cache" });
+    const response = await fetch("/chess-web/sw.js", { cache: "no-cache" });
     const swContent = await response.text();
 
     // Extract versions from the fetched service worker

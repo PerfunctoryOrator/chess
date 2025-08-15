@@ -2,12 +2,12 @@
   "name": "Chess Web Interface",
   "short_name": "Chess",
   "description": "Play chess online with a modern, responsive interface",
-  "start_url": "/",
+  "start_url": "/chess-web/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#667eea",
   "orientation": "any",
-  "scope": "/",
+  "scope": "/chess-web/",
   "lang": "en-IN",
   "icons": [
     {
@@ -21,7 +21,7 @@
       "type": "image/png"
     },
     {
-      "src": "media-support/apple-touch-icon-tint.png", 
+      "src": "media-support/apple-touch-icon-tint.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "maskable"
@@ -47,7 +47,7 @@
       "name": "New Game",
       "short_name": "New Game",
       "description": "Start a new chess game",
-      "url": "/?action=new",
+      "url": "/chess-web/?action=new",
       "icons": [
         {
           "src": "media-support/white-pawn.png",

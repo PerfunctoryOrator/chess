@@ -188,7 +188,7 @@ class UpdateTester {
         this.updateOutput("Testing network connectivity…");
 
         try {
-            const response = await fetch("/sw.js", {
+            const response = await fetch("/chess-web/sw.js", {
                 method: "HEAD",
                 cache: "no-cache"
             });
