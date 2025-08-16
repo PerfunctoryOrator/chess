@@ -117,7 +117,7 @@
                     <span class="button-desc">Advanced</span>
                 </button>
             </div>
-            <div id="general-settings" class="input-grid settings-view" style="float: left;">
+            <div id="general-settings" class="input-grid settings-view">
                 <span>Appearance</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
@@ -229,7 +229,7 @@
                     <button value="ease" selected>Ease</button>
                     <button value="emphasis">Emphasis</button>
                 </div>
-                <span>Show last move</span>
+                <span>Show last move and check</span>
                 <label class="toggle-switch">
                     <input type="checkbox" name="show-last-move" />
                 </label>
@@ -249,13 +249,60 @@
                 </label>
                 <span>Location of coordinates</span>
                 <div id="board-coordinates" class="drop-down-menu-container">
-                    <button value="inside" selected>Inside</button>
-                    <button value="outside">Outside</button>
+                    <button value="inside" selected>Inside the board</button>
+                    <button value="outside">Outside the board</button>
+                    <button value="all">All squares of the board</button>
                 </div>
                 <span>Location of ranks</span>
                 <div id="location-ranks" class="drop-down-menu-container">
-                    <button value="left" selected>Left side of board</button>
-                    <button value="right">Right side of board</button>
+                    <button value="left" selected>Left side of the board</button>
+                    <button value="right">Right side of the board</button>
+                </div>
+                <span>Focus mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="focus-mode" />
+                </label>
+                <span>Board resize handle</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="board-resize-handle" />
+                </label>
+                <span>Show captured pieces</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="board-resize-handle" />
+                </label>
+                <span>Captured pieces</span>
+                <div class="radio-input-area">
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(value);" />
+                        <div style="background-color: var(--brown-light-square-color); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--brown-board-color); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>All</span>
+                    </label>
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(value);" />
+                        <div style="background-color: var(--green-light-square-color); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--green-board-color); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>Material difference</span>
+                    </label>
+                </div>
+                <span>Piece notation</span>
+                <div class="radio-input-area">
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(value);" />
+                        <div style="background-color: var(--brown-light-square-color); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--brown-board-color); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>Symbol</span>
+                    </label>
+                    <label class="radio-input">
+                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(value);" />
+                        <div style="background-color: var(--green-light-square-color); transform: rotate(180deg);">
+                        <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--green-board-color); transform: rotate(30deg);"></div>
+                        </div>
+                        <span>Letter</span>
+                    </label>
                 </div>
             </div>
             <div class="options">

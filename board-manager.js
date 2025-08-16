@@ -363,7 +363,7 @@ const Notation = {
         },
     },
     write: {
-        san: (fromSquare, toSquare, promotedTo, enPassantSquare, board = piecePositions) => {
+        san: (fromSquare, toSquare, promotedTo, enPassantSquare, style = "letter", board = piecePositions) => {
             const pieceType = board[convertSquareToIndex(fromSquare)];
             const pieceIsPawn = pieceType.toLowerCase() === "p";
             const targetSquare = board[convertSquareToIndex(toSquare)];
@@ -612,7 +612,12 @@ function highlightSquareUnderPoint(x, y, touch = false) {
 // E.g., square = 54 (e4)
 //    => index = 36
 function convertSquareToIndex(square) {
-    return 8 * (8 - square[1]) + (square[0] - 1);
+    try {
+
+        return 8 * (8 - square[1]) + (square[0] - 1);
+    } catch (e) {
+        console.log(convertSquareToIndex.caller, activePiece)
+    }
 }
 function convertIndexToSquare(index) {
     return `${1 + (index % 8)}${8 - Math.floor(index / 8)}`;
@@ -1354,7 +1359,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     } else enPassantSquare = "";
 
     // Get move notation
-    const moveNotation = Notation.write.san(oldSquare, targetSquare, promotedTo, prevEnPassantSquare);
+    const moveNotation = Notation.write.san(oldSquare, targetSquare, promotedTo, prevEnPassantSquare, "symbol");
 
     // Update `piecePositions` and highlight move squares
     piecePositions[convertSquareToIndex(oldSquare)] = "";
@@ -1396,7 +1401,7 @@ function addMoveNotation(moveNotation) {
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">1–0</div>`;
             moveGrid.appendChild(newResultRow);
-        } else if (isStalemate(activeColor)) {
+        } else if (isStalemate(activeColor === "w" ? "b" : "w")) {
             gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
                 <div style="background-color: white;">
@@ -1414,7 +1419,7 @@ function addMoveNotation(moveNotation) {
             moveGrid.lastChild.children[2].remove();
             const blackMoveDiv = document.createElement("button");
             blackMoveDiv.className = "move-notation";
-            blackMoveDiv.innerText = moveNotation;
+            blackMoveDiv.innerHTML = moveNotation;
             moveGrid.lastChild.appendChild(blackMoveDiv);
         } else {
             const newMoveRow = document.createElement("div");
@@ -1432,7 +1437,7 @@ function addMoveNotation(moveNotation) {
             const newResultRow = document.createElement("div");
             newResultRow.innerHTML = `<div class="info">0–1</div>`;
             moveGrid.appendChild(newResultRow);
-        } else if (isStalemate(activeColor)) {
+        } else if (isStalemate(activeColor === "w" ? "b" : "w")) {
             gameStatus = "½–½";
             document.getElementById("to-move").innerHTML = `
                 <div style="background-color: black;">

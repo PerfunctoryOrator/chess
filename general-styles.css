@@ -342,6 +342,10 @@ textarea {
         }
     }
 }
+#move-grid > div > .move-notation > span {
+    width: 16%;
+    aspect-ratio: 1;
+}
 
 /* Turn indicator */
 #to-move {
@@ -383,6 +387,7 @@ textarea {
     position: absolute;
     right: 4px;
     bottom: calc(100% + 8px);
+    overflow: hidden;
     background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);
@@ -395,6 +400,14 @@ textarea {
     border-radius: 0;
     outline-offset: -2px;
     pointer-events: none;
+    &:first-child {
+        border-top-left-radius: var(--box-radius);
+        border-top-right-radius: var(--box-radius);
+    }
+    &:last-child {
+        border-bottom-left-radius: var(--box-radius);
+        border-bottom-right-radius: var(--box-radius);
+    }
 }
 .more-button > * {
     pointer-events: none;
@@ -435,6 +448,7 @@ textarea {
     position: absolute;
     top: 100%;
     left: 0;
+    overflow: hidden;
     width: 100%;
     margin-top: 2px;
     background-color: var(--background-color);
@@ -449,6 +463,14 @@ textarea {
     border-radius: 0;
     outline-offset: -2px;
     pointer-events: none;
+    &:first-child {
+        border-top-left-radius: var(--box-radius);
+        border-top-right-radius: var(--box-radius);
+    }
+    &:last-child {
+        border-bottom-left-radius: var(--box-radius);
+        border-bottom-right-radius: var(--box-radius);
+    }
 }
 
 /* Full-screen boxes */
@@ -466,11 +488,16 @@ textarea {
     position: absolute;
     top: 50%;
     left: 50%;
+    overflow: auto;
     max-height: 90%;
     background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);
     transform: translate(-50%, -50%);
+}
+.full-screen-box-container > div > .options:last-child {
+    position: sticky;
+    bottom: 0;
 }
 .input-grid {
     display: grid;

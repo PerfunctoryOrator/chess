@@ -1,7 +1,7 @@
 // Service Worker for Chess Web Interface
 // Version management and offline caching
 
-const CORE_VERSION = "1.0.3beta";
+const CORE_VERSION = "1.0.4beta";
 const MEDIA_VERSION = "1.0.2beta";
 
 const CORE_CACHE_NAME = `chess-core-v${CORE_VERSION}`;
