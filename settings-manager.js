@@ -5,6 +5,7 @@ function setAppearance(mode) {
         document.documentElement.classList.add(currentSettings.appearance);
     }
 }
+
 function setEdges(mode) {
     switch (mode) {
         case "soft":
@@ -16,6 +17,7 @@ function setEdges(mode) {
     }
     currentSettings.edges = mode;
 }
+
 function setButtons(mode) {
     switch (mode) {
         case "round":
@@ -30,6 +32,7 @@ function setButtons(mode) {
     }
     currentSettings.buttons = mode;
 }
+
 function setFont(font) {
     const customFontInputBox = document.getElementById("font-input");
     const hideCustomFontInput = () => {
@@ -65,6 +68,7 @@ function setFont(font) {
     }
     currentSettings.font = font;
 }
+
 function setBoardColor(color) {
     switch (color) {
         case "brown":
@@ -86,6 +90,7 @@ function setBoardColor(color) {
     }
     currentSettings.boardColor = color;
 }
+
 function setPieceAnimation(animation) {
     switch (animation) {
         case "ease":
@@ -97,6 +102,7 @@ function setPieceAnimation(animation) {
     }
     currentSettings.pieceAnimation = animation;
 }
+
 function toggleMoveIndicators(showMoves) {
     if (showMoves === undefined) {
         currentSettings.showMoves = root.getPropertyValue("--show-moves") === "0" ? "" : "0";
@@ -105,6 +111,7 @@ function toggleMoveIndicators(showMoves) {
     }
     root.setProperty("--show-moves", currentSettings.showMoves);
 }
+
 function applyCurrentSettings() {
     document.querySelector(`input[name="appearance"][value="${currentSettings.appearance}"]`).checked = true;
     document.querySelector(`input[name="edges"][value="${currentSettings.edges}"]`).checked = true;
@@ -124,6 +131,15 @@ function applyCurrentSettings() {
     setBoardColor(currentSettings.boardColor);
     setDropDownValue("piece-animation-selector", currentSettings.pieceAnimation);
     toggleMoveIndicators(currentSettings.showMoves);
+}
+
+function openSettingsPane(name) {
+    const settingsContainer = document.getElementById("settings-container");
+    document.getElementById(name).style.display = "";
+    document.getElementById(currentOpenPane).style.display = "none";
+    settingsContainer.querySelector(`button[value="${name}"`).classList.add("active-button");
+    settingsContainer.querySelector(`button[value="${currentOpenPane}"`).classList.remove("active-button");
+    currentOpenPane = name;
 }
 
 const Settings = {
@@ -176,6 +192,15 @@ const Settings = {
         return null;
     },
 };
+
+let currentOpenPane = "general-settings";
+document.getElementById("settings-container").querySelectorAll(".settings-view").forEach(view => {
+    if (view.id === currentOpenPane) {
+        document.getElementById("settings-container").querySelector(`button[value="${view.id}"`).classList.add("active-button");
+    } else {
+        view.style.display = "none";
+    }
+});
 
 const root = document.documentElement.style;
 let currentSettings = Settings.get();

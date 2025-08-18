@@ -139,6 +139,11 @@ button, .button-link {
     text-decoration: none;
     outline-offset: 0;
 }
+.active-button {
+    fill: var(--active-color);
+    color: var(--active-color);
+    background-color: var(--active-background-color);
+}
 
 /* Text inputs */
 input[type="text"], input[type="email"] {
@@ -494,6 +499,12 @@ textarea {
     border: var(--border);
     border-radius: var(--box-radius);
     transform: translate(-50%, -50%);
+    & > div:first-child {
+        position: sticky;
+        top: 0;
+        background-color: var(--background-color);
+        z-index: 1;
+    }
 }
 .full-screen-box-container > div > .options:last-child {
     position: sticky;
@@ -509,6 +520,7 @@ textarea {
     display: flex;
     align-items: center;
 }
+
 
 /* Settings-views (general, advanced, etc.) */
 .settings-view {

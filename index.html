@@ -10,7 +10,7 @@
         <link rel="icon" type="image/x-icon" href="media-support/favicon.ico?modified=17-8-25-1" />
         <link rel="apple-touch-icon" type="image/png" href="media-support/apple-touch-icon.png?modified=17-8-25-1" />
         <link rel="stylesheet" href="board-styles.css?modified=17-8-25-1" />
-        <link rel="stylesheet" href="general-styles.css?modified=17-8-25-1" />
+        <link rel="stylesheet" href="general-styles.css?modified=18-8-25-1" />
     </head>
     <body>
         <div id="game-area">
@@ -100,36 +100,38 @@
                 </div>
             </div>
         </div>
-        <div class="full-screen-box-container" id="settings-container">
-            <h2>Settings</h2>
-            <div class="options" style="justify-content: center; border-top: none; border-bottom: var(--border);">
-                <button>
-                    <span class="button-desc">General</span>
-                </button>
-                <button>
-                    <span class="button-desc">Board</span>
-                </button>
-                <button>
-                    <span class="button-desc">Advanced</span>
-                </button>
+        <div class="full-screen-box-container" id="settings-container" style="display: block;">
+            <div>
+                <h2>Settings</h2>
+                <div class="options" style="justify-content: center; border-top: none; border-bottom: var(--border);">
+                    <button value="general-settings" onclick="openSettingsPane(this.value);">
+                        <span class="button-desc">General</span>
+                    </button>
+                    <button value="board-settings" onclick="openSettingsPane(this.value);">
+                        <span class="button-desc">Board</span>
+                    </button>
+                    <button value="advanced-settings" onclick="openSettingsPane(this.value);">
+                        <span class="button-desc">Advanced</span>
+                    </button>
+                </div>
             </div>
             <div id="general-settings" class="input-grid settings-view">
                 <span>Appearance</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
-                        <input type="radio" name="appearance" value="system" onchange="setAppearance(value);" />
+                        <input type="radio" name="appearance" value="system" onchange="setAppearance(this.value);" />
                         <div style="background-color: whitesmoke; transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--dark-gray); transform: rotate(30deg);"></div>
                         </div>
                         <span>System</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="appearance" value="light" onchange="setAppearance(value);" />
+                        <input type="radio" name="appearance" value="light" onchange="setAppearance(this.value);" />
                         <div style="background-color: whitesmoke;"></div>
                         <span>Light</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="appearance" value="dark" onchange="setAppearance(value);" />
+                        <input type="radio" name="appearance" value="dark" onchange="setAppearance(this.value);" />
                         <div style="background-color: var(--dark-gray);"></div>
                         <span>Dark</span>
                     </label>
@@ -137,14 +139,14 @@
                 <span>Edges</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
-                        <input type="radio" name="edges" value="soft" onchange="setEdges(value);" />
+                        <input type="radio" name="edges" value="soft" onchange="setEdges(this.value);" />
                         <div>
                             <div style="position: absolute; bottom: 30%; left: 30%; width: 4em; height: 2em; background-color: var(--contrast-background-color); border: var(--border); border-radius: 0.5em;"></div>
                         </div>
                         <span>Soft</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="edges" value="sharp" onchange="setEdges(value);" />
+                        <input type="radio" name="edges" value="sharp" onchange="setEdges(this.value);" />
                         <div>
                             <div style="position: absolute; bottom: 30%; left: 30%; width: 4em; height: 2em; background-color: var(--contrast-background-color); border: var(--border);"></div>
                         </div>
@@ -154,18 +156,18 @@
                 <span>Buttons</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
-                        <input type="radio" name="buttons" value="round" onchange="setButtons(value);" />
+                        <input type="radio" name="buttons" value="round" onchange="setButtons(this.value);" />
                         <div style="border-radius: 2em;"></div>
                         <span>Round</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="buttons" value="subtle" onchange="setButtons(value);" />
+                        <input type="radio" name="buttons" value="subtle" onchange="setButtons(this.value);" />
                         <div style="border-radius: 0.5em;">
                         </div>
                         <span>Subtle</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="buttons" value="sharp" onchange="setButtons(value);" />
+                        <input type="radio" name="buttons" value="sharp" onchange="setButtons(this.value);" />
                         <div style="border-radius: 0;"></div>
                         <span>Sharp</span>
                     </label>
@@ -188,28 +190,28 @@
                 <span>Board colour</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--brown-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--brown-board-color); transform: rotate(30deg);"></div>
                         </div>
                         <span>Brown</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--green-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--green-board-color); transform: rotate(30deg);"></div>
                         </div>
                         <span>Green</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="red" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="red" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--red-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--red-board-color); transform: rotate(30deg);"></div>
                         </div>
                         <span>Red</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="blue" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="blue" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--blue-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--blue-board-color); transform: rotate(30deg);"></div>
                         </div>
@@ -269,14 +271,14 @@
                 <span>Captured pieces</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--brown-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--brown-board-color); transform: rotate(30deg);"></div>
                         </div>
                         <span>All</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--green-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--green-board-color); transform: rotate(30deg);"></div>
                         </div>
@@ -286,14 +288,14 @@
                 <span>Piece notation</span>
                 <div class="radio-input-area">
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="brown" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--brown-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--brown-board-color); transform: rotate(30deg);"></div>
                         </div>
                         <span>Symbol</span>
                     </label>
                     <label class="radio-input">
-                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(value);" />
+                        <input type="radio" name="board-color" value="green" onchange="setBoardColor(this.value);" />
                         <div style="background-color: var(--green-light-square-color); transform: rotate(180deg);">
                         <div style="position: absolute; top: calc(1.25em / sqrt(2)); right: calc(1.25em / sqrt(2)); width: 5em; height: 5em; background-color: var(--green-board-color); transform: rotate(30deg);"></div>
                         </div>
@@ -318,7 +320,7 @@
             <h2>Import Game</h2>
             <div class="input-grid">
                 <span>Enter a valid FEN or PGN:</span>
-                <textarea id="position-input" rows="5" spellcheck="false" oninput="checkFenValidity(value);"></textarea>
+                <textarea id="position-input" rows="5" spellcheck="false" oninput="checkFenValidity(this.value);"></textarea>
             </div>
             <div class="options">
                 <button onclick="{
@@ -359,8 +361,8 @@
                 }">Load</button>
             </div>
         </div>
-        <script src="document-set-up.js?modified=17-8-25-1"></script>
-        <script src="settings-manager.js?modified=17-8-25-1"></script>
+        <script src="document-set-up.js?modified=18-8-25-1"></script>
+        <script src="settings-manager.js?modified=18-8-25-1"></script>
         <script src="board-manager.js?modified=17-8-25-1"></script>
     </body>
 </html>
