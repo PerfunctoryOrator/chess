@@ -6,7 +6,10 @@ const PieceMoveMethods = {
         click: (event) => {
             const target = event.target;
             if (target.classList.contains("move-indicator")) {
-                movePiece(getSquareFromClassList(target));
+                const toSquare = getSquareFromClassList(target);
+                if (legalMoves.includes(toSquare)) {
+                    movePiece(toSquare);
+                }
             }
             if (target.classList.contains("chess-piece")) {
                 selectPiece(target);
@@ -14,6 +17,7 @@ const PieceMoveMethods = {
                 removeLegalMoveIndicators();
                 removeSquareHighlight();
                 activePiece = null;
+                legalMoves = [];
             }
         },
         remove: function () {
@@ -35,6 +39,7 @@ const PieceMoveMethods = {
             const target = event.target;
             if (target.classList.contains("chess-piece")) {
                 activePiece = null;
+                legalMoves = [];
                 removeSquareHighlight();
                 selectPiece(target, true);
                 if (!activePiece) return;
@@ -69,6 +74,7 @@ const PieceMoveMethods = {
             removeLegalMoveIndicators();
             removeSquareHighlight();
             activePiece = null;
+            legalMoves = [];
             draggedPiece.style.pointerEvents = "";
             draggedPiece.style.cursor = "grab";
             draggedPiece.classList.remove("dragged");
@@ -151,11 +157,15 @@ const PieceMoveMethods = {
                 PieceMoveMethods.dragDrop.mousemove(event);
             } else {
                 if (target.classList.contains("move-indicator")) {
-                    movePiece(getSquareFromClassList(target));
+                    const toSquare = getSquareFromClassList(target);
+                    if (legalMoves.includes(toSquare)) {
+                        movePiece(toSquare);
+                    }
                 }
                 removeLegalMoveIndicators();
                 removeSquareHighlight();
                 activePiece = null;
+                legalMoves = [];
             }
         },
         mouseup: (event) => {
@@ -172,12 +182,14 @@ const PieceMoveMethods = {
                 removeLegalMoveIndicators();
                 removeSquareHighlight();
                 activePiece = null;
+                legalMoves = [];
             } else {
                 createRipple(getSquareFromClassList(draggedPiece));
                 if (hideOnRelease) {
                     removeLegalMoveIndicators();
                     removeSquareHighlight();
                     activePiece = null;
+                    legalMoves = [];
                 }
             }
             draggedPiece.style.pointerEvents = "";
@@ -612,12 +624,7 @@ function highlightSquareUnderPoint(x, y, touch = false) {
 // E.g., square = 54 (e4)
 //    => index = 36
 function convertSquareToIndex(square) {
-    try {
-
-        return 8 * (8 - square[1]) + (square[0] - 1);
-    } catch (e) {
-        console.log(convertSquareToIndex.caller, activePiece)
-    }
+    return 8 * (8 - square[1]) + (square[0] - 1);
 }
 function convertIndexToSquare(index) {
     return `${1 + (index % 8)}${8 - Math.floor(index / 8)}`;
@@ -701,8 +708,8 @@ function setUpPieces() {
     }
 };
 
-function getBasicCandidateMoves(pieceSquare, board) {
-    let candidateMoves = [];
+function getBasicMoves(pieceSquare, board) {
+    let basicMoves = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
     const pieceFile = parseInt(pieceSquare[0]);
     const pieceRank = parseInt(pieceSquare[1]);
@@ -726,7 +733,7 @@ function getBasicCandidateMoves(pieceSquare, board) {
                 f += fileStep;
                 r += rankStep;
                 if (!isValidMove(f, r)) break;
-                candidateMoves.push(`${f}${r}`);
+                basicMoves.push(`${f}${r}`);
                 if (board[convertSquareToIndex(`${f}${r}`)]) break;
             }
         });
@@ -745,14 +752,14 @@ function getBasicCandidateMoves(pieceSquare, board) {
             [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([df, dr]) => {
                 let f = pieceFile + df;
                 let r = pieceRank + dr;
-                if (isValidMove(f, r)) candidateMoves.push(`${f}${r}`);
+                if (isValidMove(f, r)) basicMoves.push(`${f}${r}`);
             });
             break;
         case "n":
             [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]].forEach(([df, dr]) => {
                 let f = pieceFile + df;
                 let r = pieceRank + dr;
-                if (isValidMove(f, r)) candidateMoves.push(`${f}${r}`);
+                if (isValidMove(f, r)) basicMoves.push(`${f}${r}`);
             });
             break;
         case "p":
@@ -760,246 +767,140 @@ function getBasicCandidateMoves(pieceSquare, board) {
             let startRank = piece === "P" ? 2 : 7;
             let frontSquare = `${pieceFile}${pieceRank + forward}`;
             if (!board[convertSquareToIndex(frontSquare)]) {
-                candidateMoves.push(frontSquare);
+                basicMoves.push(frontSquare);
                 if (pieceRank === startRank) {
                     let doubleFront = `${pieceFile}${pieceRank + 2 * forward}`;
-                    if (!board[convertSquareToIndex(doubleFront)]) candidateMoves.push(doubleFront);
+                    if (!board[convertSquareToIndex(doubleFront)]) basicMoves.push(doubleFront);
                 }
             }
             [[-1, forward], [1, forward]].forEach(([df, dr]) => {
                 let f = pieceFile + df;
                 let r = pieceRank + dr;
                 let captureSquare = `${f}${r}`;
-                if (isValidMove(f, r) && board[convertSquareToIndex(captureSquare)]) candidateMoves.push(captureSquare);
+                if (isValidMove(f, r) && board[convertSquareToIndex(captureSquare)]) basicMoves.push(captureSquare);
             });
             if (enPassantSquare && Math.abs(pieceFile - enPassantSquare[0]) === 1 && pieceRank + forward === parseInt(enPassantSquare[1])) {
-                candidateMoves.push(enPassantSquare);
+                basicMoves.push(enPassantSquare);
             }
             break;
     }
-    return candidateMoves;
+    return basicMoves;
 };
 
 function getCandidateMoves(pieceSquare, board) {
-    let candidateMoves = getBasicCandidateMoves(pieceSquare, board);
-    const piece = board[convertSquareToIndex(pieceSquare)];
-
-    // Add castling moves for kings
-    if (piece.toLowerCase() === "k") {
-        const isWhite = piece === "K";
-        const backRank = isWhite ? 1 : 8;
-        const kingFile = parseInt(pieceSquare[0]);
-        const kingRank = parseInt(pieceSquare[1]);
-
-        // Only allow castling if king is on the back rank
-        if (kingRank === backRank) {
-            // Find rooks on the back rank
-            const rooks = [];
-            for (let file = 1; file <= 8; file++) {
-                const square = `${file}${backRank}`;
-                const pieceOnSquare = board[convertSquareToIndex(square)];
-                if (pieceOnSquare === (isWhite ? "R" : "r")) {
-                    rooks.push(file);
-                }
-            }
-
-            // Kingside castling (uses rightmost rook)
-            if ((isWhite && castlingRights.includes("K")) || (!isWhite && castlingRights.includes("k"))) {
-                const kingsideRook = Math.max(...rooks.filter(rookFile => rookFile > kingFile));
-                if (kingsideRook > kingFile) {
-                    const kingDestination = `7${backRank}`; // g1 for white, g8 for black
-                    const rookDestination = `6${backRank}`; // f1 for white, f8 for black
-
-                    // Check if squares between king and rook are empty (excluding king and rook squares)
-                    const squaresBetween = [];
-                    for (let file = Math.min(kingFile, kingsideRook) + 1; file < Math.max(kingFile, kingsideRook); file++) {
-                        squaresBetween.push(`${file}${backRank}`);
-                    }
-
-                    // Check if king destination and rook destination are empty (if different from current positions)
-                    const destinationSquares = [];
-                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
-                    if (rookDestination !== `${kingsideRook}${backRank}`) destinationSquares.push(rookDestination);
-
-                    const squaresEmpty = [...squaresBetween, ...destinationSquares].every(sq =>
-                        board[convertSquareToIndex(sq)] === "");
-
-                    if (squaresEmpty) {
-                        // Check that king doesn’t pass through attacked squares
-                        const kingPath = [];
-                        const startFile = kingFile;
-                        const endFile = 7; // g-file
-                        const step = startFile < endFile ? 1 : -1;
-                        for (let file = startFile; file !== endFile + step; file += step) {
-                            kingPath.push(`${file}${backRank}`);
-                        }
-
-                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
-                        if (notAttacked && kingDestination !== pieceSquare) {
-                            candidateMoves.push(kingDestination);
-                        }
-                    }
-                }
-            }
-
-            // Queenside castling (uses leftmost rook)
-            if ((isWhite && castlingRights.includes("Q")) || (!isWhite && castlingRights.includes("q"))) {
-                const queensideRook = Math.min(...rooks.filter(rookFile => rookFile < kingFile));
-                if (queensideRook < kingFile) {
-                    const kingDestination = `3${backRank}`; // c1 for white, c8 for black
-                    const rookDestination = `4${backRank}`; // d1 for white, d8 for black
-
-                    // Check if squares between king and rook are empty (excluding king and rook squares)
-                    const squaresBetween = [];
-                    for (let file = Math.min(kingFile, queensideRook) + 1; file < Math.max(kingFile, queensideRook); file++) {
-                        squaresBetween.push(`${file}${backRank}`);
-                    }
-
-                    // Check if king destination and rook destination are empty (if different from current positions)
-                    const destinationSquares = [];
-                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
-                    if (rookDestination !== `${queensideRook}${backRank}`) destinationSquares.push(rookDestination);
-
-                    const squaresEmpty = [...squaresBetween, ...destinationSquares].every(sq =>
-                        board[convertSquareToIndex(sq)] === "");
-
-                    if (squaresEmpty) {
-                        // Check that king doesn’t pass through attacked squares
-                        const kingPath = [];
-                        const startFile = kingFile;
-                        const endFile = 3; // c-file
-                        const step = startFile < endFile ? 1 : -1;
-                        for (let file = startFile; file !== endFile + step; file += step) {
-                            kingPath.push(`${file}${backRank}`);
-                        }
-
-                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
-                        if (notAttacked && kingDestination !== pieceSquare) {
-                            candidateMoves.push(kingDestination);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    let candidateMoves = getBasicMoves(pieceSquare, board);
+    candidateMoves.push(...getCastlingTargets(pieceSquare, board));
     return candidateMoves;
 };
 
 function getCastlingTargets(pieceSquare, board) {
+    let castlingMoves = [];
     const piece = board[convertSquareToIndex(pieceSquare)];
-    let castlingTargets = [];
+    if (piece.toLowerCase() !== "k") return [];
 
-    // Only for kings
-    if (piece.toLowerCase() === "k") {
-        const isWhite = piece === "K";
-        const backRank = isWhite ? 1 : 8;
-        const kingFile = parseInt(pieceSquare[0]);
-        const kingRank = parseInt(pieceSquare[1]);
+    const isWhite = piece === "K";
+    const backRank = isWhite ? 1 : 8;
+    const kingFile = parseInt(pieceSquare[0]);
+    const kingRank = parseInt(pieceSquare[1]);
 
-        // Only allow castling if king is on the back rank
-        if (kingRank === backRank) {
-            // Find rooks on the back rank
-            const rooks = [];
-            for (let file = 1; file <= 8; file++) {
-                const square = `${file}${backRank}`;
-                const pieceOnSquare = board[convertSquareToIndex(square)];
-                if (pieceOnSquare === (isWhite ? "R" : "r")) {
-                    rooks.push(file);
-                }
+    // Only allow castling if king is on the back rank
+    if (kingRank !== backRank) return [];
+
+    // Find rooks on the back rank
+    const rooks = [];
+    for (let file = 1; file <= 8; file++) {
+        const square = `${file}${backRank}`;
+        const pieceOnSquare = board[convertSquareToIndex(square)];
+        if (pieceOnSquare === (isWhite ? "R" : "r")) {
+            rooks.push(file);
+        }
+    }
+
+    // Kingside castling (uses rightmost rook)
+    if (castlingRights.includes(isWhite ? "K" : "k")) {
+
+        // TODO: Confirm all rook configs in Lichess (which rook is used for castling in each case)
+        const kingsideRook = Math.max(...rooks.filter(rookFile => rookFile > kingFile));
+        if (kingsideRook !== -Infinity) {
+            const kingDestination = `7${backRank}`; // g1 for white, g8 for black
+            const rookDestination = `6${backRank}`; // f1 for white, f8 for black
+
+            // Get squares between king and rook to check if they are empty (excluding king and rook squares)
+            const squaresBetween = [];
+            for (let file = kingFile + 1; file < kingsideRook; file++) {
+                squaresBetween.push(`${file}${backRank}`);
             }
 
-            // Check kingside castling
-            if ((isWhite && castlingRights.includes("K")) || (!isWhite && castlingRights.includes("k"))) {
-                const kingsideRook = Math.max(...rooks.filter(rookFile => rookFile > kingFile));
-                if (kingsideRook > kingFile) {
-                    const kingDestination = `7${backRank}`;
-                    const rookDestination = `6${backRank}`;
+            // TODO: Don’t the squares b/w destination and current also need to be empty? r3k2r/pppppppp/8/8/8/8/PPPPPPPP/RK1RQ21 w KQkq - 0 1
 
-                    // Check if squares between king and rook are empty
-                    const squaresBetween = [];
-                    for (let file = Math.min(kingFile, kingsideRook) + 1; file < Math.max(kingFile, kingsideRook); file++) {
-                        squaresBetween.push(`${file}${backRank}`);
-                    }
+            // Check if all required squares are empty
+            const squaresEmpty = [...squaresBetween, kingDestination, rookDestination].every(square => {
+                const piece = board[convertSquareToIndex(square)];
+                return piece === "" || square === pieceSquare || square === `${kingsideRook}${backRank}`;
+            });
 
-                    // Check if destinations are empty (if different from current positions)
-                    const destinationSquares = [];
-                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
-                    if (rookDestination !== `${kingsideRook}${backRank}`) destinationSquares.push(rookDestination);
+            if (squaresEmpty) {
 
-                    // For Chess960: exclude occupied destination squares from the empty check
-                    const squaresToCheck = [...squaresBetween, ...destinationSquares];
-                    const squaresEmpty = squaresToCheck.every(sq => {
-                        const piece = board[convertSquareToIndex(sq)];
-                        // Square is empty, or contains the king/rook that will move away
-                        return piece === "" || sq === pieceSquare || sq === `${kingsideRook}${backRank}`;
-                    });
-
-                    if (squaresEmpty) {
-                        // Check that king doesn’t pass through attacked squares
-                        const kingPath = [];
-                        const startFile = kingFile;
-                        const endFile = 7;
-                        const step = startFile < endFile ? 1 : -1;
-                        for (let file = startFile; file !== endFile + step; file += step) {
-                            kingPath.push(`${file}${backRank}`);
-                        }
-
-                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
-                        if (notAttacked) {
-                            castlingTargets.push(`${kingsideRook}${backRank}`); // Rook as target
-                        }
-                    }
+                // TODO: Can rook pass through attcked sq.?
+                // Check that king doesn’t pass through attacked squares
+                const kingPath = [];
+                const step = kingFile < 7 ? 1 : -1; // 7 is g-file
+                for (let file = kingFile; file !== 7 + step; file += step) {
+                    kingPath.push(`${file}${backRank}`);
                 }
-            }
 
-            // Check queenside castling
-            if ((isWhite && castlingRights.includes("Q")) || (!isWhite && castlingRights.includes("q"))) {
-                const queensideRook = Math.min(...rooks.filter(rookFile => rookFile < kingFile));
-                if (queensideRook < kingFile) {
-                    const kingDestination = `3${backRank}`;
-                    const rookDestination = `4${backRank}`;
-
-                    // Check if squares between king and rook are empty
-                    const squaresBetween = [];
-                    for (let file = Math.min(kingFile, queensideRook) + 1; file < Math.max(kingFile, queensideRook); file++) {
-                        squaresBetween.push(`${file}${backRank}`);
-                    }
-
-                    // Check if destinations are empty (if different from current positions)
-                    const destinationSquares = [];
-                    if (kingDestination !== pieceSquare) destinationSquares.push(kingDestination);
-                    if (rookDestination !== `${queensideRook}${backRank}`) destinationSquares.push(rookDestination);
-
-                    // For Chess960: exclude occupied destination squares from the empty check
-                    const squaresToCheck = [...squaresBetween, ...destinationSquares];
-                    const squaresEmpty = squaresToCheck.every(sq => {
-                        const piece = board[convertSquareToIndex(sq)];
-                        // Square is empty, or contains the king/rook that will move away
-                        return piece === "" || sq === pieceSquare || sq === `${queensideRook}${backRank}`;
-                    });
-
-                    if (squaresEmpty) {
-                        // Check that king doesn’t pass through attacked squares
-                        const kingPath = [];
-                        const startFile = kingFile;
-                        const endFile = 3;
-                        const step = startFile < endFile ? 1 : -1;
-                        for (let file = startFile; file !== endFile + step; file += step) {
-                            kingPath.push(`${file}${backRank}`);
-                        }
-
-                        const notAttacked = kingPath.every(sq => !isSquareAttacked(board, sq, isWhite ? "b" : "w"));
-                        if (notAttacked) {
-                            castlingTargets.push(`${queensideRook}${backRank}`); // Rook as target
-                        }
-                    }
+                const attacked = kingPath.every(square => isSquareAttacked(board, square, isWhite ? "b" : "w"));
+                // TODO: What if original rook square is attacked?
+                if (!attacked) {
+                    castlingMoves.push(`${kingsideRook}${backRank}`);
                 }
             }
         }
     }
 
-    return castlingTargets;
+    // Queenside castling (uses leftmost rook)
+    if (castlingRights.includes(isWhite ? "Q" : "q")) {
+
+        // TODO: Confirm all rook configs in Lichess (which rook is used for castling in each case) two rooks on one side which is chosen etc.
+        const queensideRook = Math.min(...rooks.filter(rookFile => rookFile < kingFile));
+        if (queensideRook !== -Infinity) {
+            const kingDestination = `3${backRank}`; // c1 for white, c8 for black
+            const rookDestination = `4${backRank}`; // d1 for white, d8 for black
+
+            // Get squares between king and rook to check if they are empty (excluding king and rook squares)
+            const squaresBetween = [];
+            for (let file = queensideRook + 1; file < kingFile; file++) {
+                squaresBetween.push(`${file}${backRank}`);
+            }
+
+            // TODO: Don’t the squares b/w destination and current also need to be empty? r3k2r/pppppppp/8/8/8/8/PPPPPPPP/RK1RQ21 w KQkq - 0 1
+
+            // Check if all required squares are empty
+            const squaresEmpty = [...squaresBetween, kingDestination, rookDestination].every(square => {
+                const piece = board[convertSquareToIndex(square)];
+                return piece === "" || square === pieceSquare || square === `${queensideRook}${backRank}`;
+            });
+
+            if (squaresEmpty) {
+
+                // TODO: Can rook pass through attcked sq.?
+                // Check that king doesn’t pass through attacked squares
+                const kingPath = [];
+                const step = kingFile < 3 ? 1 : -1; // 3 is c-file
+                for (let file = kingFile; file !== 3 + step; file += step) {
+                    kingPath.push(`${file}${backRank}`);
+                }
+
+                const attacked = kingPath.every(square => isSquareAttacked(board, square, isWhite ? "b" : "w"));
+                // TODO: What if original rook square is attacked?
+                if (!attacked) {
+                    castlingMoves.push(`${queensideRook}${backRank}`);
+                }
+            }
+        }
+    }
+
+    return castlingMoves;
 };
 
 function isSquareAttacked(board, square, attackerColor) {
@@ -1010,7 +911,7 @@ function isSquareAttacked(board, square, attackerColor) {
         if ((attackerColor === "w" && isWhite) ||
             (attackerColor === "b" && !isWhite)) {
             const attackerSquare = convertIndexToSquare(i);
-            const moves = getBasicCandidateMoves(attackerSquare, board);
+            const moves = getBasicMoves(attackerSquare, board);
             if (moves.includes(square)) return true;
         }
     }
@@ -1128,6 +1029,7 @@ function selectPiece(piece, dragged = false) {
         removeLegalMoveIndicators();
         removeSquareHighlight();
         activePiece = null;
+        legalMoves = [];
         return;
     }
 
@@ -1145,35 +1047,53 @@ function selectPiece(piece, dragged = false) {
     // Remove all previous legal move indicators
     removeLegalMoveIndicators();
 
-    // Handle piece capture or castling target
+    // Handle piece capture and castling
     if (activePiece && legalMoves.includes(pieceSquare)) {
 
         // Check if this is a castling target (rook clicked for castling)
-        const activeSquare = getSquareFromClassList(activePiece);
-        const activePieceType = piecePositions[convertSquareToIndex(activeSquare)];
+        const activePieceSquare = getSquareFromClassList(activePiece);
+        const activePieceType = piecePositions[convertSquareToIndex(activePieceSquare)];
 
         if (activePieceType.toLowerCase() === "k") {
-            const castlingTargets = getCastlingTargets(activeSquare, piecePositions);
-            if (castlingTargets.includes(pieceSquare)) {
+            const targetPieceType = piecePositions[convertSquareToIndex(pieceSquare)];
+            if (targetPieceType.toLowerCase() === "r" && (targetPieceType === "r") === (activePieceType === "k")) {
 
                 // This is a rook being clicked for castling; pass the rook’s square as target
-                movePiece(pieceSquare);
+
+                const kingFile = parseInt(activePieceSquare[0]);
+                const rookFile = parseInt(pieceSquare[0]);
+                const castleRank = activePieceSquare[1];
+                const castleFile = rookFile < kingFile ? 3 : 7;
+                const targetSquare = `${castleFile}${castleRank}`;
+                movePiece(targetSquare);
+                // Change the position of rook
+                piece.classList.remove(`square-${rookFile}${castleRank}`);
+                piece.classList.add(`square-${castleFile === 3 ? 4 : 6}${castleRank}`);
+                piece.classList.add("sliding");
+                setTimeout(() => {
+                    piece.classList.remove("sliding");
+                }, 300);
+                // TODO: set halfmove clock to 0?
                 halfmoveClock = 0;
                 activePiece = null;
+                legalMoves = [];
                 return;
             }
-        }
+        } else {
 
-        // Regular piece capture
-        movePiece(pieceSquare);
-        halfmoveClock = 0;
-        activePiece = null;
-        return;
+            // Regular piece capture
+            movePiece(pieceSquare);
+            halfmoveClock = 0;
+            activePiece = null;
+            legalMoves = [];
+            return;
+        }
     }
 
     // If the piece to be selected is already selected, deselect it
     if (piece === activePiece) {
         activePiece = null;
+        legalMoves = [];
         removeSquareHighlight();
         return;
     }
@@ -1187,56 +1107,10 @@ function selectPiece(piece, dragged = false) {
 
     // Select the piece and highlight legal moves
     activePiece = piece;
-    const allMoves = getLegalMoves(pieceSquare);
-    const pieceType = piecePositions[convertSquareToIndex(pieceSquare)];
+    legalMoves = getLegalMoves(pieceSquare);
 
-    // Handle king castling logic
-    let castlingTargets = [];
-    let normalMoves = [];
-    let castlingMoves = [];
-
-    if (pieceType.toLowerCase() === "k") {
-
-        // Get castling targets (rooks that can be clicked for castling)
-        castlingTargets = getCastlingTargets(pieceSquare, piecePositions);
-
-        // Separate normal moves from castling moves
-        const isWhite = pieceType === "K";
-        const backRank = isWhite ? 1 : 8;
-
-        // Get basic candidate moves (normal moves only)
-        const basicMoves = [];
-        const candidateMoves = getBasicCandidateMoves(pieceSquare, piecePositions);
-        candidateMoves.forEach(move => {
-            let newBoard = piecePositions.slice();
-            newBoard[convertSquareToIndex(move)] = newBoard[convertSquareToIndex(pieceSquare)];
-            newBoard[convertSquareToIndex(pieceSquare)] = "";
-            if (!isKingInCheck(newBoard, pieceType === pieceType.toUpperCase() ? "w" : "b")) {
-                basicMoves.push(move);
-            }
-        });
-
-        allMoves.forEach(move => {
-            const isCastlingMove = move === `7${backRank}` || move === `3${backRank}`;
-
-            if (isCastlingMove) {
-
-                // Don’t show castling destination if king is already there
-                if (pieceSquare !== move) {
-                    castlingMoves.push(move);
-                }
-            } else {
-                normalMoves.push(move);
-            }
-        });
-    } else {
-        normalMoves = allMoves;
-    }
-
-    legalMoves = allMoves.concat(castlingTargets);
-
-    // Show move indicators for normal moves
-    normalMoves.forEach(square => {
+    // Show move indicators
+    legalMoves.forEach(square => {
         const moveIndicator = document.createElement("div");
         moveIndicator.className = `move-indicator square-${square}`;
         if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(pieceSquare)].toLowerCase() === "p")) {
@@ -1244,26 +1118,6 @@ function selectPiece(piece, dragged = false) {
         } else {
             moveIndicator.classList.add("empty-move-indicator");
         }
-        chessBoard.appendChild(moveIndicator);
-    });
-
-    // Show indicators for castling moves that don’t conflict with normal moves
-    if (pieceType.toLowerCase() === "k") {
-        castlingMoves.forEach(square => {
-            if (!normalMoves.includes(square)) {
-                const moveIndicator = document.createElement("div");
-                moveIndicator.className = `move-indicator square-${square}`;
-                moveIndicator.classList.add("empty-move-indicator");
-                chessBoard.appendChild(moveIndicator);
-            }
-        });
-    }
-
-    // Show rook targets for castling
-    castlingTargets.forEach(square => {
-        const moveIndicator = document.createElement("div");
-        moveIndicator.className = `move-indicator square-${square}`;
-        moveIndicator.classList.add("capture-indicator");
         chessBoard.appendChild(moveIndicator);
     });
 };
@@ -1323,7 +1177,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         }
     }
 
-    // Handle piece capture
+    // Handle piece capture and castling
     const capturedPieceType = piecePositions[convertSquareToIndex(targetSquare)];
     if (capturedPieceType) {
         const capturedPiece = chessBoard.querySelector(`.chess-piece.square-${targetSquare}:not(.removed)`);
@@ -1336,8 +1190,6 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     pieceToMove.classList.add(`square-${targetSquare}`);
     if (!dropped) {
         pieceToMove.classList.add("sliding");
-    }
-    if (!dropped) {
         setTimeout(() => {
             pieceToMove.classList.remove("sliding");
         }, 300);
@@ -1588,6 +1440,7 @@ function computerMove() {
     activePiece = chessBoard.querySelector(`.chess-piece.square-${randomItem.slice(0, 2)}:not(.removed)`);
     movePiece(randomItem.slice(3, 5), false, true);
     activePiece = null;
+    legalMoves = [];
 }
 
 let isBoardFlipped = false;
