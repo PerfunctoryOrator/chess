@@ -1,3 +1,4 @@
+// TODO: update CastlingRights whenever a rook or king moves
 // Ways to move pieces
 let draggedPiece = null;
 let hideOnRelease = false;
@@ -389,10 +390,10 @@ const Notation = {
                 const backRank = isWhite ? 1 : 8;
                 const fromRank = parseInt(fromSquare[1]);
                 if (fromRank === backRank) {
-                    if (toSquare === `7${backRank}`) {
+                    if (toSquare === `8${backRank}`) {
                         isCastling = true;
                         castlingNotation = "O-O";
-                    } else if (toSquare === `3${backRank}`) {
+                    } else if (toSquare === `1${backRank}`) {
                         isCastling = true;
                         castlingNotation = "O-O-O";
                     }
@@ -831,7 +832,7 @@ function getCastlingTargets(pieceSquare, board) {
                 squaresBetween.push(`${file}${backRank}`);
             }
 
-            // TODO: Don’t the squares b/w destination and current also need to be empty? r3k2r/pppppppp/8/8/8/8/PPPPPPPP/RK1RQ21 w KQkq - 0 1
+            // TODO: Don’t the squares b/w destination and current also need to be empty? r3k2r/pppppppp/8/8/8/8/PPPPPPPP/RK1RQ21 w KQkq - 0 1 — Yes, they do.
 
             // Check if all required squares are empty
             const squaresEmpty = [...squaresBetween, kingDestination, rookDestination].every(square => {
@@ -841,8 +842,9 @@ function getCastlingTargets(pieceSquare, board) {
 
             if (squaresEmpty) {
 
-                // TODO: Can rook pass through attcked sq.?
+                // TODO: Can rook pass through attcked sq.? Yes, it can
                 // Check that king doesn’t pass through attacked squares
+
                 const kingPath = [];
                 const step = kingFile < 7 ? 1 : -1; // 7 is g-file
                 for (let file = kingFile; file !== 7 + step; file += step) {
@@ -850,7 +852,7 @@ function getCastlingTargets(pieceSquare, board) {
                 }
 
                 const attacked = kingPath.every(square => isSquareAttacked(board, square, isWhite ? "b" : "w"));
-                // TODO: What if original rook square is attacked?
+                // TODO: What if original rook square is attacked? — Should be no problem
                 if (!attacked) {
                     castlingMoves.push(`${kingsideRook}${backRank}`);
                 }
@@ -1033,7 +1035,6 @@ function selectPiece(piece, dragged = false) {
         return;
     }
 
-    // Get square
     const pieceSquare = getSquareFromClassList(piece);
 
     // If click-or-drop mode  is enabled
@@ -1047,47 +1048,13 @@ function selectPiece(piece, dragged = false) {
     // Remove all previous legal move indicators
     removeLegalMoveIndicators();
 
-    // Handle piece capture and castling
+    // Handle piece capture
     if (activePiece && legalMoves.includes(pieceSquare)) {
-
-        // Check if this is a castling target (rook clicked for castling)
-        const activePieceSquare = getSquareFromClassList(activePiece);
-        const activePieceType = piecePositions[convertSquareToIndex(activePieceSquare)];
-
-        if (activePieceType.toLowerCase() === "k") {
-            const targetPieceType = piecePositions[convertSquareToIndex(pieceSquare)];
-            if (targetPieceType.toLowerCase() === "r" && (targetPieceType === "r") === (activePieceType === "k")) {
-
-                // This is a rook being clicked for castling; pass the rook’s square as target
-
-                const kingFile = parseInt(activePieceSquare[0]);
-                const rookFile = parseInt(pieceSquare[0]);
-                const castleRank = activePieceSquare[1];
-                const castleFile = rookFile < kingFile ? 3 : 7;
-                const targetSquare = `${castleFile}${castleRank}`;
-                movePiece(targetSquare);
-                // Change the position of rook
-                piece.classList.remove(`square-${rookFile}${castleRank}`);
-                piece.classList.add(`square-${castleFile === 3 ? 4 : 6}${castleRank}`);
-                piece.classList.add("sliding");
-                setTimeout(() => {
-                    piece.classList.remove("sliding");
-                }, 300);
-                // TODO: set halfmove clock to 0?
-                halfmoveClock = 0;
-                activePiece = null;
-                legalMoves = [];
-                return;
-            }
-        } else {
-
-            // Regular piece capture
-            movePiece(pieceSquare);
-            halfmoveClock = 0;
-            activePiece = null;
-            legalMoves = [];
-            return;
-        }
+        movePiece(pieceSquare);
+        halfmoveClock = 0;
+        activePiece = null;
+        legalMoves = [];
+        return;
     }
 
     // If the piece to be selected is already selected, deselect it
@@ -1163,6 +1130,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     const previousRank = parseInt(oldSquare[1]);
     const toFile = parseInt(targetSquare[0]);
     const toRank = parseInt(targetSquare[1]);
+    let isCastling = false;
 
     // Handle pawn promotion
     let promotedTo = "";
@@ -1170,7 +1138,7 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
             promotedTo = await showPromotionBox(targetSquare);
             if (!promotedTo) return;
-            activePiece = promotedTo[0];
+            activePiece = promotedTo[0]; // Don’t use `pieceToMove` bacause it is a constant
             promotedTo = promotedTo[1];
             pieceToMove.classList.remove("P", "p");
             pieceToMove.classList.add(promotedTo);
@@ -1178,21 +1146,62 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     }
 
     // Handle piece capture and castling
-    const capturedPieceType = piecePositions[convertSquareToIndex(targetSquare)];
-    if (capturedPieceType) {
-        const capturedPiece = chessBoard.querySelector(`.chess-piece.square-${targetSquare}:not(.removed)`);
-        capturedPiece.classList.add("removed");
-        setTimeout(() => capturedPiece.remove(), 250);
+    const targetPieceType = piecePositions[convertSquareToIndex(targetSquare)];
+    if (targetPieceType) {
+        const targetPiece = chessBoard.querySelector(`.chess-piece.square-${targetSquare}:not(.removed)`);
+
+        // Handle castling
+        if (pieceType.toLowerCase() === "k" && targetPieceType.toLowerCase() === "r" && (targetPieceType === "r") === (pieceType === "k")) {
+
+            isCastling = true;
+            const kingFile = parseInt(oldSquare[0]);
+            const castleFile = toFile < kingFile ? 3 : 7;
+            const finalKingSquare = `${castleFile}${previousRank}`;
+
+            // Change the position of king
+            pieceToMove.classList.remove(`square-${oldSquare}`);
+            pieceToMove.classList.add(`square-${finalKingSquare}`);
+            if (!dropped) {
+                pieceToMove.classList.add("sliding");
+                setTimeout(() => {
+                    pieceToMove.classList.remove("sliding");
+                }, 300);
+            }
+
+            // Change the position of rook
+            targetPiece.classList.remove(`square-${targetSquare}`);
+            targetPiece.classList.add(`square-${castleFile === 3 ? 4 : 6}${previousRank}`);
+            targetPiece.classList.add("sliding");
+            setTimeout(() => {
+                targetPiece.classList.remove("sliding");
+            }, 300);
+            // TODO: set halfmove clock to 0?
+            halfmoveClock = 0;
+            activePiece = null;
+            legalMoves = [];
+            if (pieceType === "k") {
+                castlingRights = castlingRights.replace(/[kq]/g, "");
+            } else {
+                castlingRights = castlingRights.replace(/[KQ]/g, "");
+            }
+        } else {
+
+            // Handle piece capture
+            targetPiece.classList.add("removed");
+            setTimeout(() => targetPiece.remove(), 250);
+        }
     }
 
     // Change the position of piece
-    pieceToMove.classList.remove(`square-${oldSquare}`);
-    pieceToMove.classList.add(`square-${targetSquare}`);
-    if (!dropped) {
-        pieceToMove.classList.add("sliding");
-        setTimeout(() => {
-            pieceToMove.classList.remove("sliding");
-        }, 300);
+    if (!isCastling) {
+        pieceToMove.classList.remove(`square-${oldSquare}`);
+        pieceToMove.classList.add(`square-${targetSquare}`);
+        if (!dropped) {
+            pieceToMove.classList.add("sliding");
+            setTimeout(() => {
+                pieceToMove.classList.remove("sliding");
+            }, 300);
+        }
     }
 
     // Handle en passant
@@ -1214,12 +1223,22 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     const moveNotation = Notation.write.san(oldSquare, targetSquare, promotedTo, prevEnPassantSquare, "symbol");
 
     // Update `piecePositions` and highlight move squares
-    piecePositions[convertSquareToIndex(oldSquare)] = "";
+    if (isCastling) {
+        piecePositions[convertSquareToIndex(oldSquare)] = "";
+        piecePositions[convertSquareToIndex(targetSquare)] = "";
+        const kingFile = parseInt(oldSquare[0]);
+        const castleFile = toFile < kingFile ? 3 : 7;
+        const finalKingSquare = `${castleFile}${previousRank}`;
+        piecePositions[convertSquareToIndex(finalKingSquare)] = pieceType;
+        piecePositions[convertSquareToIndex(`${castleFile === 3 ? 4 : 6}${previousRank}`)] = targetPieceType;
+    } else {
+        piecePositions[convertSquareToIndex(oldSquare)] = "";
+        if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
+        else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
+    }
     removeSquareHighlight(true);
     highlightSquare(oldSquare, true);
     highlightSquare(targetSquare, true);
-    if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
-    else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
 
     // Write move notation to the move grid and update the to-move indicator; also update the fullmove number
     addMoveNotation(moveNotation);
