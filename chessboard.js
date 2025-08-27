@@ -1,4 +1,5 @@
-// TODO: update CastlingRights whenever a rook or king moves
+// TODO: update CastlingRights whenever a rook moves
+// TODO: fix border-radius of promotion box in board-styles.css
 // Ways to move pieces
 let draggedPiece = null;
 let hideOnRelease = false;

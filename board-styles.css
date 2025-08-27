@@ -155,70 +155,68 @@
 
 /* Promotion box */
 .promotion-box {
-    position: absolute;
-    width: var(--board-square-width);
-    height: var(--board-square-width);
-    box-shadow: 8px 16px 16px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    width: calc(var(--board-square-width) - 2*2px);
+    background-color: whitesmoke;
+    border: 2px solid gainsboro;
+    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.2);
     animation: appear 0.3s ease-in-out;
     z-index: 8;
     display: flex;
     flex-direction: column;
     & > button {
-        width: var(--board-square-width);
         aspect-ratio: 1;
         padding: 0;
         margin: 0;
-        border-right: 2px solid gainsboro;
-        border-left: 2px solid gainsboro;
         border-radius: 0;
         outline-offset: -2px;
-        background-color: whitesmoke;
-        &:first-child {
-            border-top: 2px solid gainsboro;
-        }
-        &:last-child {
-            border-bottom: 2px solid gainsboro;
-        }
         &.cancel-button {
-            aspect-ratio: 2 / 1;
+            aspect-ratio: 2;
             justify-content: center;
             position: relative;
+            background-color: rgba(0, 0, 0, 0.05);
         }
         &.cancel-button::before, &.cancel-button::after {
-          content: "";
-          position: absolute;
-          background-color: var(--dark-gray);
-          width: 20px;
-          height: 4px;
-          top: 50%;
-          left: 50%;
+            content: "";
+            position: absolute;
+            background-color: gray;
+            width: 20px;
+            height: 4px;
+            top: 50%;
+            left: 50%;
+            border-radius: 8px;
         }
         &.cancel-button::before {
-          transform: translate(-50%, -50%) rotate(45deg);
+            transform: translate(-50%, -50%) rotate(45deg);
         }
         &.cancel-button::after {
-          transform: translate(-50%, -50%) rotate(-45deg);
+            transform: translate(-50%, -50%) rotate(-45deg);
         }
     }
     & > button:hover, & > button:focus-visible {
-        background-color: rgb(232.75, 232.75, 232.75);
+        background-color: rgba(0, 0, 0, 0.05);
     }
     & > button:focus-visible {
         outline: 2px solid rgb(42, 100, 227);
     }
+    &.square-18 {
+        & > button:first-child {border-radius: var(--box-radius) 0 0 0;}
+    }
+    &.square-88 {
+        & > button:first-child {border-radius: 0 var(--box-radius) 0 0;}
+    }
+    &.square-81 {
+        & > button:first-child {border-radius: 0 0 var(--box-radius) 0;}
+    }
+    &.square-11 {
+        & > button:first-child {border-radius: 0 0 0 var(--box-radius);}
+    }
 }
 .flipped .promotion-box:not(.black), .promotion-box.black:not(.flipped *) {
     flex-direction: column-reverse;
-    & > button {
-        &:first-child {
-            border-top: none;
-            border-bottom: 2px solid gainsboro;
-        }
-        &:last-child {
-            border-top: 2px solid gainsboro;
-            border-bottom: none;
-        }
-    }
+    margin-top: calc(-3.5*var(--board-square-width) - 2*2px + 4*4px + 4px / 2);
+    box-shadow: 8px 0px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* File and rank indicators */

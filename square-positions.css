@@ -1,162 +1,162 @@
 /* VIII rank */
 .square-18 {transform: translate(0, 0);}
-.square-28 {transform: translate(100%, 0);}
-.square-38 {transform: translate(200%, 0);}
-.square-48 {transform: translate(300%, 0);}
-.square-58 {transform: translate(400%, 0);}
-.square-68 {transform: translate(500%, 0);}
-.square-78 {transform: translate(600%, 0);}
-.square-88 {transform: translate(700%, 0);}
+.square-28 {transform: translate(var(--board-square-width), 0);}
+.square-38 {transform: translate(calc(2 * var(--board-square-width)), 0);}
+.square-48 {transform: translate(calc(3 * var(--board-square-width)), 0);}
+.square-58 {transform: translate(calc(4 * var(--board-square-width)), 0);}
+.square-68 {transform: translate(calc(5 * var(--board-square-width)), 0);}
+.square-78 {transform: translate(calc(6 * var(--board-square-width)), 0);}
+.square-88 {transform: translate(calc(7 * var(--board-square-width)), 0);}
 
 /* VII rank */
-.square-17 {transform: translate(0, 100%);}
-.square-27 {transform: translate(100%, 100%);}
-.square-37 {transform: translate(200%, 100%);}
-.square-47 {transform: translate(300%, 100%);}
-.square-57 {transform: translate(400%, 100%);}
-.square-67 {transform: translate(500%, 100%);}
-.square-77 {transform: translate(600%, 100%);}
-.square-87 {transform: translate(700%, 100%);}
+.square-17 {transform: translate(0, var(--board-square-width));}
+.square-27 {transform: translate(var(--board-square-width), var(--board-square-width));}
+.square-37 {transform: translate(calc(2 * var(--board-square-width)), var(--board-square-width));}
+.square-47 {transform: translate(calc(3 * var(--board-square-width)), var(--board-square-width));}
+.square-57 {transform: translate(calc(4 * var(--board-square-width)), var(--board-square-width));}
+.square-67 {transform: translate(calc(5 * var(--board-square-width)), var(--board-square-width));}
+.square-77 {transform: translate(calc(6 * var(--board-square-width)), var(--board-square-width));}
+.square-87 {transform: translate(calc(7 * var(--board-square-width)), var(--board-square-width));}
 
 /* VI rank */
-.square-16 {transform: translate(0, 200%);}
-.square-26 {transform: translate(100%, 200%);}
-.square-36 {transform: translate(200%, 200%);}
-.square-46 {transform: translate(300%, 200%);}
-.square-56 {transform: translate(400%, 200%);}
-.square-66 {transform: translate(500%, 200%);}
-.square-76 {transform: translate(600%, 200%);}
-.square-86 {transform: translate(700%, 200%);}
+.square-16 {transform: translate(0, calc(2 * var(--board-square-width)));}
+.square-26 {transform: translate(var(--board-square-width), calc(2 * var(--board-square-width)));}
+.square-36 {transform: translate(calc(2 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+.square-46 {transform: translate(calc(3 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+.square-56 {transform: translate(calc(4 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+.square-66 {transform: translate(calc(5 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+.square-76 {transform: translate(calc(6 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+.square-86 {transform: translate(calc(7 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
 
 /* V rank */
-.square-15 {transform: translate(0, 300%);}
-.square-25 {transform: translate(100%, 300%);}
-.square-35 {transform: translate(200%, 300%);}
-.square-45 {transform: translate(300%, 300%);}
-.square-55 {transform: translate(400%, 300%);}
-.square-65 {transform: translate(500%, 300%);}
-.square-75 {transform: translate(600%, 300%);}
-.square-85 {transform: translate(700%, 300%);}
+.square-15 {transform: translate(0, calc(3 * var(--board-square-width)));}
+.square-25 {transform: translate(var(--board-square-width), calc(3 * var(--board-square-width)));}
+.square-35 {transform: translate(calc(2 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+.square-45 {transform: translate(calc(3 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+.square-55 {transform: translate(calc(4 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+.square-65 {transform: translate(calc(5 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+.square-75 {transform: translate(calc(6 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+.square-85 {transform: translate(calc(7 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
 
 /* IV rank */
-.square-14 {transform: translate(0, 400%);}
-.square-24 {transform: translate(100%, 400%);}
-.square-34 {transform: translate(200%, 400%);}
-.square-44 {transform: translate(300%, 400%);}
-.square-54 {transform: translate(400%, 400%);}
-.square-64 {transform: translate(500%, 400%);}
-.square-74 {transform: translate(600%, 400%);}
-.square-84 {transform: translate(700%, 400%);}
+.square-14 {transform: translate(0, calc(4 * var(--board-square-width)));}
+.square-24 {transform: translate(var(--board-square-width), calc(4 * var(--board-square-width)));}
+.square-34 {transform: translate(calc(2 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+.square-44 {transform: translate(calc(3 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+.square-54 {transform: translate(calc(4 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+.square-64 {transform: translate(calc(5 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+.square-74 {transform: translate(calc(6 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+.square-84 {transform: translate(calc(7 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
 
 /* III rank */
-.square-13 {transform: translate(0, 500%);}
-.square-23 {transform: translate(100%, 500%);}
-.square-33 {transform: translate(200%, 500%);}
-.square-43 {transform: translate(300%, 500%);}
-.square-53 {transform: translate(400%, 500%);}
-.square-63 {transform: translate(500%, 500%);}
-.square-73 {transform: translate(600%, 500%);}
-.square-83 {transform: translate(700%, 500%);}
+.square-13 {transform: translate(0, calc(5 * var(--board-square-width)));}
+.square-23 {transform: translate(var(--board-square-width), calc(5 * var(--board-square-width)));}
+.square-33 {transform: translate(calc(2 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+.square-43 {transform: translate(calc(3 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+.square-53 {transform: translate(calc(4 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+.square-63 {transform: translate(calc(5 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+.square-73 {transform: translate(calc(6 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+.square-83 {transform: translate(calc(7 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
 
 /* II rank */
-.square-12 {transform: translate(0, 600%);}
-.square-22 {transform: translate(100%, 600%);}
-.square-32 {transform: translate(200%, 600%);}
-.square-42 {transform: translate(300%, 600%);}
-.square-52 {transform: translate(400%, 600%);}
-.square-62 {transform: translate(500%, 600%);}
-.square-72 {transform: translate(600%, 600%);}
-.square-82 {transform: translate(700%, 600%);}
+.square-12 {transform: translate(0, calc(6 * var(--board-square-width)));}
+.square-22 {transform: translate(var(--board-square-width), calc(6 * var(--board-square-width)));}
+.square-32 {transform: translate(calc(2 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+.square-42 {transform: translate(calc(3 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+.square-52 {transform: translate(calc(4 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+.square-62 {transform: translate(calc(5 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+.square-72 {transform: translate(calc(6 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+.square-82 {transform: translate(calc(7 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
 
 /* I rank */
-.square-11 {transform: translate(0, 700%);}
-.square-21 {transform: translate(100%, 700%);}
-.square-31 {transform: translate(200%, 700%);}
-.square-41 {transform: translate(300%, 700%);}
-.square-51 {transform: translate(400%, 700%);}
-.square-61 {transform: translate(500%, 700%);}
-.square-71 {transform: translate(600%, 700%);}
-.square-81 {transform: translate(700%, 700%);}
+.square-11 {transform: translate(0, calc(7 * var(--board-square-width)));}
+.square-21 {transform: translate(var(--board-square-width), calc(7 * var(--board-square-width)));}
+.square-31 {transform: translate(calc(2 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+.square-41 {transform: translate(calc(3 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+.square-51 {transform: translate(calc(4 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+.square-61 {transform: translate(calc(5 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+.square-71 {transform: translate(calc(6 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+.square-81 {transform: translate(calc(7 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
 
 /* Flipped board */
 .flipped {
     /* I rank */
     & .square-81 {transform: translate(0, 0);}
-    & .square-71 {transform: translate(100%, 0);}
-    & .square-61 {transform: translate(200%, 0);}
-    & .square-51 {transform: translate(300%, 0);}
-    & .square-41 {transform: translate(400%, 0);}
-    & .square-31 {transform: translate(500%, 0);}
-    & .square-21 {transform: translate(600%, 0);}
-    & .square-11 {transform: translate(700%, 0);}
+    & .square-71 {transform: translate(var(--board-square-width), 0);}
+    & .square-61 {transform: translate(calc(2 * var(--board-square-width)), 0);}
+    & .square-51 {transform: translate(calc(3 * var(--board-square-width)), 0);}
+    & .square-41 {transform: translate(calc(4 * var(--board-square-width)), 0);}
+    & .square-31 {transform: translate(calc(5 * var(--board-square-width)), 0);}
+    & .square-21 {transform: translate(calc(6 * var(--board-square-width)), 0);}
+    & .square-11 {transform: translate(calc(7 * var(--board-square-width)), 0);}
 
     /* II rank */
-    & .square-82 {transform: translate(0, 100%);}
-    & .square-72 {transform: translate(100%, 100%);}
-    & .square-62 {transform: translate(200%, 100%);}
-    & .square-52 {transform: translate(300%, 100%);}
-    & .square-42 {transform: translate(400%, 100%);}
-    & .square-32 {transform: translate(500%, 100%);}
-    & .square-22 {transform: translate(600%, 100%);}
-    & .square-12 {transform: translate(700%, 100%);}
+    & .square-82 {transform: translate(0, var(--board-square-width));}
+    & .square-72 {transform: translate(var(--board-square-width), var(--board-square-width));}
+    & .square-62 {transform: translate(calc(2 * var(--board-square-width)), var(--board-square-width));}
+    & .square-52 {transform: translate(calc(3 * var(--board-square-width)), var(--board-square-width));}
+    & .square-42 {transform: translate(calc(4 * var(--board-square-width)), var(--board-square-width));}
+    & .square-32 {transform: translate(calc(5 * var(--board-square-width)), var(--board-square-width));}
+    & .square-22 {transform: translate(calc(6 * var(--board-square-width)), var(--board-square-width));}
+    & .square-12 {transform: translate(calc(7 * var(--board-square-width)), var(--board-square-width));}
 
     /* III rank */
-    & .square-83 {transform: translate(0, 200%);}
-    & .square-73 {transform: translate(100%, 200%);}
-    & .square-63 {transform: translate(200%, 200%);}
-    & .square-53 {transform: translate(300%, 200%);}
-    & .square-43 {transform: translate(400%, 200%);}
-    & .square-33 {transform: translate(500%, 200%);}
-    & .square-23 {transform: translate(600%, 200%);}
-    & .square-13 {transform: translate(700%, 200%);}
+    & .square-83 {transform: translate(0, calc(2 * var(--board-square-width)));}
+    & .square-73 {transform: translate(var(--board-square-width), calc(2 * var(--board-square-width)));}
+    & .square-63 {transform: translate(calc(2 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+    & .square-53 {transform: translate(calc(3 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+    & .square-43 {transform: translate(calc(4 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+    & .square-33 {transform: translate(calc(5 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+    & .square-23 {transform: translate(calc(6 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
+    & .square-13 {transform: translate(calc(7 * var(--board-square-width)), calc(2 * var(--board-square-width)));}
 
     /* IV rank */
-    & .square-84 {transform: translate(0, 300%);}
-    & .square-74 {transform: translate(100%, 300%);}
-    & .square-64 {transform: translate(200%, 300%);}
-    & .square-54 {transform: translate(300%, 300%);}
-    & .square-44 {transform: translate(400%, 300%);}
-    & .square-34 {transform: translate(500%, 300%);}
-    & .square-24 {transform: translate(600%, 300%);}
-    & .square-14 {transform: translate(700%, 300%);}
+    & .square-84 {transform: translate(0, calc(3 * var(--board-square-width)));}
+    & .square-74 {transform: translate(var(--board-square-width), calc(3 * var(--board-square-width)));}
+    & .square-64 {transform: translate(calc(2 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+    & .square-54 {transform: translate(calc(3 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+    & .square-44 {transform: translate(calc(4 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+    & .square-34 {transform: translate(calc(5 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+    & .square-24 {transform: translate(calc(6 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
+    & .square-14 {transform: translate(calc(7 * var(--board-square-width)), calc(3 * var(--board-square-width)));}
 
     /* V rank */
-    & .square-85 {transform: translate(0, 400%);}
-    & .square-75 {transform: translate(100%, 400%);}
-    & .square-65 {transform: translate(200%, 400%);}
-    & .square-55 {transform: translate(300%, 400%);}
-    & .square-45 {transform: translate(400%, 400%);}
-    & .square-35 {transform: translate(500%, 400%);}
-    & .square-25 {transform: translate(600%, 400%);}
-    & .square-15 {transform: translate(700%, 400%);}
+    & .square-85 {transform: translate(0, calc(4 * var(--board-square-width)));}
+    & .square-75 {transform: translate(var(--board-square-width), calc(4 * var(--board-square-width)));}
+    & .square-65 {transform: translate(calc(2 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+    & .square-55 {transform: translate(calc(3 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+    & .square-45 {transform: translate(calc(4 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+    & .square-35 {transform: translate(calc(5 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+    & .square-25 {transform: translate(calc(6 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
+    & .square-15 {transform: translate(calc(7 * var(--board-square-width)), calc(4 * var(--board-square-width)));}
 
     /* VI rank */
-    & .square-86 {transform: translate(0, 500%);}
-    & .square-76 {transform: translate(100%, 500%);}
-    & .square-66 {transform: translate(200%, 500%);}
-    & .square-56 {transform: translate(300%, 500%);}
-    & .square-46 {transform: translate(400%, 500%);}
-    & .square-36 {transform: translate(500%, 500%);}
-    & .square-26 {transform: translate(600%, 500%);}
-    & .square-16 {transform: translate(700%, 500%);}
+    & .square-86 {transform: translate(0, calc(5 * var(--board-square-width)));}
+    & .square-76 {transform: translate(var(--board-square-width), calc(5 * var(--board-square-width)));}
+    & .square-66 {transform: translate(calc(2 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+    & .square-56 {transform: translate(calc(3 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+    & .square-46 {transform: translate(calc(4 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+    & .square-36 {transform: translate(calc(5 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+    & .square-26 {transform: translate(calc(6 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
+    & .square-16 {transform: translate(calc(7 * var(--board-square-width)), calc(5 * var(--board-square-width)));}
 
     /* VII rank */
-    & .square-87 {transform: translate(0, 600%);}
-    & .square-77 {transform: translate(100%, 600%);}
-    & .square-67 {transform: translate(200%, 600%);}
-    & .square-57 {transform: translate(300%, 600%);}
-    & .square-47 {transform: translate(400%, 600%);}
-    & .square-37 {transform: translate(500%, 600%);}
-    & .square-27 {transform: translate(600%, 600%);}
-    & .square-17 {transform: translate(700%, 600%);}
+    & .square-87 {transform: translate(0, calc(6 * var(--board-square-width)));}
+    & .square-77 {transform: translate(var(--board-square-width), calc(6 * var(--board-square-width)));}
+    & .square-67 {transform: translate(calc(2 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+    & .square-57 {transform: translate(calc(3 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+    & .square-47 {transform: translate(calc(4 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+    & .square-37 {transform: translate(calc(5 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+    & .square-27 {transform: translate(calc(6 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
+    & .square-17 {transform: translate(calc(7 * var(--board-square-width)), calc(6 * var(--board-square-width)));}
 
     /* VIII rank */
-    & .square-88 {transform: translate(0, 700%);}
-    & .square-78 {transform: translate(100%, 700%);}
-    & .square-68 {transform: translate(200%, 700%);}
-    & .square-58 {transform: translate(300%, 700%);}
-    & .square-48 {transform: translate(400%, 700%);}
-    & .square-38 {transform: translate(500%, 700%);}
-    & .square-28 {transform: translate(600%, 700%);}
-    & .square-18 {transform: translate(700%, 700%);}
+    & .square-88 {transform: translate(0, calc(7 * var(--board-square-width)));}
+    & .square-78 {transform: translate(var(--board-square-width), calc(7 * var(--board-square-width)));}
+    & .square-68 {transform: translate(calc(2 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+    & .square-58 {transform: translate(calc(3 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+    & .square-48 {transform: translate(calc(4 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+    & .square-38 {transform: translate(calc(5 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+    & .square-28 {transform: translate(calc(6 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
+    & .square-18 {transform: translate(calc(7 * var(--board-square-width)), calc(7 * var(--board-square-width)));}
 }
