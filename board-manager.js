@@ -46,6 +46,7 @@ const PieceMoveMethods = {
                 if (!activePiece) return;
                 draggedPiece = event.target;
                 target.classList.add("dragged");
+                target.classList.remove("sliding");
                 PieceMoveMethods.dragDrop.mousemove(event);
             }
         },
@@ -155,6 +156,7 @@ const PieceMoveMethods = {
                 if (!activePiece) return;
                 draggedPiece = event.target;
                 target.classList.add("dragged");
+                target.classList.remove("sliding");
                 PieceMoveMethods.dragDrop.mousemove(event);
             } else {
                 if (target.classList.contains("move-indicator")) {
@@ -492,43 +494,38 @@ const Notation = {
             return moveNotation;
         },
         fen: (board = piecePositions, color = activeColor, castling = castlingRights, enPassant = enPassantSquare, halfmove = halfmoveClock, fullmove = fullmoveNumber) => {
-            try {
-                // Build position string
-                let position = "";
-                for (let rank = 7; rank >= 0; rank--) {
-                    let emptyCount = 0;
+            // Build position string
+            let position = "";
+            for (let rank = 7; rank >= 0; rank--) {
+                let emptyCount = 0;
 
-                    for (let file = 0; file < 8; file++) {
-                        const square = board[rank * 8 + file];
+                for (let file = 0; file < 8; file++) {
+                    const square = board[rank * 8 + file];
 
-                        if (square === "") {
-                            emptyCount++;
-                        } else {
-                            if (emptyCount > 0) {
-                                position += emptyCount;
-                                emptyCount = 0;
-                            }
-                            position += square;
+                    if (square === "") {
+                        emptyCount++;
+                    } else {
+                        if (emptyCount > 0) {
+                            position += emptyCount;
+                            emptyCount = 0;
                         }
+                        position += square;
                     }
-
-                    if (emptyCount > 0) position += emptyCount;
-                    if (rank > 0) position += "/";
                 }
 
-                // Convert en passant from internal format
-                let enPassantSquareNotation = "-";
-                if (enPassant && enPassant.length === 2) {
-                    const file = String.fromCharCode("a".charCodeAt(0) + parseInt(enPassant[0]) - 1);
-                    const rank = enPassant[1];
-                    enPassantSquareNotation = file + rank;
-                }
-
-                return `${position} ${color} ${castling || "-"} ${enPassantSquareNotation} ${halfmove || 0} ${fullmove || 1}`;
-            } catch (error) {
-                console.error("Error generating FEN:", error);
-                return "";
+                if (emptyCount > 0) position += emptyCount;
+                if (rank > 0) position += "/";
             }
+
+            // Convert en passant from internal format
+            let enPassantSquareNotation = "-";
+            if (enPassant && enPassant.length === 2) {
+                const file = String.fromCharCode("a".charCodeAt(0) + parseInt(enPassant[0]) - 1);
+                const rank = enPassant[1];
+                enPassantSquareNotation = file + rank;
+            }
+
+            return `${position} ${color} ${castling || "-"} ${enPassantSquareNotation} ${halfmove || 0} ${fullmove || 1}`;
         },
         pgn: () => {
             // TODO: Implement PGN writing
@@ -820,7 +817,7 @@ function getCastlingTargets(pieceSquare, board) {
     // Kingside castling (uses rightmost rook)
     if (castlingRights.includes(isWhite ? "K" : "k")) {
 
-        // TODO: Confirm all rook configs in Lichess (which rook is used for castling in each case)
+        // TODO: Confirm all rook configs in Lichess (which rook is used for castling in each case) — DONE
         const kingsideRook = Math.max(...rooks.filter(rookFile => rookFile > kingFile));
         if (kingsideRook !== -Infinity) {
             const kingDestination = `7${backRank}`; // g1 for white, g8 for black
@@ -863,9 +860,9 @@ function getCastlingTargets(pieceSquare, board) {
     // Queenside castling (uses leftmost rook)
     if (castlingRights.includes(isWhite ? "Q" : "q")) {
 
-        // TODO: Confirm all rook configs in Lichess (which rook is used for castling in each case) two rooks on one side which is chosen etc.
+        // TODO: Confirm all rook configs in Lichess (which rook is used for castling in each case) two rooks on one side which is chosen etc. — DONE
         const queensideRook = Math.min(...rooks.filter(rookFile => rookFile < kingFile));
-        if (queensideRook !== -Infinity) {
+        if (queensideRook !== Infinity) {
             const kingDestination = `3${backRank}`; // c1 for white, c8 for black
             const rookDestination = `4${backRank}`; // d1 for white, d8 for black
 
@@ -951,6 +948,7 @@ function getLegalMoves(pieceSquare, board = piecePositions, color = activeColor)
 };
 
 function isCheckmate(activeColor, board = piecePositions) {
+
     // If king is not in check, it can’t be checkmate
     if (!isKingInCheck(board, activeColor)) return false;
 
@@ -1025,15 +1023,6 @@ function createRipple(square) {
 }
 
 function selectPiece(piece, dragged = false) {
-
-    // If the user has selected a to-be-removed piece
-    if (piece.classList.contains("removed")) {
-        removeLegalMoveIndicators();
-        removeSquareHighlight();
-        activePiece = null;
-        legalMoves = [];
-        return;
-    }
 
     const pieceSquare = getSquareFromClassList(piece);
 
@@ -1386,14 +1375,10 @@ function checkFenValidity(fen) {
         return false;
     }
 
-    try {
-        const parsedFen = Notation.read.fen(trimmedFen);
-        if (parsedFen) {
-            positionInputBox.style.border = "";
-            return parsedFen;
-        }
-    } catch (error) {
-        console.warn("FEN validation error:", error.message);
+    const parsedFen = Notation.read.fen(trimmedFen);
+    if (parsedFen) {
+        positionInputBox.style.border = "";
+        return parsedFen;
     }
 
     positionInputBox.style.border = "2px solid var(--danger-color)";

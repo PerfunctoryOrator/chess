@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="white-player">
-            <div class="avatar white K"></div>
+                <div class="avatar white K"></div>
                 <div>
                     <span>You</span>
                     <span class="player-rating white">1500</span>
@@ -360,6 +360,19 @@
                     } else window.alert('The entered FEN is not valid.');
                 }">Load</button>
             </div>
+        </div>
+        <div class="full-screen-box-container" id="share-box-container">
+            <h2>Share Game</h2>
+            <div class="input-grid">
+                <span>FEN:</span>
+                <input id="fen-output" type="text" readonly />
+                <span>PGN:</span>
+                <textarea id="pgn-output" rows="5" spellcheck="false" readonly></textarea>
+            </div>
+            <div class="options">
+                <button onclick="{
+                    hideFullScreenBox('share-box-container');
+                }">Done</button>
         </div>
         <script src="document-set-up.js?modified=18-8-25-1"></script>
         <script src="settings-manager.js?modified=18-8-25-1"></script>
