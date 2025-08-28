@@ -817,10 +817,8 @@ function getCastlingTargets(pieceSquare, board) {
 
     // Kingside castling (uses rightmost rook)
     if (castlingRights.includes(isWhite ? "K" : "k")) {
-
         const kingsideRook = Math.max(...rooks.filter(rookFile => rookFile > kingFile));
         if (kingsideRook !== -Infinity) {
-            const kingDestination = `7${backRank}`; // g1 for white, g8 for black
             const rookDestination = `6${backRank}`; // f1 for white, f8 for black
 
             // Get squares between king and rook to check if they are empty (excluding king and rook squares)
@@ -856,7 +854,6 @@ function getCastlingTargets(pieceSquare, board) {
 
     // Queenside castling (uses leftmost rook)
     if (castlingRights.includes(isWhite ? "Q" : "q")) {
-
         const queensideRook = Math.min(...rooks.filter(rookFile => rookFile < kingFile));
         if (queensideRook !== Infinity) {
             const rookDestination = `4${backRank}`; // d1 for white, d8 for black
@@ -1209,6 +1206,60 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     // Get move notation
     const moveNotation = Notation.write.san(oldSquare, targetSquare, promotedTo, prevEnPassantSquare, "symbol");
 
+    // Update castling rights
+    if (pieceType.toLowerCase() === "k") {
+        if (pieceType === "k") {
+            castlingRights = castlingRights.replace(/[kq]/g, "");
+        } else {
+            castlingRights = castlingRights.replace(/[KQ]/g, "");
+        }
+    } else if (pieceType.toLowerCase() === "r") {
+        const isWhite = pieceType === "R";
+        const backRank = isWhite ? 1 : 8;
+        const rookRank = parseInt(oldSquare[1]);
+        const rookFile = parseInt(oldSquare[0]);
+
+        // Only check castling rights if rook is on the back rank
+        if (rookRank === backRank) {
+
+            // Find the king on the back rank
+            let kingFile = -1;
+            for (let file = 1; file <= 8; file++) {
+                const square = `${file}${backRank}`;
+                const pieceOnSquare = piecePositions[convertSquareToIndex(square)];
+                if (pieceOnSquare === (isWhite ? "K" : "k")) {
+                    kingFile = file;
+                    break;
+                }
+            }
+
+            if (kingFile !== -1) {
+
+                // Find all rooks on the back rank (before the move)
+                const rooks = [];
+                for (let file = 1; file <= 8; file++) {
+                    const square = `${file}${backRank}`;
+                    let pieceOnSquare = piecePositions[convertSquareToIndex(square)];
+                    if (pieceOnSquare === (isWhite ? "R" : "r")) {
+                        rooks.push(file);
+                    }
+                }
+
+                // Check if this rook was used for kingside castling (rightmost rook)
+                const kingsideRooks = rooks.filter(file => file > kingFile);
+                if (kingsideRooks.length > 0 && rookFile === Math.max(...kingsideRooks)) {
+                    castlingRights = castlingRights.replace(isWhite ? "K" : "k", "");
+                }
+
+                // Check if this rook was used for queenside castling (leftmost rook)
+                const queensideRooks = rooks.filter(file => file < kingFile);
+                if (queensideRooks.length > 0 && rookFile === Math.min(...queensideRooks)) {
+                    castlingRights = castlingRights.replace(isWhite ? "Q" : "q", "");
+                }
+            }
+        }
+    }
+
     // Update `piecePositions`
     if (isCastling) {
         piecePositions[convertSquareToIndex(oldSquare)] = "";
@@ -1222,17 +1273,6 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
         piecePositions[convertSquareToIndex(oldSquare)] = "";
         if (promotedTo) piecePositions[convertSquareToIndex(targetSquare)] = promotedTo;
         else piecePositions[convertSquareToIndex(targetSquare)] = pieceType;
-    }
-
-    // Update castling rights
-    if (pieceType.toLowerCase() === "k") {
-        if (pieceType === "k") {
-            castlingRights = castlingRights.replace(/[kq]/g, "");
-        } else {
-            castlingRights = castlingRights.replace(/[KQ]/g, "");
-        }
-    } else if (pieceType.toLowerCase() === "r") {
-
     }
 
     // Highlight move squares
