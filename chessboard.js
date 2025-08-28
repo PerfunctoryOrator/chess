@@ -392,13 +392,17 @@ const Notation = {
                 const isWhite = pieceType === "K";
                 const backRank = isWhite ? 1 : 8;
                 const fromRank = parseInt(fromSquare[1]);
-                if (fromRank === backRank) {
-                    if (toSquare === `8${backRank}`) {
-                        isCastling = true;
-                        castlingNotation = "O-O";
-                    } else if (toSquare === `1${backRank}`) {
-                        isCastling = true;
-                        castlingNotation = "O-O-O";
+                const kingFile = parseInt(fromSquare[0]);
+                const rookFile = parseInt(toSquare[0]);
+
+                if (fromRank === backRank && targetSquare.toLowerCase() === "r" && ((targetSquare === "R") === isWhite)) {
+                    isCastling = true;
+
+                    // Determine if it’s kingside or queenside castling
+                    if (rookFile > kingFile) {
+                        castlingNotation = "O-O"; // Kingside
+                    } else {
+                        castlingNotation = "O-O-O"; // Queenside
                     }
                 }
             }
@@ -470,15 +474,19 @@ const Notation = {
             if (isCastling) {
                 const isWhite = pieceType === "K";
                 const backRank = isWhite ? 1 : 8;
-                const fromRank = parseInt(fromSquare[1]);
-                if (fromRank === backRank) {
-                    if (toSquare === `7${backRank}`) {
-                        newBoard[convertSquareToIndex(`8${backRank}`)] = "";
-                        newBoard[convertSquareToIndex(`6${backRank}`)] = isWhite ? "R" : "r";
-                    } else if (toSquare === `3${backRank}`) {
-                        newBoard[convertSquareToIndex(`1${backRank}`)] = "";
-                        newBoard[convertSquareToIndex(`4${backRank}`)] = isWhite ? "R" : "r";
-                    }
+                const kingFile = parseInt(fromSquare[0]);
+                const rookFile = parseInt(toSquare[0]);
+
+                // Remove rook from original position
+                newBoard[convertSquareToIndex(toSquare)] = "";
+
+                // Determine rook’s final position based on castling type
+                if (rookFile > kingFile) {
+                    // Kingside castling: rook goes to f-file
+                    newBoard[convertSquareToIndex(`6${backRank}`)] = isWhite ? "R" : "r";
+                } else {
+                    // Queenside castling: rook goes to d-file
+                    newBoard[convertSquareToIndex(`4${backRank}`)] = isWhite ? "R" : "r";
                 }
             }
 
