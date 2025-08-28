@@ -134,7 +134,7 @@
     }
     &.sliding {
         outline: none;
-        z-index: 9;
+        z-index: 7;
         transition: opacity 0.3s ease-out, transform 0.3s var(--piece-animation);
     }
     &.dragged {
@@ -311,13 +311,11 @@
     width: var(--board-square-width);
     aspect-ratio: 1;
     border-radius: 0;
+    background-color: rgba(255, 255, 0, 0.5);
     z-index: 2;
     pointer-events: none;
     animation: appear 0.25s ease;
     transition: opacity 0.25s ease;
-    &.default {
-        background-color: rgba(255, 255, 0, 0.5);
-    }
     &.yellow {
         background-color: rgba(255, 170, 0, 0.8);
     }
@@ -407,7 +405,7 @@
     &.touch-drag {
         outline: none;
         box-shadow: none;
-        z-index: 9;
+        z-index: 8;
     }
     &.touch-drag::after {
         content: "";

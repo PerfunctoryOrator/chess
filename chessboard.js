@@ -1,5 +1,3 @@
-// TODO: update CastlingRights whenever a rook moves
-// TODO: fix border-radius of promotion box in board-styles.css
 // Ways to move pieces
 let draggedPiece = null;
 let hideOnRelease = false;
@@ -1059,9 +1057,9 @@ function selectPiece(piece, dragged = false) {
     }
 
     // Highlight the selected square
-    const prevHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}.default:not(.removed)`);
+    const permanentHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}.permanent:not(.removed)`);
     removeSquareHighlight();
-    if (!prevHighlight) {
+    if (!permanentHighlight) {
         highlightSquare(pieceSquare);
     }
 
@@ -1130,21 +1128,9 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
     const toRank = parseInt(targetSquare[1]);
     let isCastling = false;
 
-    // Handle pawn promotion
-    let promotedTo = "";
-    if (pieceType.toLowerCase() === "p") {
-        if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
-            promotedTo = await showPromotionBox(targetSquare);
-            if (!promotedTo) return;
-            activePiece = promotedTo[0]; // Don’t use `pieceToMove` bacause it is a constant
-            promotedTo = promotedTo[1];
-            pieceToMove.classList.remove("P", "p");
-            pieceToMove.classList.add(promotedTo);
-        }
-    }
-
     // Handle piece capture and castling
     const targetPieceType = piecePositions[convertSquareToIndex(targetSquare)];
+    let capturedPiece = null; // Store captured piece info for potential restoration
     if (targetPieceType) {
         const targetPiece = chessBoard.querySelector(`.chess-piece.square-${targetSquare}:not(.removed)`);
 
@@ -1178,6 +1164,13 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
             legalMoves = [];
         } else {
 
+            // Store captured piece info before removing it
+            capturedPiece = {
+                element: targetPiece,
+                pieceType: targetPieceType,
+                square: targetSquare
+            };
+
             // Handle piece capture
             targetPiece.classList.add("removed");
             setTimeout(() => targetPiece.remove(), 250);
@@ -1193,6 +1186,41 @@ async function movePiece(targetSquare, dropped = false, recurse = false) {
             setTimeout(() => {
                 pieceToMove.classList.remove("sliding");
             }, 300);
+        }
+    }
+
+    // Handle pawn promotion
+    let promotedTo = "";
+    if (pieceType.toLowerCase() === "p") {
+        if (pieceType.toLowerCase() === "p" && toRank === (pieceType === "p" ? 1 : 8)) {
+            promotedTo = await showPromotionBox(targetSquare);
+            if (!promotedTo) {
+                // Promotion was cancelled — restore the pawn to original square
+                pieceToMove.classList.remove(`square-${targetSquare}`);
+                pieceToMove.classList.add(`square-${oldSquare}`);
+
+                // Restore captured piece if there was one
+                if (capturedPiece) {
+                    capturedPiece.element.classList.remove("removed");
+                    // Clear any pending removal timeout by recreating the element
+                    const restoredPiece = document.createElement("div");
+                    restoredPiece.className = `chess-piece ${capturedPiece.pieceType} square-${capturedPiece.square}`;
+                    restoredPiece.addEventListener("mouseenter", mouseEntersPiece);
+                    restoredPiece.addEventListener("mouseleave", mouseLeavesPiece);
+                    if (pieceMoveMethod === "dragDrop" || pieceMoveMethod === "clickDragDrop") {
+                        restoredPiece.style.cursor = "grab";
+                    }
+                    chessBoard.appendChild(restoredPiece);
+                    // Remove the old element after a brief delay to avoid visual glitches
+                    setTimeout(() => capturedPiece.element.remove(), 0);
+                }
+
+                return;
+            }
+            activePiece = promotedTo[0]; // Don’t use `pieceToMove` bacause it is a constant
+            promotedTo = promotedTo[1];
+            pieceToMove.classList.remove("P", "p");
+            pieceToMove.classList.add(promotedTo);
         }
     }
 
@@ -1391,9 +1419,7 @@ function removeSquareHighlight(permanent = false, square = "") {
 function highlightSquare(square, permanent = false, color = "") {
     const highlight = document.createElement("div");
     highlight.className = `square-highlight square-${square}`;
-    if (color === "") {
-        highlight.classList.add("default");
-    } else {
+    if (color !== "") {
         highlight.classList.add(color);
     }
     if (permanent === true) highlight.classList.add("permanent");
