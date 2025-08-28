@@ -459,7 +459,7 @@ textarea {
     background-color: var(--background-color);
     border: var(--border);
     border-radius: var(--box-radius);
-    box-shadow: 8px 8px 16px var(--shadow-color);
+    box-shadow: 0 8px 16px var(--shadow-color);
     z-index: 10;
 }
 .drop-down-menu > button {

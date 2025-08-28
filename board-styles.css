@@ -160,7 +160,7 @@
     width: calc(var(--board-square-width) - 2*2px);
     background-color: whitesmoke;
     border: 2px solid gainsboro;
-    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
     animation: appear 0.3s ease-in-out;
     z-index: 8;
     display: flex;
@@ -216,7 +216,20 @@
 .flipped .promotion-box:not(.black), .promotion-box.black:not(.flipped *) {
     flex-direction: column-reverse;
     margin-top: calc(-3.5*var(--board-square-width) - 2*2px + 4*4px + 4px / 2);
-    box-shadow: 8px 0px 16px rgba(0, 0, 0, 0.2);
+}
+.flipped .promotion-box {
+    &.square-18 {
+        & > button:first-child {border-radius: 0 0 var(--box-radius) 0;}
+    }
+    &.square-88 {
+        & > button:first-child {border-radius: 0 0 0 var(--box-radius);}
+    }
+    &.square-81 {
+        & > button:first-child {border-radius: var(--box-radius) 0 0 0;}
+    }
+    &.square-11 {
+        & > button:first-child {border-radius: 0 var(--box-radius) 0 0;}
+    }
 }
 
 /* File and rank indicators */
@@ -298,11 +311,13 @@
     width: var(--board-square-width);
     aspect-ratio: 1;
     border-radius: 0;
-    background-color: rgba(255, 255, 0, 0.5);
     z-index: 2;
     pointer-events: none;
     animation: appear 0.25s ease;
     transition: opacity 0.25s ease;
+    &.default {
+        background-color: rgba(255, 255, 0, 0.5);
+    }
     &.yellow {
         background-color: rgba(255, 170, 0, 0.8);
     }

@@ -999,6 +999,12 @@ function isStalemate(activeColor, board = piecePositions) {
 function removeLegalMoveIndicators() {
     chessBoard.querySelectorAll(".move-indicator").forEach(indicator => {
         indicator.classList.add("fade-out");
+        if (pieceMoveMethod === "clickDragDrop") {
+            const pieceOnSquare = chessBoard.querySelector(`.chess-piece.square-${getSquareFromClassList(indicator)}`);
+            if (pieceOnSquare) {
+                pieceOnSquare.style.cursor = "grab";
+            }
+        }
         setTimeout(() => indicator.remove(), 200);
     });
 };
@@ -1048,7 +1054,7 @@ function selectPiece(piece, dragged = false) {
     }
 
     // Highlight the selected square
-    const prevHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}:not(.removed)`);
+    const prevHighlight = chessBoard.querySelector(`.square-highlight.square-${pieceSquare}.default:not(.removed)`);
     removeSquareHighlight();
     if (!prevHighlight) {
         highlightSquare(pieceSquare);
@@ -1062,7 +1068,12 @@ function selectPiece(piece, dragged = false) {
     legalMoves.forEach(square => {
         const moveIndicator = document.createElement("div");
         moveIndicator.className = `move-indicator square-${square}`;
-        if (piecePositions[convertSquareToIndex(square)] || (square === enPassantSquare && piecePositions[convertSquareToIndex(pieceSquare)].toLowerCase() === "p")) {
+        if (piecePositions[convertSquareToIndex(square)]) {
+            moveIndicator.classList.add("capture-indicator");
+            if (pieceMoveMethod === "clickDragDrop") {
+                chessBoard.querySelector(`.chess-piece.square-${square}`).style.cursor = "default";
+            }
+        } else if (square === enPassantSquare && piecePositions[convertSquareToIndex(pieceSquare)].toLowerCase() === "p") {
             moveIndicator.classList.add("capture-indicator");
         } else {
             moveIndicator.classList.add("empty-move-indicator");
@@ -1332,7 +1343,9 @@ function removeSquareHighlight(permanent = false, square = "") {
 function highlightSquare(square, permanent = false, color = "") {
     const highlight = document.createElement("div");
     highlight.className = `square-highlight square-${square}`;
-    if (color !== "") {
+    if (color === "") {
+        highlight.classList.add("default");
+    } else {
         highlight.classList.add(color);
     }
     if (permanent === true) highlight.classList.add("permanent");
@@ -1447,6 +1460,7 @@ function computerMove() {
     legalMoves = [];
 }
 
+let pieceMoveMethod = "clickDragDrop";
 let isBoardFlipped = false;
 let piecePositions = [];
 let activeColor = "", castlingRights = "", enPassantSquare = "", halfmoveClock = "", fullmoveNumber = "";
